@@ -33,6 +33,7 @@ jobs:
         id: version
         run: |
           set -euo pipefail
+
           raw_version="$(git cliff --config cliff.toml --bumped-version --unreleased | tr -d '\r\n')"
           version="${raw_version#v}"
           if [ -z "$version" ]; then
@@ -45,17 +46,68 @@ jobs:
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "archive_name=ignition-workflows-${version}.zip" >> "$GITHUB_OUTPUT"
 
-      - name: Generate release notes
+      - name: Generate release notes (fail on parse errors)
         run: |
           set -euo pipefail
           mkdir -p dist
+
+          # Capture stderr so WARNs don't get lost
+          errfile="dist/git-cliff-release-notes.stderr.log"
+
           git cliff \
             --config cliff.toml \
             --unreleased \
             --tag "${{ steps.version.outputs.tag }}" \
             --strip header \
-            > dist/release-notes.md
+            > dist/release-notes.md \
+            2> "${errfile}" || true
+
+          # Fail if git-cliff reported parse errors (it may still exit 0)
+          if grep -q "skipped due to parse error" "${errfile}"; then
+            echo "::error::git-cliff skipped commit(s) due to parse error(s) while generating release notes."
+            echo "---- git-cliff stderr ----"
+            cat "${errfile}"
+            echo "---- verbose details (-vv) ----"
+            git cliff -vv \
+              --config cliff.toml \
+              --unreleased \
+              --tag "${{ steps.version.outputs.tag }}" \
+              --strip header \
+              > /dev/null 2> dist/git-cliff-release-notes.verbose.log || true
+            tail -n 200 dist/git-cliff-release-notes.verbose.log
+            exit 1
+          fi
+
           test -s dist/release-notes.md
+
+      - name: Generate CHANGELOG (dry run; fail on parse errors)
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+
+          errfile="dist/git-cliff-changelog.stderr.log"
+
+          # Full changelog for the repo
+          git cliff \
+            --config cliff.toml \
+            --tag "${{ steps.version.outputs.tag }}" \
+            > dist/CHANGELOG.md \
+            2> "${errfile}" || true
+
+          if grep -q "skipped due to parse error" "${errfile}"; then
+            echo "::error::git-cliff skipped commit(s) due to parse error(s) while generating CHANGELOG."
+            echo "---- git-cliff stderr ----"
+            cat "${errfile}"
+            echo "---- verbose details (-vv) ----"
+            git cliff -vv \
+              --config cliff.toml \
+              --tag "${{ steps.version.outputs.tag }}" \
+              > /dev/null 2> dist/git-cliff-changelog.verbose.log || true
+            tail -n 200 dist/git-cliff-changelog.verbose.log
+            exit 1
+          fi
+
+          test -s dist/CHANGELOG.md
 
       - name: Build release artifact
         run: |
