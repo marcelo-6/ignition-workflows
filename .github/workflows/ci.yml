@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    name: Basic Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate key files
+        run: |
+          set -euo pipefail
+          test -f Justfile
+          test -f cliff.toml
+          test -f README.md
+          test -f LICENSE
+
+      - name: Check for merge conflict markers
+        run: |
+          set -euo pipefail
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- .; then
+            echo "Merge conflict markers found"
+            exit 1
+          fi
+
+      - name: Prepare .env for CI compose validation
+        run: |
+          set -euo pipefail
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          fi
+
+      - name: Validate Docker Compose syntax
+        run: |
+          set -euo pipefail
+          docker compose config >/dev/null
+
+      - name: Warn if .env is still tracked
+        run: |
+          set -euo pipefail
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::warning::.env is tracked in git. Consider: git rm --cached .env"
+          fi
