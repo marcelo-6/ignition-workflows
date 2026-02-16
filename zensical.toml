@@ -11,23 +11,23 @@
 # The site_name is shown in the page header and the browser window title
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_name
-site_name = "Documentations"
+site_name = "Ignition Workflows"
 
 # The site_description is included in the HTML head and should contain a
 # meaningful description of the site content for use by search engines.
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_description
-site_description = "A new project generated from the default template project."
+site_description = "DBOS-inspired workflow orchestration for Ignition Gateway scripting."
 
 # The site_author attribute. This is used in the HTML head element.
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_author
-site_author = "<your name here>"
+site_author = "Marcelo Amorim"
 
 # The site_url is the canonical URL for your site. When building online
 # documentation you should set this.
 # Read more: https://zensical.org/docs/setup/basics/#site_url
-#site_url = "https://www.example.com/"
+site_url = "https://marcelo-6.github.io/ignition-workflows/"
 
 # The copyright notice appears in the page footer and can contain an HTML
 # fragment.
@@ -44,10 +44,32 @@ Copyright &copy; 2026 Marcelo Amorim
 # can be defined using TOML syntax.
 #
 # Read more: https://zensical.org/docs/setup/navigation/
-# nav = [
-#   { "Get started" = "index.md" },
-#   { "Markdown in 5min" = "markdown.md" },
-# ]
+nav = [
+  { "Home" = "index.md" },
+  { "Getting Started" = [
+    "getting-started/getting-started.md",
+    "getting-started/steps-and-authoring.md",
+    "getting-started/testing.md",
+    ]},
+  { "Concepts" = [
+    "concepts/architecture.md",
+    "concepts/state-model.md",
+    ]},
+  { "Examples" = [
+    "examples/operations.md",
+    ]},
+  { "API Reference" = [
+    "api-reference/api-admin.md",
+    "api-reference/api-params.md",
+    "api-reference/api-service.md",
+    ]},
+  { "Zensical Examples" = [
+    "zensical/example-1.md",
+    "zensical/example-2.md",
+    ]},
+  { "Roadmap" = "roadmap.md" },
+  { "References" = "references.md" },
+]
 
 # With the "extra_css" option you can add your own CSS styling to customize
 # your Zensical project according to your needs. You can add any number of
@@ -210,12 +232,12 @@ features = [
     # When sections are enabled, top-level sections are rendered as groups in
     # the sidebar for viewports above 1220px, but remain as-is on mobile.
     # https://zensical.org/docs/setup/navigation/#navigation-sections
-    "navigation.sections",
+    # "navigation.sections",
 
     # When tabs are enabled, top-level sections are rendered in a menu layer
     # below the header for viewports above 1220px, but remain as-is on mobile.
     # https://zensical.org/docs/setup/navigation/#navigation-tabs
-    #"navigation.tabs",
+    # "navigation.tabs",
 
     # When sticky tabs are enabled, navigation tabs will lock below the header
     # and always remain visible when scrolling down.
@@ -246,7 +268,7 @@ features = [
     # When navigation integration for the table of contents is enabled, it is
     # always rendered as part of the navigation sidebar on the left.
     # https://zensical.org/docs/setup/navigation/#navigation-integration
-    #"toc.integrate",
+    # "toc.integrate",
 ]
 
 # ----------------------------------------------------------------------------
@@ -259,12 +281,12 @@ features = [
 # - https://zensical.org/docs/setup/colors/
 # ----------------------------------------------------------------------------
 [[project.theme.palette]]
-scheme = "default"
+scheme = "slate"
 toggle.icon = "lucide/sun"
 toggle.name = "Switch to dark mode"
 
 [[project.theme.palette]]
-scheme = "slate"
+scheme = "default"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
 
@@ -303,5 +325,4 @@ toggle.name = "Switch to light mode"
 #[[project.extra.social]]
 #icon = "fontawesome/brands/github"
 #link = "https://github.com/user/repo"
-
 
