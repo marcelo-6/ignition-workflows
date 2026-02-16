@@ -101,7 +101,7 @@ jobs:
         if: steps.version.outputs.skip != 'true' && steps.botcheck.outputs.skip != 'true'
         run: |
           set -euo pipefail
-          # Full deterministic changelog for the repo
+          # Full changelog for the repo
           git cliff \
             --config cliff.toml \
             --tag "${{ steps.version.outputs.tag }}" \
