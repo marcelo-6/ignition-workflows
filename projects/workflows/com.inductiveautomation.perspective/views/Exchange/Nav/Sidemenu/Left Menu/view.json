@@ -1,0 +1,354 @@
+{
+  "custom": {
+    "size": "small"
+  },
+  "params": {},
+  "propConfig": {
+    "custom.size": {
+      "binding": {
+        "config": {
+          "path": "page.props.dimensions.viewport.width"
+        },
+        "transforms": [
+          {
+            "fallback": "large",
+            "inputType": "range",
+            "mappings": [
+              {
+                "input": {
+                  "max": 1000,
+                  "min": 0
+                },
+                "output": "small"
+              }
+            ],
+            "outputType": "scalar",
+            "type": "map"
+          },
+          {
+            "expression": "if({session.props.device.type}\u003d\u0027designer\u0027,\"small\",{value})",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 300
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Link"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "params": {
+            "icon": "material/home",
+            "isLink": true,
+            "label": "Workflows",
+            "showArrow": false,
+            "target": "/"
+          },
+          "path": "Exchange/Nav/Sidemenu/Embedded/Link"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Section Dashes"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "params": {
+            "hasSeparator": false,
+            "icon": "material/run_circle",
+            "items": [],
+            "label": "Runs",
+            "target": "/runs"
+          },
+          "path": "Exchange/Nav/Sidemenu/Embedded/Section"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Link_1"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "params": {
+            "icon": "material/low_priority",
+            "isLink": true,
+            "label": "Queues",
+            "showArrow": false,
+            "target": "/queues"
+          },
+          "path": "Exchange/Nav/Sidemenu/Embedded/Link"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Link_2"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "params": {
+            "icon": "material/pause_circle_filled",
+            "isLink": true,
+            "label": "Prompts",
+            "showArrow": false,
+            "target": "/prompts"
+          },
+          "path": "Exchange/Nav/Sidemenu/Embedded/Link"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Section_2"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "params": {
+            "hasSeparator": true,
+            "icon": "material/settings",
+            "items": [
+              {
+                "icon": "material/settings",
+                "instancePosition": {},
+                "instanceStyle": {
+                  "classes": "",
+                  "color": ""
+                },
+                "label": "Logs",
+                "target": "/admin/logs"
+              },
+              {
+                "icon": "material/settings",
+                "instancePosition": {},
+                "instanceStyle": {
+                  "classes": "",
+                  "color": ""
+                },
+                "label": "Threads",
+                "target": "/admin/threads"
+              },
+              {
+                "icon": "material/settings",
+                "instancePosition": {},
+                "instanceStyle": {
+                  "classes": "",
+                  "color": ""
+                },
+                "label": "Testing",
+                "target": "/admin"
+              }
+            ],
+            "label": "Manage",
+            "target": ""
+          },
+          "path": "Exchange/Nav/Sidemenu/Embedded/Section"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "draggable": true,
+                    "id": "iotYN78T",
+                    "modal": false,
+                    "overlayDismiss": false,
+                    "resizable": true,
+                    "showCloseIcon": true,
+                    "type": "open",
+                    "viewPath": "Exchange/Workflows/Pages/Admin",
+                    "viewportBound": false
+                  },
+                  "scope": "C",
+                  "type": "popup"
+                }
+              }
+            },
+            "meta": {
+              "name": "Section_3"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "hasSeparator": true,
+                "icon": "material/help",
+                "items": [],
+                "label": "Help",
+                "target": ""
+              },
+              "path": "Exchange/Nav/Sidemenu/Embedded/Section"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "Alarms"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.size} !\u003d \"large\""
+                  },
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "iconOnly": false
+              },
+              "path": "Exchange/Nav/Embedded/Alarms",
+              "style": {
+                "classes": "nav-link"
+              }
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "User"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.size} !\u003d \"large\""
+                  },
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "path": "Exchange/Nav/Embedded/User",
+              "style": {
+                "classes": "nav-link"
+              }
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "Theme"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.size} !\u003d \"large\""
+                  },
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "loading": {
+                "order": "with-parent"
+              },
+              "params": {
+                "isLink": false
+              },
+              "path": "Exchange/Nav/Embedded/Theme",
+              "style": {
+                "classes": "nav-link"
+              }
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "Time"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.size} !\u003d \"large\""
+                  },
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "path": "Exchange/Nav/Embedded/Time",
+              "style": {
+                "classes": "nav-not-a-link"
+              }
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "name": "Util"
+        },
+        "position": {
+          "basis": "200px",
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "justify": "flex-end"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.classes": {
+        "binding": {
+          "config": {
+            "expression": "if({session.props.device.type}\u003d\u0027designer\u0027,\r\n\u0027nav nav-open \u0027,\r\nif({session.custom.navigation.sideMenu.leftOpen},\r\n\u0027nav nav-open \u0027,\r\n\u0027nav \u0027))"
+          },
+          "type": "expr"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {}
+    },
+    "type": "ia.container.flex"
+  }
+}

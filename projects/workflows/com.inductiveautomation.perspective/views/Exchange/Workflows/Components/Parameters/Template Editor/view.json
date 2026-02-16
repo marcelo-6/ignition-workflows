@@ -1,0 +1,968 @@
+{
+  "custom": {
+    "lastSaveResult": {
+      "ok": true,
+      "templateVersion": 8
+    },
+    "loadedTemplate": {
+      "version": 8
+    },
+    "selection": {},
+    "workflowName": ""
+  },
+  "params": {},
+  "propConfig": {
+    "custom.lastSaveResult": {
+      "persistent": true
+    },
+    "custom.loadedTemplate": {
+      "persistent": true
+    },
+    "custom.loadedTemplate.description": {
+      "binding": {
+        "config": {
+          "path": "/root/Form.props.columns.items[0].rows.items[0].widgets[0].info.text"
+        },
+        "transforms": [
+          {
+            "expression": "try(if(isBadOrError({value}),\"\", {value}),\"\")",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.loadedTemplate.name": {
+      "binding": {
+        "config": {
+          "path": "/root/Form.props.columns.items[0].rows.items[0].widgets[0].label.text"
+        },
+        "transforms": [
+          {
+            "expression": "try(if(isBadOrError({value}),\"\", {value}),\"\")",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.selection": {
+      "persistent": true
+    },
+    "custom.selection.isTemplateNotAvailable": {
+      "binding": {
+        "config": {
+          "expression": "if({view.custom.selection.isWorkflowSelected} \u0026\u0026 {/root/Header/Selection/Template.props.params.noResults},True,False)"
+        },
+        "type": "expr"
+      }
+    },
+    "custom.selection.isTemplatedSelected": {
+      "binding": {
+        "config": {
+          "path": "/root/Header/Selection/Template.props.params.selected"
+        },
+        "transforms": [
+          {
+            "expression": "if(isBadOrError({value}), None, len({value})\u003e 0)",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.selection.isWorkflowSelected": {
+      "binding": {
+        "config": {
+          "path": "view.custom.workflowName"
+        },
+        "transforms": [
+          {
+            "fallback": true,
+            "inputType": "scalar",
+            "mappings": [
+              {
+                "input": "",
+                "output": false
+              },
+              {
+                "input": null,
+                "output": false
+              }
+            ],
+            "outputType": "scalar",
+            "type": "map"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.selection.template": {
+      "binding": {
+        "config": {
+          "path": "/root/Header/Selection/Template.props.params.selected"
+        },
+        "transforms": [
+          {
+            "expression": "if(isBadOrError(jsonDecode({value})),\"\", jsonDecode({value}))",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.workflowName": {
+      "binding": {
+        "config": {
+          "path": "/root/Header/Selection/Workflow.props.params.selected"
+        },
+        "transforms": [
+          {
+            "expression": "if(isBadOrError({value}), None, {value})",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 918
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "LabelWorkflow"
+            },
+            "position": {
+              "basis": "32px"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h2"
+              },
+              "text": "Start a workflow"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "Workflow"
+                },
+                "position": {
+                  "basis": "42px",
+                  "shrink": 0
+                },
+                "props": {
+                  "params": {
+                    "refresh": false,
+                    "selected": ""
+                  },
+                  "path": "Exchange/Workflows/Components/Workflows/Selection"
+                },
+                "type": "ia.display.view"
+              },
+              {
+                "meta": {
+                  "name": "Label"
+                },
+                "position": {
+                  "basis": "32px"
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selection.isTemplateNotAvailable"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "btn--destructiveOutline",
+                    "marginTop": 5
+                  },
+                  "text": "No template available for this workflow"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": [
+                      {
+                        "config": {
+                          "draggable": true,
+                          "id": "9mwThiwR",
+                          "modal": false,
+                          "overlayDismiss": false,
+                          "resizable": true,
+                          "showCloseIcon": true,
+                          "title": "Copy template",
+                          "type": "open",
+                          "viewPath": "Exchange/Workflows/Components/Parameters/Template Copy",
+                          "viewportBound": false
+                        },
+                        "scope": "C",
+                        "type": "popup"
+                      },
+                      {
+                        "config": {
+                          "script": "\tself.props.value \u003d 0"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      }
+                    ]
+                  }
+                },
+                "meta": {
+                  "name": "CopyTemplate"
+                },
+                "position": {
+                  "basis": "34px"
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selection.isTemplateNotAvailable"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "primary": false,
+                  "readyState": {
+                    "icon": {
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Copy a template"
+                  },
+                  "style": {
+                    "classes": "btn btn--outline",
+                    "marginTop": 5,
+                    "maxWidth": 150
+                  },
+                  "writingState": {
+                    "icon": {
+                      "path": "material/hourglass_empty",
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Writing..."
+                  }
+                },
+                "type": "ia.input.oneshotbutton"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": [
+                      {
+                        "config": {
+                          "script": "\tself.props.value \u003d 0"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      },
+                      {
+                        "config": {
+                          "script": "\tret \u003d exchange.workflows.api.service.start(workflowName\u003dself.view.custom.workflowName)\n\texchange.workflows.toast.show(\n\t\tmessage\u003d\"{}\".format(ret),\n\t\ttype\u003d\"success\",\n\t\tcloseButton\u003dTrue\n\t)"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      }
+                    ]
+                  }
+                },
+                "meta": {
+                  "name": "StartWithNoTemplate"
+                },
+                "position": {
+                  "basis": "34px"
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selection.isTemplateNotAvailable"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "primary": false,
+                  "readyState": {
+                    "icon": {
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Start anyway"
+                  },
+                  "style": {
+                    "classes": "btn btn--outline",
+                    "marginTop": 5,
+                    "maxWidth": 150
+                  },
+                  "writingState": {
+                    "icon": {
+                      "path": "material/hourglass_empty",
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Writing..."
+                  }
+                },
+                "type": "ia.input.oneshotbutton"
+              },
+              {
+                "meta": {
+                  "name": "Separator"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "separator-column"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "LabelTemplate"
+                },
+                "position": {
+                  "basis": "32px"
+                },
+                "props": {
+                  "style": {
+                    "classes": "text-h3"
+                  },
+                  "text": "Select a template to use"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "ActiveOnly"
+                },
+                "position": {
+                  "basis": "42px"
+                },
+                "props": {
+                  "selected": true,
+                  "text": "Active Templates Only"
+                },
+                "type": "ia.input.checkbox"
+              },
+              {
+                "meta": {
+                  "name": "LatestOnly"
+                },
+                "position": {
+                  "basis": "42px"
+                },
+                "props": {
+                  "selected": true,
+                  "text": "Latest Templates Only"
+                },
+                "type": "ia.input.checkbox"
+              },
+              {
+                "meta": {
+                  "name": "Template"
+                },
+                "position": {
+                  "basis": "42px"
+                },
+                "propConfig": {
+                  "props.params.templateQueryOptions.latestOnly": {
+                    "binding": {
+                      "config": {
+                        "path": "../LatestOnly.props.selected"
+                      },
+                      "type": "property"
+                    }
+                  },
+                  "props.params.templateQueryOptions.status": {
+                    "binding": {
+                      "config": {
+                        "path": "../ActiveOnly.props.selected"
+                      },
+                      "transforms": [
+                        {
+                          "expression": "if({value},\"active\", None)",
+                          "type": "expression"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.params.workflowName": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.workflowName"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "params": {
+                    "noResults": true,
+                    "refresh": false,
+                    "selected": null,
+                    "templateQueryOptions": {}
+                  },
+                  "path": "Exchange/Workflows/Components/Parameters/Template Selection"
+                },
+                "type": "ia.display.view"
+              }
+            ],
+            "meta": {
+              "name": "Selection"
+            },
+            "position": {
+              "basis": "0px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "JSONViewer"
+            },
+            "position": {
+              "basis": "150px"
+            },
+            "propConfig": {
+              "props.params.json": {
+                "binding": {
+                  "config": {
+                    "path": "../Selection/Template.props.params.selected"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "boolStyle": "color:var(--qual-9);font-size:1.1em",
+                "indent": 2,
+                "keyStyle": "font-weight:bold",
+                "nullStyle": "color:var(--error);font-size:1.1em;font-style:italic",
+                "numericStyle": "font-weight:bold;color:var(--qual-7);font-size:1.1em",
+                "stringStyle": "color:var(--qual-2);font-weight:bold",
+                "symbolStyle": "color:var(--qual-10);font-size:1.1em"
+              },
+              "path": "Exchange/Workflows/Components/JSONViewer",
+              "style": {
+                "classes": "codebox"
+              }
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": [
+                      {
+                        "config": {
+                          "script": "\tself.parent.parent.parent.getChild(\"Form\").load()"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      },
+                      {
+                        "config": {
+                          "script": "\tself.props.value \u003d 0"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      }
+                    ]
+                  }
+                },
+                "meta": {
+                  "name": "LoadLatest",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "Load record from database into form props"
+                  }
+                },
+                "position": {
+                  "basis": "34px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.enabled": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selection.isTemplatedSelected"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "primary": false,
+                  "readyState": {
+                    "icon": {
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Load"
+                  },
+                  "style": {
+                    "classes": "btn btn--outline"
+                  },
+                  "writingState": {
+                    "icon": {
+                      "path": "material/hourglass_empty",
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Writing..."
+                  }
+                },
+                "type": "ia.input.oneshotbutton"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": [
+                      {
+                        "config": {
+                          "script": "\tself.parent.parent.parent.getChild(\"Form\").save()"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      },
+                      {
+                        "config": {
+                          "script": "\tself.props.value \u003d 0"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      }
+                    ]
+                  }
+                },
+                "meta": {
+                  "name": "Save",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "Save form props into database"
+                  }
+                },
+                "position": {
+                  "basis": "34px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.enabled": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selection.isTemplatedSelected"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "primary": false,
+                  "readyState": {
+                    "icon": {
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Save"
+                  },
+                  "style": {
+                    "classes": "btn btn--outline"
+                  },
+                  "writingState": {
+                    "icon": {
+                      "path": "material/hourglass_empty",
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Saving..."
+                  }
+                },
+                "type": "ia.input.oneshotbutton"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": [
+                      {
+                        "config": {
+                          "script": "\tsystem.perspective.openPopup(id\u003d\"test\",\n\t\t\t\t\t\t\t\tview\u003d\"Exchange/Workflows/Components/JSONViewer\",\n\t\t\t\t\t\t\t\tparams\u003d{\"json\":system.util.jsonEncode(self.parent.parent.parent.getChild(\"Form\").props)},\n\t\t\t\t\t\t\t\ttitle\u003dself.view.custom.loadedTemplate.name,\n\t\t\t\t\t\t\t\tshowCloseIcon\u003dTrue,\n\t\t\t\t\t\t\t\tdraggable\u003dTrue,\n\t\t\t\t\t\t\t\tresizable\u003dTrue,\n\t\t\t\t\t\t\t\tmodal\u003dTrue,\n\t\t\t\t\t\t\t\toverlayDismiss\u003dTrue,\n\t\t\t\t\t\t\t\tviewportBound\u003dTrue)"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      },
+                      {
+                        "config": {
+                          "script": "\tself.props.value \u003d 0"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      }
+                    ]
+                  }
+                },
+                "meta": {
+                  "name": "ExportJson",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "(Not available yet) Export form props JSON to be edited/viewed outside of Igntion"
+                  }
+                },
+                "position": {
+                  "basis": "34px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.enabled": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selection.isTemplatedSelected"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "primary": false,
+                  "readyState": {
+                    "icon": {
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "View JSON"
+                  },
+                  "style": {
+                    "classes": "btn btn--outline"
+                  },
+                  "writingState": {
+                    "icon": {
+                      "path": "material/hourglass_empty",
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Writing..."
+                  }
+                },
+                "type": "ia.input.oneshotbutton"
+              },
+              {
+                "meta": {
+                  "name": "ImportJson",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "(Not available yet) Import form props JSON edited outside of Igntion"
+                  }
+                },
+                "position": {
+                  "basis": "34px",
+                  "grow": 1
+                },
+                "props": {
+                  "enabled": false,
+                  "primary": false,
+                  "readyState": {
+                    "icon": {
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Import JSON"
+                  },
+                  "style": {
+                    "classes": "btn btn--outline"
+                  },
+                  "writingState": {
+                    "icon": {
+                      "path": "material/hourglass_empty",
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Writing..."
+                  }
+                },
+                "type": "ia.input.oneshotbutton"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": [
+                      {
+                        "config": {
+                          "script": "\tself.parent.parent.parent.getChild(\"Form\").loadTemplateWithEnums()"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      },
+                      {
+                        "config": {
+                          "script": "\tself.props.value \u003d 0"
+                        },
+                        "scope": "G",
+                        "type": "script"
+                      }
+                    ]
+                  }
+                },
+                "meta": {
+                  "name": "LoadEnums",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "Load enum from database into form props"
+                  }
+                },
+                "position": {
+                  "basis": "34px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.enabled": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selection.isTemplatedSelected"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "primary": false,
+                  "readyState": {
+                    "icon": {
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Load Enums"
+                  },
+                  "style": {
+                    "classes": "btn btn--outline"
+                  },
+                  "writingState": {
+                    "icon": {
+                      "path": "material/hourglass_empty",
+                      "style": {
+                        "height": "24px",
+                        "width": "2rem"
+                      }
+                    },
+                    "text": "Writing..."
+                  }
+                },
+                "type": "ia.input.oneshotbutton"
+              }
+            ],
+            "meta": {
+              "name": "Commands"
+            },
+            "position": {
+              "basis": "45px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "props": {
+              "alignContent": "flex-start",
+              "alignItems": "flex-start",
+              "style": {
+                "marginTop": 15
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "Header"
+        },
+        "position": {
+          "basis": "350px"
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "padding": 15
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "events": {
+          "component": {
+            "onError": {
+              "config": {
+                "script": "\texchange.workflows.toast.show(\n\t\tmessage\u003d\"failed to start!\",\n\t\ttype\u003d\"error\",\n\t\tcloseButton\u003dTrue\n\t)"
+              },
+              "scope": "G",
+              "type": "script"
+            },
+            "onSubmitActionPerformed": {
+              "config": {
+                "script": "\tret \u003d exchange.workflows.api.params.startWithTemplate(\n\t\t\t\t\t\t\t\t\t\tworkflowName\u003dself.view.custom.workflowName,\n\t\t\t\t\t\t\t\t\t\ttemplateName\u003dself.view.custom.selection.template.templateName,\n\t\t\t\t\t\t\t\t\t\toverridesData\u003dself.props.data,\n\t\t\t\t\t\t\t\t\t\ttemplateVersion\u003dself.view.custom.selection.template.templateVersion,\n\t\t\t\t\t\t\t\t\t\tactor\u003dself.session.props.auth.user.userName\n\t\t\t\t\t\t\t\t\t\t)\n\texchange.workflows.toast.show(\n\t\tmessage\u003d\"{} \".format(ret),\n\t\ttype\u003d\"success\",\n\t\tcloseButton\u003dTrue\n\t)"
+              },
+              "scope": "G",
+              "type": "script"
+            },
+            "onSuccess": {
+              "config": {
+                "script": "\texchange.workflows.toast.show(\n\t\tmessage\u003d\"Workflow {} enqueued!\".format(self.view.custom.workflowName),\n\t\ttype\u003d\"error\",\n\t\tcloseButton\u003dTrue\n\t)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "Form"
+        },
+        "position": {
+          "basis": "400px",
+          "grow": 1
+        },
+        "propConfig": {
+          "props.actions.submit.disabled": {
+            "binding": {
+              "config": {
+                "expression": "!{view.custom.selection.isWorkflowSelected} ||\r\n({view.custom.selection.isWorkflowSelected} \u0026\u0026\r\n{view.custom.selection.isTemplateNotAvailable}\r\n )||\r\n!{view.custom.selection.isTemplatedSelected} ||\r\nlen({view.custom.loadedTemplate.name}) \u003c\u003d0\r\n"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "actions": {
+            "cancel": {
+              "icon": {
+                "path": "material/cancel"
+              }
+            },
+            "submit": {
+              "icon": {
+                "path": "material/run_circle"
+              },
+              "text": "Start"
+            }
+          },
+          "columns": {
+            "align": "stretch",
+            "items": [
+              {
+                "rows": {
+                  "align": "start",
+                  "items": [],
+                  "justify": "start",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "style": {
+                  "classes": ""
+                },
+                "visible": false
+              }
+            ]
+          },
+          "data": {
+            "paramOne": "v8",
+            "paramTwo": "5"
+          },
+          "name": "demo.commands_60s.My First Template",
+          "validation": {
+            "isInvalid": true,
+            "status": {
+              "paramOne": "valid",
+              "paramThree": "valueMissing",
+              "paramTwo": "valid"
+            }
+          }
+        },
+        "scripts": {
+          "customMethods": [
+            {
+              "name": "save",
+              "params": [],
+              "script": "\t\n\tworkflowName \u003d self.view.custom.workflowName\n\ttemplateName \u003d self.view.custom.loadedTemplate.name\n\tdescription \u003d self.view.custom.loadedTemplate.description\n\t\n\t# Pull props directly from the Form component (source of truth)\n\tformProps \u003d system.util.jsonEncode(self.props)\n\t\n\tr \u003d exchange.workflows.api.params.createTemplateVersion(\n\t\tworkflowName\u003dworkflowName,\n\t\ttemplateName\u003dtemplateName,\n\t\tformProps\u003dformProps,\n\t\tdescription\u003ddescription,\n\t\tcreatedBy\u003dself.session.props.auth.user.userName,\n\t\tactivate\u003dTrue\n\t)\n\t\n\tself.view.custom.lastSaveResult \u003d r\n\t\n\t# Optional: reload to show new version\n\tif r.get(\"ok\"):\n\t\texchange.workflows.toast.show(\n            message\u003d\"Save! {} v{}\".format(templateName, self.view.custom.lastSaveResult.templateVersion),\n            type\u003d\"success\",\n            closeButton\u003dTrue\n        )\n\t\tself.view.custom.loadedTemplate.version \u003d self.view.custom.lastSaveResult.templateVersion\n\telse:\n\t\texchange.workflows.toast.show(\n            message\u003d\"failed to save!\",\n            type\u003d\"error\",\n            closeButton\u003dTrue\n        )"
+            },
+            {
+              "name": "load",
+              "params": [],
+              "script": "\ttemplateName \u003d None\n\ttry:\n\t\ttemplateName \u003d self.view.custom.selection.template.templateName\n\t\tif not templateName and not self.view.custom.workflowName:\n\t\t\treturn\n\t\tprops \u003d self.props\n\t\ttoChange \u003d exchange.workflows.api.params.getTemplate(\n\t\t\t\t\t\t\t\t\t\t\t\t\tworkflowName \u003d self.view.custom.workflowName,\n\t\t\t\t\t\t\t\t\t\t\t\t\ttemplateName \u003d self.view.custom.selection.template.templateName,\n\t\t\t\t\t\t\t\t\t\t\t\t\ttemplateVersion \u003d self.view.custom.selection.template.templateVersion)[\"schema\"][\"formProps\"]\n\t\tfor item in props:\n\t\t\tif item in toChange:\n\t\t\t\tprops[item] \u003d toChange[item]\n\t\t\n\t\texchange.workflows.toast.show(\n            message\u003d\"Loaded! {} v{}\".format(templateName, self.view.custom.selection.template.templateVersion),\n            type\u003d\"success\",\n            closeButton\u003dTrue\n        )\n\texcept Exception as e:\n\t\t\n\t\texchange.workflows.toast.show(\n            message\u003d\"failed to load! {}\".format(str(e)),\n            type\u003d\"error\",\n            closeButton\u003dTrue\n        )\n\t\treturn\n\n"
+            },
+            {
+              "name": "loadTemplateWithEnums",
+              "params": [],
+              "script": "\t\"\"\"\n\tLoad the selected template into this Form component and expand enum placeholders to options.\n\n\tBehavior:\n\t- Fetch template (specific version)\n\t- Expand enums using exchange.workflows.api.params.expandTemplateForUi\n\t- Apply returned schema.formProps onto the current component props (only keys that exist)\n\t\"\"\"\n\ttry:\n\t\tworkflowName \u003d self.view.custom.workflowName\n\t\ttplSel \u003d self.view.custom.selection.template\n\t\ttemplateName \u003d tplSel.templateName\n\t\ttemplateVersion \u003d tplSel.templateVersion\n\n\t\tif not workflowName or not templateName:\n\t\t\treturn\n\n\t\t# 1) Get template object\n\t\ttpl \u003d exchange.workflows.api.params.getTemplate(\n\t\t\tworkflowName\u003dworkflowName,\n\t\t\ttemplateName\u003dtemplateName,\n\t\t\ttemplateVersion\u003dtemplateVersion\n\t\t)\n\t\tif not tpl:\n\t\t\traise Exception(\"template_not_found\")\n\n\t\t# 2) Expand enums into widget options\n\t\ttplUi \u003d exchange.workflows.api.params.expandTemplateForUi(tpl)\n\n\t\t# 3) Apply formProps onto this Form component props (your existing pattern)\n\t\ttoChange \u003d (tplUi.get(\"schema\", {}) or {}).get(\"formProps\", {}) or {}\n\t\tprops \u003d self.props\n\n\t\tfor item in props:\n\t\t\tif item in toChange:\n\t\t\t\tprops[item] \u003d toChange[item]\n\n\t\texchange.workflows.toast.show(\n\t\t\tmessage\u003d\"Loaded! {} v{}\".format(templateName, templateVersion),\n\t\t\ttype\u003d\"success\",\n\t\t\tcloseButton\u003dTrue\n\t\t)\n\n\texcept Exception as e:\n\t\texchange.workflows.toast.show(\n\t\t\tmessage\u003d\"failed to load! {}\".format(str(e)),\n\t\t\ttype\u003d\"error\",\n\t\t\tcloseButton\u003dTrue\n\t\t)\n\t\treturn"
+            }
+          ],
+          "extensionFunctions": null,
+          "messageHandlers": []
+        },
+        "type": "ia.input.form"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "type": "ia.container.flex"
+  }
+}

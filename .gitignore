@@ -1,0 +1,29 @@
+# VS Code files
+.vscode/
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Secrets
+secrets/
+
+# Ignition
+.resources/
+conversion-report.txt
+gw-build/*.modl
+gw-build/*.jar
+gw-build/*.gwbk
+
+# Private docs
+docs/private/*
+
+# Build outputs
+dist/
+build/
+
+# Python/Jython cache
+__pycache__/
+.pytest_cache/
+.mypy_cache/

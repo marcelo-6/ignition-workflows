@@ -1,0 +1,150 @@
+{
+  "custom": {
+    "numAlarms": 0
+  },
+  "params": {
+    "iconOnly": false
+  },
+  "propConfig": {
+    "custom.numAlarms": {
+      "binding": {
+        "config": {
+          "expression": "now(2000)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn len(system.alarm.queryStatus(state\u003d[\"ActiveUnacked\"]))",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "params.iconOnly": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 40,
+      "width": 250
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "Icon"
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "props": {
+              "path": "material/alarm",
+              "style": {
+                "classes": "",
+                "padding": "8px"
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "meta": {
+              "name": "Label"
+            },
+            "position": {
+              "basis": "50px",
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "expression": "!{view.params.iconOnly}"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.numAlarms}"
+                  },
+                  "transforms": [
+                    {
+                      "expression": "numberFormat({value}, \"#,##0\")",
+                      "type": "expression"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "overflow": "hidden"
+              },
+              "textStyle": {
+                "paddingRight": 8,
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "page": "/alarms"
+              },
+              "scope": "C",
+              "type": "nav"
+            }
+          }
+        },
+        "meta": {
+          "name": "FlexContainer",
+          "tooltip": {
+            "enabled": true,
+            "text": "Navigate to alarm summary"
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "nav-theme",
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.classes": {
+        "binding": {
+          "config": {
+            "expression": "if({view.custom.numAlarms} \u003e 0, \u0027nav-alarm-item\u0027,\u0027\u0027)"
+          },
+          "type": "expr"
+        }
+      }
+    },
+    "props": {
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

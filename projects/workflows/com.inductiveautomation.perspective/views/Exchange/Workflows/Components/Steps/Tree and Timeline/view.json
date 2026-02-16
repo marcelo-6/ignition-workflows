@@ -1,0 +1,184 @@
+{
+  "custom": {
+    "poll": 1,
+    "steps": null,
+    "workflow": null
+  },
+  "params": {
+    "workflow_id": ""
+  },
+  "propConfig": {
+    "custom.poll": {
+      "binding": {
+        "config": {
+          "path": "view.custom.workflow[0].status"
+        },
+        "transforms": [
+          {
+            "fallback": 1,
+            "inputType": "scalar",
+            "mappings": [
+              {
+                "input": "SUCCESS",
+                "output": 0
+              },
+              {
+                "input": "CANCELLED",
+                "output": 0
+              }
+            ],
+            "outputType": "scalar",
+            "type": "map"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.steps": {
+      "binding": {
+        "config": {
+          "parameters": {
+            "workflowId": "{view.params.workflow_id}"
+          },
+          "polling": {
+            "enabled": true,
+            "rate": "{view.custom.poll}"
+          },
+          "queryPath": "Exchange/Workflows/Workflows/Steps/ListByWorkflow",
+          "returnFormat": "dataset"
+        },
+        "transforms": [
+          {
+            "code": "\t# Perspective Script Transform (Jython 2.7)\n\t# Input (value): steps dataset/list\n\t# Uses: workflow metadata\n\t# Output: {\"gantt\": {...}, \"tree\": {...}}\n\t\n\tdef _to_rows(v):\n\t    if v is None:\n\t        return []\n\t    if isinstance(v, list):\n\t        return v\n\t    try:\n\t        py \u003d system.dataset.toPyDataSet(v)\n\t        out \u003d []\n\t        for r in py:\n\t            out.append({\n\t                \"call_seq\": r[\"call_seq\"],\n\t                \"step_name\": r[\"step_name\"],\n\t                \"status\": r[\"status\"],\n\t                \"output_json\": r[\"output_json\"],\n\t                \"error_json\": r[\"error_json\"],\n\t                \"started_at_epoch_ms\": r[\"started_at_epoch_ms\"],\n\t                \"completed_at_epoch_ms\": r[\"completed_at_epoch_ms\"],\n\t                \"attempts\": r[\"attempts\"],\n\t            })\n\t        return out\n\t    except:\n\t        return []\n\t\n\tdef _as_long(x, default\u003dNone):\n\t    try:\n\t        if x is None:\n\t            return default\n\t        return long(x)\n\t    except:\n\t        try:\n\t            return long(str(x))\n\t        except:\n\t            return default\n\t\n\tdef _norm_status(s):\n\t    s \u003d (s or \"\").upper().strip()\n\t    if not s:\n\t        return \"UNKNOWN\"\n\t    return s\n\t\n\tdef _is_terminal(s):\n\t    s \u003d _norm_status(s)\n\t    return s in (\"SUCCESS\", \"ERROR\", \"FAILED\", \"CANCELLED\", \"CANCELED\", \"COMPLETED\")\n\t\n\tdef _tree_icon_for_status(status):\n\t    # Keep it simple: use built-in Material icons\n\t    s \u003d _norm_status(status)\n\t    if s \u003d\u003d \"SUCCESS\":\n\t        return {\"path\": \"material/check_circle\"}\n\t    if s \u003d\u003d \"ERROR\" or s \u003d\u003d \"FAILED\":\n\t        return {\"path\": \"material/error\"}\n\t    if s in (\"CANCELLED\", \"CANCELED\"):\n\t        return {\"path\": \"material/cancel\"}\n\t    if s in (\"RUNNING\", \"STARTED\"):\n\t        return {\"path\": \"material/autorenew\"}\n\t    if s in (\"PENDING\", \"ENQUEUED\", \"QUEUED\"):\n\t        return {\"path\": \"material/schedule\"}\n\t    return {\"path\": \"material/help\"}\n\tdef _mode_color(mode):\n\t    m \u003d _norm_status(mode)\n\t    if m \u003d\u003d \"SUCCESS\":\n\t        return \"#0aa648\"\n\t    if m in (\"ERROR\", \"FAILED\"):\n\t        return \"#de1b1b\"\n\t    if m in (\"CANCELLED\", \"CANCELED\"):\n\t        return \"#a1a1a1\"\n\t    if m in (\"RUNNING\", \"STARTED\"):\n\t        return \"#5691f0\"\n\t    if m in (\"PENDING\", \"ENQUEUED\", \"QUEUED\"):\n\t        return \"#cf7911\"\n\t    return \"#bdbdbd\"\n\tdef _fmt_duration(ms):\n\t    \"\"\"Compact duration string for tooltips.\"\"\"\n\t    try:\n\t        ms \u003d long(ms)\n\t    except:\n\t        return \"—\"\n\t\n\t    if ms \u003c 1000:\n\t        return \"%d ms\" % ms\n\t\n\t    s \u003d ms / 1000.0\n\t    if s \u003c 60:\n\t        return \"%.3f s\" % s\n\t\n\t    m \u003d int(s // 60)\n\t    rs \u003d s - (m * 60)\n\t    return \"%dm %06.3fs\" % (m, rs)\n\n\n\tnow_ms \u003d system.date.toMillis(system.date.now())\n\t\n\t# --- workflow meta ---\n\tmeta \u003d self.custom.workflow[0] if self.custom.workflow[0] else None\n\twf_name \u003d str(meta.get(\"workflow_name\") or meta.get(\"name\") or \"Workflow\")\n\twf_status \u003d _norm_status(meta.get(\"status\"))\n\twf_start \u003d _as_long(meta.get(\"started_at_epoch_ms\"))\n\twf_completed \u003d _as_long(meta.get(\"completed_at_epoch_ms\"))\n\t\n\twf_running \u003d (wf_completed is None) and (not _is_terminal(wf_status))\n\twf_end_effective \u003d now_ms if wf_running else (wf_completed if wf_completed is not None else now_ms)\n\t\n\t# --- steps ---\n\trows \u003d _to_rows(value)\n\t\n\titems \u003d []\n\tany_step_running \u003d False\n\t\n\tfor r in rows:\n\t    call_seq \u003d int(r.get(\"call_seq\") or 0)\n\t    step_name \u003d str(r.get(\"step_name\") or \"—\")\n\t    st \u003d _norm_status(r.get(\"status\"))\n\t\n\t    s \u003d _as_long(r.get(\"started_at_epoch_ms\"))\n\t    e \u003d _as_long(r.get(\"completed_at_epoch_ms\"))\n\t\n\t    if s is None:\n\t        continue\n\t\n\t    if e is None:\n\t        e \u003d now_ms\n\t        any_step_running \u003d True\n\t        if st in (\"UNKNOWN\", \"\"):\n\t            st \u003d \"RUNNING\"\n\t\n\t    if e \u003c s:\n\t        e \u003d s\n\t    dur_ms \u003d max(0, e - s)\n\t    dur_text \u003d _fmt_duration(dur_ms)\n\t    label \u003d \"%03d  %s\" % (call_seq, step_name)\n\t\n\t    items.append({\n\t        \"call_seq\": call_seq,\n\t        \"label\": label,\n\t        \"step_name\": step_name,\n\t        \"status\": st,\n\t        \"start\": s,\n\t        \"end\": e,\n\t        \"attempts\": int(r.get(\"attempts\") or 1),\n\t        \"output_json\": r.get(\"output_json\"),\n\t        \"error_json\": r.get(\"error_json\"),\n\t        \"duration_ms\": long(dur_ms),\n\t        \"duration_text\": dur_text,\n\t    })\n\t\n\titems.sort(key\u003dlambda x: x[\"call_seq\"])\n\t\n\t# --- range ---\n\tif wf_start is None:\n\t    wf_start \u003d min([it[\"start\"] for it in items]) if items else now_ms\n\t\n\tmax_step_end \u003d max([it[\"end\"] for it in items]) if items else now_ms\n\trange_end \u003d now_ms if (wf_running or any_step_running) else max(wf_end_effective, max_step_end)\n\t\n\t# --- workflow mode ---\n\tif wf_status !\u003d \"UNKNOWN\":\n\t    wf_mode \u003d wf_status\n\telse:\n\t    wf_mode \u003d \"RUNNING\" if (wf_running or any_step_running) else \"SUCCESS\"\n\t    if not (wf_running or any_step_running) and any(it[\"status\"] in (\"ERROR\", \"FAILED\") for it in items):\n\t        wf_mode \u003d \"ERROR\"\n\t\n\t# --- modes ---\n\tmode_set \u003d {}\n\tmode_set[wf_mode] \u003d True\n\tfor it in items:\n\t    mode_set[it[\"status\"]] \u003d True\n#\tmodes \u003d [{\"name\": k} for k in sorted(mode_set.keys())]\n\tmodes \u003d [{\"name\": k, \"color\": _mode_color(k)} for k in sorted(mode_set.keys())]\n\t\n\t# --- gantt data ---\n\tgantt_data \u003d []\n\twf_dur_ms \u003d max(0, range_end - wf_start)\n\twf_dur_text \u003d _fmt_duration(wf_dur_ms)\n\t\n\tgantt_data.append({\n\t    \"name\": wf_name,\n\t    \"events\": [{\n\t        \"start\": long(wf_start),\n\t        \"end\": long(range_end if (wf_running or any_step_running) else wf_end_effective),\n\t        \"mode\": wf_mode,\n\t        \"duration_ms\": long(wf_dur_ms),\n\t        \"duration_text\": wf_dur_text\n\t    }]\n\t})\n\t\n\tfor it in items:\n\t    gantt_data.append({\n\t        \"name\": it[\"label\"],\n\t        \"events\": [{\n\t            \"start\": long(it[\"start\"]),\n\t            \"end\": long(it[\"end\"]),\n\t            \"mode\": it[\"status\"],\n\t            \"duration_ms\": long(it[\"duration_ms\"]),\n\t            \"duration_text\": it[\"duration_text\"],\n\t            \"attempts\": it[\"attempts\"]\n\t        }]\n\t    })\n\t\n\tgantt \u003d {\n\t    \"data\": gantt_data,\n\t    \"modes\": modes,\n\t    \"range\": {\"start\": long(wf_start), \"end\": long(range_end)}\n\t}\n\t\n\t# --- tree items (piggy-back from the same parsed items) ---\n\ttree_children \u003d []\n\tfor it in items:\n\t    tree_children.append({\n\t        \"label\": it[\"label\"],\n\t        \"icon\": _tree_icon_for_status(it[\"status\"]),\n\t        \"data\": {\n\t            \"call_seq\": it[\"call_seq\"],\n\t            \"step_name\": it[\"step_name\"],\n\t            \"status\": it[\"status\"],\n\t            \"attempts\": it[\"attempts\"],\n\t            \"started_at_epoch_ms\": long(it[\"start\"]),\n\t            \"completed_at_epoch_ms\": None if it[\"end\"] \u003d\u003d now_ms and _as_long(it.get(\"end\")) \u003d\u003d now_ms and _norm_status(it[\"status\"]) \u003d\u003d \"RUNNING\" else long(it[\"end\"]),\n\t            \"output_json\": it[\"output_json\"],\n\t            \"error_json\": it[\"error_json\"]\n\t        }\n\t    })\n\t\n\ttree \u003d [{\n\t        \"label\": wf_name,\n\t        \"expanded\": True,\n\t        \"icon\": _tree_icon_for_status(wf_mode),\n\t        \"data\": {\"status\": wf_mode},\n\t        \"items\": tree_children\n\t    }]\n\t\n\treturn {\"gantt\": gantt, \"tree\": tree}",
+            "type": "script"
+          }
+        ],
+        "type": "query"
+      },
+      "persistent": true
+    },
+    "custom.workflow": {
+      "binding": {
+        "config": {
+          "parameters": {
+            "workflowId": "{view.params.workflow_id}"
+          },
+          "polling": {
+            "enabled": true,
+            "rate": "{view.custom.poll}"
+          },
+          "queryPath": "Exchange/Workflows/Workflows/GetOne",
+          "returnFormat": "json"
+        },
+        "type": "query"
+      },
+      "persistent": true
+    },
+    "params.workflow_id": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 836
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Tree"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.items": {
+            "binding": {
+              "config": {
+                "path": "view.custom.steps.tree"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "appearance": {
+            "defaultNodeIcons": {
+              "collapsed": {
+                "path": "material/folder"
+              },
+              "empty": {
+                "path": "material/stop"
+              },
+              "expanded": {
+                "path": "material/folder_open"
+              }
+            },
+            "expandIcons": {
+              "collapsed": {
+                "path": "material/arrow_right"
+              },
+              "expanded": {
+                "path": "material/arrow_drop_down"
+              }
+            }
+          }
+        },
+        "type": "ia.display.tree"
+      },
+      {
+        "meta": {
+          "name": "Template"
+        },
+        "position": {
+          "basis": "320px",
+          "grow": 1
+        },
+        "propConfig": {
+          "props.params.data": {
+            "binding": {
+              "config": {
+                "path": "view.custom.steps.gantt.data"
+              },
+              "type": "property"
+            }
+          },
+          "props.params.modes": {
+            "binding": {
+              "config": {
+                "path": "view.custom.steps.gantt.modes"
+              },
+              "type": "property"
+            }
+          },
+          "props.params.range": {
+            "binding": {
+              "config": {
+                "path": "view.custom.steps.gantt.range"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "params": {
+            "exampleData": false,
+            "instanceID": "ModeTimeline",
+            "update": {
+              "onChange": true
+            }
+          },
+          "path": "Exchange/Workflows/Components/Ribbon Chart/Template"
+        },
+        "type": "ia.display.view"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "type": "ia.container.flex"
+  }
+}

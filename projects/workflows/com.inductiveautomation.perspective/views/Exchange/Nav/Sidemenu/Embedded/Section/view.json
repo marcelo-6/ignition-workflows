@@ -1,0 +1,249 @@
+{
+  "custom": {
+    "key": "",
+    "toggle": false
+  },
+  "params": {
+    "hasSeparator": false,
+    "icon": "material/face",
+    "items": [
+      {
+        "icon": "",
+        "instancePosition": {},
+        "instanceStyle": {
+          "classes": "",
+          "color": ""
+        },
+        "label": "Link 1",
+        "target": "/exchange/responsive-nav/page/brown"
+      },
+      {
+        "icon": "",
+        "instancePosition": {},
+        "instanceStyle": {
+          "classes": "",
+          "color": ""
+        },
+        "label": "Link 2",
+        "target": "/exchange/responsive-nav/page/red"
+      }
+    ],
+    "label": "Label",
+    "target": ""
+  },
+  "propConfig": {
+    "custom.key": {
+      "binding": {
+        "config": {
+          "struct": {
+            "pagePath": "{page.props.path}",
+            "sectionToggle": "{view.custom.toggle}"
+          },
+          "waitOnAll": true
+        },
+        "transforms": [
+          {
+            "code": "\t# Open Section if we are in the target page of the parent section OR\n\t# the section name is part of the page path of the current page\n\t# if target empty, assume this is a non navigating parent section\n\tif self.view.params.target \u003d\u003d \"\" and value[\"sectionToggle\"]:\n\t\treturn \"nav-section-open \"\n\telif value \u003d\u003d self.view.params.target:\n\t\treturn \"nav-section-open \"\n\telif value[\"pagePath\"].split(\"/\")[1] \u003d\u003d self.view.params.label.lower().replace(\" \",\"-\"):\n\t\treturn \"nav-section-open \"\n\telse:\n\t\treturn \"\"",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.toggle": {
+      "persistent": true
+    },
+    "params.hasSeparator": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.icon": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.items": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.label": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.target": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 250,
+      "width": 250
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Label"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.params.hasSeparator"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "nav-section-separator "
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\tif not self.view.custom.toggle:\n\t\tself.view.custom.toggle \u003d True\n\telse:\n\t\tself.view.custom.toggle \u003d False"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "Nav Link"
+        },
+        "position": {
+          "basis": "44px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.params.icon": {
+            "binding": {
+              "config": {
+                "path": "view.params.icon"
+              },
+              "type": "property"
+            }
+          },
+          "props.params.label": {
+            "binding": {
+              "config": {
+                "path": "view.params.label"
+              },
+              "type": "property"
+            }
+          },
+          "props.params.showArrow": {
+            "binding": {
+              "config": {
+                "expression": "len({view.params.items}) \u003e 0"
+              },
+              "type": "expr"
+            }
+          },
+          "props.params.target": {
+            "binding": {
+              "config": {
+                "path": "view.params.target"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "Exchange/Nav/Sidemenu/Embedded/Link"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "FlexRepeater"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.domId": {
+            "binding": {
+              "config": {
+                "expression": "concat(\"nav-section-repeater-\",{view.params.index})"
+              },
+              "type": "expr"
+            }
+          },
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "len({this.props.instances})\u003e0"
+              },
+              "type": "expr"
+            }
+          },
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.params.items"
+              },
+              "transforms": [
+                {
+                  "code": "\tjson \u003d system.util.jsonDecode(system.util.jsonEncode(value))\n\treturn json",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "direction": "column",
+          "elementPosition": {
+            "basis": "auto",
+            "grow": 0,
+            "shrink": 0
+          },
+          "elementStyle": {
+            "height": "var(--nav-link-height)"
+          },
+          "path": "Exchange/Nav/Sidemenu/Embedded/Link",
+          "style": {
+            "classes": "nav-section-link",
+            "overflow": "hidden"
+          },
+          "useDefaultViewHeight": false,
+          "useDefaultViewWidth": false
+        },
+        "type": "ia.display.flex-repeater"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.classes": {
+        "binding": {
+          "config": {
+            "expression": "concat(\"nav-section \",\r\n{view.custom.key}\r\n)"
+          },
+          "type": "expr"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

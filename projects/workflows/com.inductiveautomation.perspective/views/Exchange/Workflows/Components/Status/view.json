@@ -1,0 +1,222 @@
+{
+  "custom": {},
+  "params": {
+    "value": ""
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 43,
+      "width": 117
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "Icon"
+            },
+            "position": {
+              "basis": "24px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "transforms": [
+                    {
+                      "fallback": "material/error",
+                      "inputType": "scalar",
+                      "mappings": [
+                        {
+                          "input": "SUCCESS",
+                          "output": "material/check_circle"
+                        },
+                        {
+                          "input": "RUNNING",
+                          "output": "material/run_circle"
+                        },
+                        {
+                          "input": "ERROR",
+                          "output": "material/error"
+                        },
+                        {
+                          "input": "ENQUEUED",
+                          "output": "material/queue"
+                        },
+                        {
+                          "input": "PENDING",
+                          "output": "material/timer"
+                        },
+                        {
+                          "input": "STARTED",
+                          "output": "material/run_circle"
+                        }
+                      ],
+                      "outputType": "scalar",
+                      "type": "map"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "meta": {
+              "name": "Label"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "marginLeft": 5,
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "FlexContainer",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom"
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "transforms": [
+                {
+                  "fallback": "Workflow has beed ???.",
+                  "inputType": "scalar",
+                  "mappings": [
+                    {
+                      "input": "SUCCESS",
+                      "output": "Workflow has been successfully completed."
+                    },
+                    {
+                      "input": "RUNNING",
+                      "output": "Workflow is currently being executed."
+                    },
+                    {
+                      "input": "ERROR",
+                      "output": "Workflow has failed with errors."
+                    },
+                    {
+                      "input": "ENQUEUED",
+                      "output": "Workflow is in the queue and waiting to be executed."
+                    },
+                    {
+                      "input": "PENDING",
+                      "output": "Workflow has beed claimed (dequeued) but is not yet executing."
+                    },
+                    {
+                      "input": "CANCELLED",
+                      "output": "Workflow has beed canceled."
+                    }
+                  ],
+                  "outputType": "scalar",
+                  "type": "map"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.classes": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "transforms": [
+                {
+                  "fallback": "pill-error",
+                  "inputType": "scalar",
+                  "mappings": [
+                    {
+                      "input": "SUCCESS",
+                      "output": "pill-success"
+                    },
+                    {
+                      "input": "RUNNING",
+                      "output": "pill-running"
+                    },
+                    {
+                      "input": "ERROR",
+                      "output": "pill-error"
+                    },
+                    {
+                      "input": "ENQUEUED",
+                      "output": "pill-pending"
+                    },
+                    {
+                      "input": "PENDING",
+                      "output": "pill-running"
+                    },
+                    {
+                      "input": "STARTED",
+                      "output": "pill-running"
+                    }
+                  ],
+                  "outputType": "scalar",
+                  "type": "map"
+                },
+                {
+                  "expression": "{value} + \" pill\"",
+                  "type": "expression"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

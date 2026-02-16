@@ -1,0 +1,674 @@
+{
+  "custom": {
+    "size": "large"
+  },
+  "params": {
+    "params": {}
+  },
+  "propConfig": {
+    "custom.size": {
+      "binding": {
+        "config": {
+          "path": "page.props.dimensions.viewport.width"
+        },
+        "transforms": [
+          {
+            "fallback": "large",
+            "inputType": "range",
+            "mappings": [
+              {
+                "input": {
+                  "max": 1000,
+                  "min": 0
+                },
+                "output": "small"
+              }
+            ],
+            "outputType": "scalar",
+            "type": "map"
+          },
+          {
+            "expression": "if({session.props.device.type}\u003d\u0027designer\u0027,\"large\",{value})",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.params": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 50,
+      "width": 1000
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "dom": {
+            "onClick": [
+              {
+                "config": {
+                  "script": "\tif self.props.path \u003d\u003d \u0027material/menu\u0027:\n\t\tsystem.perspective.openDock(id\u003d\u0027menu\u0027)\n\t\tself.props.path \u003d \u0027material/menu_open\u0027\n#\t\tsystem.perspective.alterDock(dockId\u003d\u0027menu\u0027, config\u003d{\u0027display\u0027:\u0027visible\u0027, \u0027content\u0027:\u0027push\u0027})\n\t\t\n\telse:\n\t\tsystem.perspective.closeDock(id\u003d\u0027menu\u0027)\n\t\tself.props.path \u003d \u0027material/menu\u0027\n#\t\tsystem.perspective.alterDock(dockId\u003d\u0027menu\u0027, config\u003d{\u0027display\u0027:\u0027onDemand\u0027, \u0027content\u0027:\u0027push\u0027})"
+                },
+                "enabled": false,
+                "scope": "G",
+                "type": "script"
+              },
+              {
+                "config": {
+                  "script": "\tif not self.session.custom.navigation.sideMenu.leftOpen:\n\t\tself.session.custom.navigation.sideMenu.leftOpen \u003d True\n\telse:\n\t\tself.session.custom.navigation.sideMenu.leftOpen \u003d False"
+                },
+                "scope": "G",
+                "type": "script"
+              }
+            ]
+          }
+        },
+        "meta": {
+          "name": "Menu Action",
+          "tooltip": {
+            "delay": 1000,
+            "enabled": true
+          }
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "expression": "if({session.custom.navigation.sideMenu.leftOpen},\u0027Close sidebar\u0027,\u0027Keep sidebar\u0027)"
+              },
+              "type": "expr"
+            }
+          },
+          "props.path": {
+            "binding": {
+              "config": {
+                "expression": "if({session.custom.navigation.sideMenu.leftOpen},\u0027material/menu_open\u0027,\u0027material/menu\u0027)"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "nav-header-button",
+            "display": "flex"
+          }
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "meta": {
+          "name": "Separator"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "nav-header-button-separator"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\tsystem.perspective.navigateBack()"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "Nav Back",
+          "tooltip": {
+            "delay": 1000,
+            "enabled": true,
+            "text": "Navigate Back"
+          }
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "path": "material/keyboard_arrow_left",
+          "style": {
+            "classes": "nav-header-button",
+            "display": "flex"
+          }
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\tsystem.perspective.navigateForward()"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "Nav For",
+          "tooltip": {
+            "delay": 1000,
+            "enabled": true,
+            "text": "Navigate Forward"
+          }
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "path": "material/keyboard_arrow_right",
+          "style": {
+            "classes": "nav-header-button",
+            "display": "flex"
+          }
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "meta": {
+          "name": "Separator_0"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "nav-header-button-separator"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {},
+              "scope": "C",
+              "type": "refresh"
+            }
+          }
+        },
+        "meta": {
+          "name": "Refresh",
+          "tooltip": {
+            "delay": 1000,
+            "enabled": true,
+            "text": "Refresh"
+          }
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "path": "material/refresh",
+          "style": {
+            "classes": "nav-header-button",
+            "display": "flex"
+          }
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "name": "path2"
+                        },
+                        "props": {
+                          "fill": {
+                            "opacity": "1",
+                            "paint": "var(--neutral-100)"
+                          },
+                          "path": "m 37.344391,71.227685 v 25.297 h -3.817 v -25.297 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path4"
+                        },
+                        "props": {
+                          "fill": {
+                            "opacity": "1",
+                            "paint": "var(--neutral-100)"
+                          },
+                          "path": "m 56.308391,96.148685 c 0,0.754 -0.029,1.417 -0.075,1.991 -0.049,0.574 -0.118,1.077 -0.205,1.513 -0.262,1.201995 -0.775,2.235995 -1.542,3.097995 -1.438,1.664 -3.425,2.491 -5.945,2.491 -2.13,0 -3.884,-0.575 -5.26,-1.728 -1.421,-1.186 -2.24,-2.821 -2.458,-4.907995 h 3.702 c 0.144,0.787 0.378,1.393998 0.706,1.818995 0.764,0.993 1.879,1.49 3.342,1.49 2.698,0 4.047,-1.646 4.047,-4.945995 v -2.228 c -1.464,1.496 -3.152,2.244 -5.063,2.244 -2.172,0 -3.953,-0.788 -5.341,-2.359 -1.396,-1.595 -2.096,-3.589 -2.096,-5.98 0,-2.327 0.649,-4.303 1.949,-5.93 1.398,-1.729 3.244,-2.59 5.538,-2.59 2.011,0 3.681,0.746 5.014,2.245 v -1.803 h 3.688 v 15.581 z m -3.54,-7.561 c 0,-1.549 -0.417,-2.789 -1.245,-3.713 -0.839,-0.949 -1.915,-1.424 -3.227,-1.424 -1.4,0 -2.503,0.518 -3.312,1.553 -0.73,0.927 -1.098,2.129 -1.098,3.599 0,1.451 0.367,2.639 1.098,3.566 0.797,1.016 1.902,1.523 3.312,1.523 1.408,0 2.522,-0.513 3.342,-1.539 0.751,-0.927 1.13,-2.114 1.13,-3.565 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path6"
+                        },
+                        "props": {
+                          "fill": {
+                            "opacity": "1",
+                            "paint": "var(--neutral-100)"
+                          },
+                          "path": "m 59.950391,80.567685 h 3.705 v 1.474 c 1.29,-1.278 2.743,-1.916 4.36,-1.916 1.857,0 3.305,0.585 4.342,1.753 0.895,0.994 1.344,2.615 1.344,4.865 v 9.782 h -3.703 v -8.902 c 0,-1.569 -0.221,-2.656 -0.657,-3.257 -0.425,-0.609 -1.202,-0.916 -2.326,-0.916 -1.224,0 -2.093,0.403 -2.606,1.21 -0.502,0.797 -0.754,2.189 -0.754,4.173 v 7.692 h -3.705 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path8"
+                        },
+                        "props": {
+                          "fill": {
+                            "opacity": "1",
+                            "paint": "var(--neutral-100)"
+                          },
+                          "path": "m 76.790391,73.930685 c 0,-0.644 0.233,-1.202 0.702,-1.67 0.473,-0.47 1.033,-0.703 1.691,-0.703 0.663,0 1.234,0.233 1.701,0.703 0.473,0.457 0.708,1.023 0.708,1.688 0,0.667 -0.235,1.234 -0.708,1.704 -0.456,0.468 -1.02,0.705 -1.685,0.705 -0.669,0 -1.234,-0.236 -1.707,-0.705 -0.469,-0.471 -0.702,-1.045 -0.702,-1.722 z m 4.241,6.637 v 15.958 h -3.687 v -15.958 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path10"
+                        },
+                        "props": {
+                          "fill": {
+                            "opacity": "1",
+                            "paint": "var(--neutral-100)"
+                          },
+                          "path": "m 89.170391,84.006685 v 12.519 h -3.689 v -12.519 h -1.574 v -3.439 h 1.574 v -5.849 h 3.689 v 5.849 h 2.865 v 3.439 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path12"
+                        },
+                        "props": {
+                          "fill": {
+                            "opacity": "1",
+                            "paint": "var(--neutral-100)"
+                          },
+                          "path": "m 93.649391,73.930685 c 0,-0.644 0.233,-1.202 0.705,-1.67 0.468,-0.47 1.031,-0.703 1.688,-0.703 0.667,0 1.233,0.233 1.704,0.703 0.468,0.457 0.705,1.023 0.705,1.688 0,0.667 -0.236,1.234 -0.705,1.704 -0.459,0.468 -1.021,0.705 -1.688,0.705 -0.666,0 -1.235,-0.236 -1.704,-0.705 -0.472,-0.471 -0.705,-1.045 -0.705,-1.722 z m 4.243,6.637 v 15.958 h -3.687 v -15.958 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path14"
+                        },
+                        "props": {
+                          "fill": {
+                            "opacity": "1",
+                            "paint": "var(--neutral-100)"
+                          },
+                          "path": "m 100.80139,88.432685 c 0,-2.305 0.826,-4.266 2.476,-5.881 1.651,-1.619 3.66,-2.426 6.03,-2.426 2.381,0 4.4,0.813 6.062,2.442 1.636,1.627 2.459,3.628 2.459,5.998 0,2.389 -0.83,4.395 -2.476,6.011 -1.662,1.604 -3.698,2.408 -6.111,2.408 -2.393,0 -4.398,-0.816 -6.014,-2.458 -1.619,-1.616 -2.426,-3.646 -2.426,-6.094 z m 3.77,0.067 c 0,1.59 0.425,2.856 1.278,3.783 0.873,0.938 2.025,1.41 3.457,1.41 1.44,0 2.596,-0.463 3.457,-1.394 0.861,-0.927 1.294,-2.167 1.294,-3.721 0,-1.55 -0.433,-2.791 -1.294,-3.717 -0.873,-0.94 -2.028,-1.41 -3.457,-1.41 -1.411,0 -2.552,0.47 -3.425,1.41 -0.874,0.938 -1.31,2.151 -1.31,3.639 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path16"
+                        },
+                        "props": {
+                          "fill": {
+                            "opacity": 1,
+                            "paint": "var(--neutral-100)"
+                          },
+                          "path": "m 132.36239,82.585685 c -0.544,-0.74 -1.026,-1.406 -1.483,-2.036 -0.715,-0.279 -1.523,-0.425 -2.434,-0.425 -1.619,0 -3.07,0.638 -4.36,1.916 v -1.474 h -3.703 v 15.958 h 3.703 v -7.692 c 0,-1.983 0.253,-3.375 0.755,-4.173 0.513,-0.807 1.384,-1.21 2.606,-1.21 1.125,0 1.898,0.307 2.326,0.916 0.434,0.601 0.652,1.688 0.652,3.257 v 8.902 h 3.705 v -9.782 c 0,-0.719 -0.05,-1.37 -0.143,-1.963 -0.587,-0.792 -1.142,-1.54 -1.624,-2.194 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path18"
+                        },
+                        "props": {
+                          "fill": {
+                            "paint": "#f7901e"
+                          },
+                          "path": "m 170.41439,49.972685 c -0.428,-0.949 -1.103,-1.685 -2.024,-2.208 -0.927,-0.521 -1.903,-0.723 -2.933,-0.598 -1.034,0.12 -1.923,0.836 -2.664,2.151 -0.14,0.241 -0.494,0.984 -1.069,2.232 -0.578,1.245 -1.313,2.821 -2.2,4.728 -0.885,1.903 -1.892,4.048 -3.013,6.43 -1.126,2.381 -2.287,4.887 -3.484,7.513 -1.202,2.627 -2.412,5.277 -3.638,7.956 -1.201,2.625 -2.346,5.116 -3.426,7.47 0.518,0.222 1.007,0.508 1.473,0.854 2.222,-3.257 4.599,-6.724 7.125,-10.401 2.557,-3.722 4.931,-7.207 7.126,-10.46 2.196,-3.25 4.064,-6.014 5.606,-8.284 1.544,-2.271 2.425,-3.602 2.644,-3.991 0.745,-1.316 0.905,-2.443 0.477,-3.392 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "meta": {
+                          "name": "path20"
+                        },
+                        "props": {
+                          "fill": {
+                            "paint": "#f7901e"
+                          },
+                          "path": "m 139.79939,85.710685 c -0.701,-2.8 -1.275,-5.053 -1.715,-6.762 -0.449,-1.726 -0.823,-3.093 -1.114,-4.1 -0.29,-1.003 -0.521,-1.742 -0.69,-2.21 -0.171,-0.47 -0.335,-0.871 -0.493,-1.2 -0.377,-0.79 -0.934,-1.306 -1.666,-1.547 -0.734,-0.241 -1.518,-0.161 -2.351,0.237 -0.834,0.398 -1.389,0.96 -1.66,1.681 -0.276,0.724 -0.223,1.48 0.15,2.27 0.159,0.329 0.367,0.708 0.626,1.136 0.258,0.427 0.686,1.072 1.287,1.931 0.598,0.858 1.429,2.002 2.488,3.435 1.058,1.432 2.469,3.31 4.23,5.643 0.296,-0.193 0.599,-0.369 0.908,-0.514 z"
+                        },
+                        "type": "ia.shapes.path"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "name": "path64"
+                            },
+                            "props": {
+                              "fill": {
+                                "paint": "#f7901e"
+                              },
+                              "path": "m 336.294,345.251 c 0,-0.837 0.668,-1.505 1.513,-1.505 0.846,0 1.512,0.668 1.512,1.505 0,0.838 -0.666,1.504 -1.512,1.504 -0.845,0 -1.513,-0.666 -1.513,-1.504 z m 2.794,0 c 0,-0.709 -0.591,-1.274 -1.281,-1.274 -0.692,0 -1.28,0.565 -1.28,1.274 0,0.709 0.588,1.273 1.28,1.273 0.69,0 1.281,-0.564 1.281,-1.273 z m -0.564,0.814 h -0.279 l -0.494,-0.76 h -0.274 v 0.76 h -0.234 v -1.647 h 0.72 c 0.297,0 0.585,0.081 0.585,0.435 0,0.324 -0.226,0.444 -0.52,0.453 z m -0.773,-0.992 c 0.206,0 0.565,0.04 0.565,-0.223 0,-0.17 -0.226,-0.2 -0.402,-0.2 h -0.438 v 0.423 z"
+                            },
+                            "type": "ia.shapes.path"
+                          }
+                        ],
+                        "meta": {
+                          "name": "g66"
+                        },
+                        "props": {
+                          "transform": "translate(-185.14061,-250.00331)"
+                        },
+                        "type": "ia.shapes.group"
+                      },
+                      {
+                        "meta": {
+                          "name": "circle68"
+                        },
+                        "props": {
+                          "cx": "142.94638",
+                          "cy": "92.620682",
+                          "fill": {
+                            "paint": "#f7901e"
+                          },
+                          "r": "4.652"
+                        },
+                        "type": "ia.shapes.circle"
+                      }
+                    ],
+                    "meta": {
+                      "name": "g196"
+                    },
+                    "props": {
+                      "transform": "translate(0,1.2700031)"
+                    },
+                    "type": "ia.shapes.group"
+                  }
+                ],
+                "meta": {
+                  "name": "g111"
+                },
+                "props": {
+                  "transform": "translate(-33.527391,-48.400683)"
+                },
+                "type": "ia.shapes.group"
+              }
+            ],
+            "meta": {
+              "name": "Ignition Logo"
+            },
+            "position": {
+              "basis": "100px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "cursor": "pointer"
+              },
+              "viewBox": "0 0 137.121 58.111001"
+            },
+            "type": "ia.container.drawing"
+          }
+        ],
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "page": "/"
+              },
+              "scope": "C",
+              "type": "nav"
+            }
+          }
+        },
+        "meta": {
+          "name": "Logo",
+          "tooltip": {
+            "enabled": true,
+            "text": "Home"
+          }
+        },
+        "position": {
+          "basis": "100px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.size} \u003d \"large\""
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "nav-header-button",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "FlexRepeater",
+          "tooltip": {
+            "text": "0"
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "path": "{page.props.path}",
+                  "viewportWidth": "{page.props.dimensions.viewport.width}"
+                },
+                "waitOnAll": true
+              },
+              "transforms": [
+                {
+                  "code": "\tinstances \u003d []\n\tpath \u003d \"\"\n\tallPages \u003d [i[\u0027url\u0027] for i in system.perspective.getProjectInfo()[\"pageConfigs\"]]\n\tpages \u003d self.page.props.path.split(\"/\")[1:]\n\tfor i, label in enumerate(pages):\n\t\tif label !\u003d \"\":\n\t\t\tpath \u003d path + \"/\" + label\n\t\t\tif self.page.props.dimensions.viewport.width \u003c\u003d 450:\n\t\t\t\tinstances \u003d [{\n\t\t\t\t  \"instanceStyle\": {\n\t\t\t\t    \"classes\": \"\"\n\t\t\t\t  },\n\t\t\t\t  \"instancePosition\": {},\n\t\t\t\t  \"icon\": \"\",#\"material/arrow_right\",\n#\t\t\t\t  \"index\": 1,\n\t\t\t\t  \"isLink\": path in allPages,\n\t\t\t\t  \"label\": label,\n\t\t\t\t  \"parentIndex\": 0,\n\t\t\t\t  \"showArrow\": False,\n\t\t\t\t  \"target\": path\n\t\t\t\t}]\n\t\t\telse:\n\t\t\t\tinstances.append({\n\t\t\t\t  \"instanceStyle\": {\n\t\t\t\t    \"classes\": \"\"\n\t\t\t\t  },\n\t\t\t\t  \"instancePosition\": {},\n\t\t\t\t  \"icon\": \"\",#\"material/arrow_right\",\n#\t\t\t\t  \"index\": 1,\n\t\t\t\t  \"isLink\": path in allPages,\n\t\t\t\t  \"label\": label,\n\t\t\t\t  \"parentIndex\": 0,\n\t\t\t\t  \"showArrow\": False,\n\t\t\t\t  \"target\": path\n\t\t\t\t})\t\n\t\t\t\n\treturn instances",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "elementPosition": {
+            "basis": "auto",
+            "grow": 0,
+            "shrink": 0
+          },
+          "path": "Exchange/Nav/Header/Embedded/Breadcrumb Item",
+          "style": {
+            "gap": "0px",
+            "overflow": "hidden"
+          },
+          "useDefaultViewHeight": false,
+          "useDefaultViewWidth": false
+        },
+        "type": "ia.display.flex-repeater"
+      },
+      {
+        "meta": {
+          "name": "Maintenace Mode Header"
+        },
+        "position": {
+          "basis": "320px"
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "session.custom.maintenance.enabled"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "Exchange/Workflows/Components/Admin/Maintenace Mode Header"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "User"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.size} \u003d \"large\""
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "path": "Exchange/Nav/Embedded/User",
+          "style": {
+            "classes": "nav-link"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Alarms"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.params.iconOnly": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.size} !\u003d \"large\""
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "path": "Exchange/Nav/Embedded/Alarms",
+          "style": {
+            "classes": "nav-link"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Theme"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.size} \u003d \"large\""
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "loading": {
+            "order": "with-parent"
+          },
+          "params": {
+            "iconOnly": true
+          },
+          "path": "Exchange/Nav/Embedded/Theme",
+          "style": {
+            "classes": "nav-link"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Time"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.size} \u003d \"large\""
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "params": {
+            "noIcon": true
+          },
+          "path": "Exchange/Nav/Embedded/Time",
+          "style": {
+            "classes": "nav-not-a-link",
+            "fontWeight": "normal"
+          }
+        },
+        "type": "ia.display.view"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "classes": "nav-header",
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

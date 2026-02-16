@@ -1,0 +1,123 @@
+{
+  "custom": {},
+  "events": {
+    "system": {
+      "onStartup": {
+        "config": {
+          "script": "\tself.getChild(\"root\").getChild(\"Dropdown\").refresh()"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {
+    "noResults": true,
+    "refresh": false,
+    "selected": null,
+    "templateQueryOptions": {
+      "latestOnly": false,
+      "status": ""
+    },
+    "workflowName": ""
+  },
+  "propConfig": {
+    "params.noResults": {
+      "binding": {
+        "config": {
+          "path": "/root/Dropdown.props.options"
+        },
+        "transforms": [
+          {
+            "expression": "if(isNull({value}) || len({value}) \u003c\u003d 0,True,False)",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      },
+      "paramDirection": "output",
+      "persistent": true
+    },
+    "params.refresh": {
+      "onChange": {
+        "enabled": null,
+        "script": "\tself.getChild(\"root\").getChild(\"Dropdown\").refresh()"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.selected": {
+      "binding": {
+        "config": {
+          "path": "/root/Dropdown.props.value"
+        },
+        "type": "property"
+      },
+      "paramDirection": "output",
+      "persistent": true
+    },
+    "params.templateQueryOptions": {
+      "onChange": {
+        "enabled": null,
+        "script": "\tself.getChild(\"root\").getChild(\"Dropdown\").refresh()"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.workflowName": {
+      "onChange": {
+        "enabled": null,
+        "script": "\tif previousValue.value !\u003d currentValue.value and currentValue.value:\n\t\tself.getChild(\"root\").getChild(\"Dropdown\").refresh()"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 43,
+      "width": 306
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Dropdown"
+        },
+        "position": {
+          "basis": "350px"
+        },
+        "props": {
+          "placeholder": {
+            "text": "Select template..."
+          },
+          "showClearIcon": true,
+          "style": {
+            "classes": "input"
+          },
+          "value": null
+        },
+        "scripts": {
+          "customMethods": [
+            {
+              "name": "refresh",
+              "params": [],
+              "script": "\tif self.view.params.workflowName:\n\t\tself.props.options \u003d exchange.workflows.api.params.getTemplateDropdownOptions(\n\t\t\t\t\t\t\t\tworkflowName \u003d self.view.params.workflowName,\n\t\t\t\t\t\t\t\tstatus\u003d self.view.params.templateQueryOptions.status if self.view.params.templateQueryOptions.status else None,\n\t\t\t\t\t\t\t\tlatestOnly\u003dself.view.params.templateQueryOptions.latestOnly)"
+            }
+          ],
+          "extensionFunctions": null,
+          "messageHandlers": []
+        },
+        "type": "ia.input.dropdown"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "type": "ia.container.flex"
+  }
+}

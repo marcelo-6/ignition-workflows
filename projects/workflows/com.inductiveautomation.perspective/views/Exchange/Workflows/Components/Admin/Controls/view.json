@@ -1,0 +1,977 @@
+{
+  "custom": {
+    "stats": "{\"inMemoryQueue\":{\"maxDepth\":50000,\"overflowCount\":2,\"depth\":0,\"flushDuringMaintenance\":false,\"acceptDuringMaintenance\":false,\"lastOverflowAtMs\":1771167262515,\"type\":\"java.util.concurrent.ConcurrentLinkedQueue\",\"overflowMode\":\"reject\"},\"identity\":{\"generation\":4,\"executorId\":\"ign-devops:353ffbbc-ff2f-4f55-b16b-c2da29052cd8\",\"dbName\":\"WorkflowsDB\",\"projectName\":\"workflows\",\"threadName\":\"perspective-worker-156\",\"timestampMs\":1771167303283},\"workload\":{\"activeWorkflowsCount\":0,\"activePartitionsCount\":0,\"inFlightWorkflows\":0},\"executors\":{\"workflows\":{\"activeCount\":0,\"queueSize\":0,\"largestPoolSize\":4,\"isTerminated\":false,\"poolSize\":4,\"className\":\"java.util.concurrent.ThreadPoolExecutor\",\"queueClassName\":\"java.util.concurrent.LinkedBlockingQueue\",\"isTerminating\":false,\"taskCount\":20,\"queueRemainingCapacity\":2147483647,\"corePoolSize\":4,\"completedTaskCount\":20,\"maxPoolSize\":4,\"isShutdown\":false},\"steps\":{\"activeCount\":0,\"queueSize\":0,\"largestPoolSize\":0,\"isTerminated\":false,\"poolSize\":0,\"className\":\"java.util.concurrent.ThreadPoolExecutor\",\"queueClassName\":\"java.util.concurrent.LinkedBlockingQueue\",\"isTerminating\":false,\"taskCount\":0,\"queueRemainingCapacity\":2147483647,\"corePoolSize\":8,\"completedTaskCount\":0,\"maxPoolSize\":8,\"isShutdown\":false}},\"maintenance\":{\"mode\":\"drain\",\"reason\":\"\",\"lastSwapAtMs\":1771167260273,\"enabled\":false},\"capacity\":{\"workflowAvailableSlots\":4,\"workflowWorkersConfigured\":4,\"workflowQueueSize\":0,\"workflowActiveCount\":0}}"
+  },
+  "params": {},
+  "propConfig": {
+    "custom.stats": {
+      "binding": {
+        "config": {
+          "expression": "now(3000)"
+        },
+        "transforms": [
+          {
+            "code": "\tfrom exchange.workflows.engine.instance import getWorkflows\n\trt \u003d getWorkflows(dbName\u003d\"WorkflowsDB\")\n\tstats \u003d rt.getExecutorDiagnostics()\n\treturn system.util.jsonEncode(stats)",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 640,
+      "width": 980
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Maintenance Mode Header"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "session.custom.maintenance.enabled"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "Exchange/Workflows/Components/Admin/Maintenace Mode Header"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "Label"
+                },
+                "position": {
+                  "basis": "32px"
+                },
+                "props": {
+                  "style": {
+                    "classes": "text-h2"
+                  },
+                  "text": "Test Results"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "Results"
+                },
+                "position": {
+                  "basis": "200px",
+                  "grow": 1
+                },
+                "props": {
+                  "source": "Tests results go here",
+                  "style": {
+                    "maxHeight": "100%",
+                    "overflow": "auto",
+                    "padding": "8px"
+                  }
+                },
+                "type": "ia.display.markdown"
+              }
+            ],
+            "meta": {
+              "name": "Tests"
+            },
+            "position": {
+              "position": "right"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "height": "100%",
+                "padding": "8px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "OpsLabel"
+                    },
+                    "position": {
+                      "basis": "28px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "text-h2"
+                      },
+                      "text": "Quick Operations"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "children": [
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\t# from exchange.workflows.tests import harness\n\t# report \u003d harness.run_all(db_name\u003d\"WorkflowsDB\")\n\t# self.parent.parent.parent.getChild(\"Tests\").getChild(\"Results\").props.source \u003d harness.format_report_md(report)\n\t# self.props.value \u003d 0\n\tfrom exchange.workflows.tests import runner\n\treport \u003d runner.run_all_md(dbName\u003d\"WorkflowsDB\")\n\tself.parent.parent.parent.parent.getChild(\"Tests\").getChild(\"Results\").props.source \u003d report[\"markdown\"]\n\tself.props.value \u003d 0"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "name": "RunTests"
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "confirm": {
+                            "enabled": true
+                          },
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Run Tests"
+                          },
+                          "style": {
+                            "classes": "btn btn--secondaryOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      },
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\texchange.workflows.engine.instance.getWorkflows()\n\tself.props.value \u003d 0"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "name": "Clear_0"
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Init Runtime"
+                          },
+                          "style": {
+                            "classes": "btn btn--secondaryOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      }
+                    ],
+                    "meta": {
+                      "name": "OpsRow1"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "gap": "8px",
+                        "width": "100%"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\texchange.workflows.engine.instance.shutdownRuntime()\n\tself.props.value \u003d 0"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "name": "Clear"
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Reset Runtime"
+                          },
+                          "style": {
+                            "classes": "btn btn--secondaryOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      }
+                    ],
+                    "meta": {
+                      "name": "OpsRow2"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "gap": "8px",
+                        "width": "100%"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "meta": {
+                      "name": "MaintenanceLabel"
+                    },
+                    "position": {
+                      "basis": "28px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "text-h2"
+                      },
+                      "text": "Maintenance"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "MaintenanceNote"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "text-body2"
+                      },
+                      "text": "Use maintenance before swapping to avoid mixed-version execution."
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "children": [
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": [
+                              {
+                                "config": {
+                                  "script": "    ret \u003d exchange.workflows.api.admin.enterMaintenance(\n            mode\u003d\"drain\",\n            reason\u003d\"admin requested maintenance drain\",\n            queueName\u003d\"default\"\n    )\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance on\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to enable maintenance\"), type\u003d\"error\")"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              },
+                              {
+                                "config": {
+                                  "script": "\tself.props.value \u003d 0"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              }
+                            ]
+                          }
+                        },
+                        "meta": {
+                          "name": "MaintModeDrain",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "center-right",
+                            "text": "This will enable maintenance mode (no new workflow can start) and allow running workflows to end/fail"
+                          }
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "confirm": {
+                            "enabled": true,
+                            "text": "Are you sure? This will enable maintenance mode (no new workflow can start) and allow running workflows to end/fail"
+                          },
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Drain Mode"
+                          },
+                          "style": {
+                            "classes": "btn btn--destructiveOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      },
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": [
+                              {
+                                "config": {
+                                  "script": "    ret \u003d exchange.workflows.api.admin.enterMaintenance(\n            mode\u003d\"cancel\",\n            reason\u003d\"admin requested maintenance cancel\",\n            queueName\u003d\"default\"\n    )\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance on\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to enable maintenance\"), type\u003d\"error\")"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              },
+                              {
+                                "config": {
+                                  "script": "\tself.props.value \u003d 0"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              }
+                            ]
+                          }
+                        },
+                        "meta": {
+                          "name": "MaintModeCancel",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "center-right",
+                            "text": " This will enable maintenance mode (no new workflow can start) request cancellation for queued/running workflows."
+                          }
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "confirm": {
+                            "enabled": true,
+                            "text": "Are you sure? This will enable maintenance mode (no new workflow can start) and cancel running workflows!!"
+                          },
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Cancel Mode"
+                          },
+                          "style": {
+                            "classes": "btn btn--destructiveOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      }
+                    ],
+                    "meta": {
+                      "name": "MaintRow1"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "gap": "8px",
+                        "width": "100%"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": [
+                              {
+                                "config": {
+                                  "script": "    ret \u003d exchange.workflows.api.admin.swapIfDrained()\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"swap worked\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed swap runtime globals\"), type\u003d\"error\")"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              },
+                              {
+                                "config": {
+                                  "script": "\tself.props.value \u003d 0"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              }
+                            ]
+                          }
+                        },
+                        "meta": {
+                          "name": "MaintModeSwap",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "center-right",
+                            "text": "Swap runtime executors only when the system is drained."
+                          }
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "confirm": {
+                            "enabled": true,
+                            "text": "Are you sure? "
+                          },
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Swap Runtime"
+                          },
+                          "style": {
+                            "classes": "btn btn--destructiveOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      },
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": [
+                              {
+                                "config": {
+                                  "script": "    ret \u003d exchange.workflows.api.admin.exitMaintenance()\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance off\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to disable maintenance\"), type\u003d\"error\")"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              },
+                              {
+                                "config": {
+                                  "script": "\tself.props.value \u003d 0"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              }
+                            ]
+                          }
+                        },
+                        "meta": {
+                          "name": "MaintModeExit",
+                          "tooltip": {
+                            "enabled": true,
+                            "text": "Tthis will allow new workflows to be put into the queue again"
+                          }
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "confirm": {
+                            "enabled": true,
+                            "text": "Are you sure? this will allow new workflows to be put into the queue again"
+                          },
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Resume Dispatch"
+                          },
+                          "style": {
+                            "classes": "btn btn--destructiveOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      }
+                    ],
+                    "meta": {
+                      "name": "MaintRow2"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "gap": "8px",
+                        "width": "100%"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "meta": {
+                      "name": "SchemaLabel"
+                    },
+                    "position": {
+                      "basis": "28px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "text-h2"
+                      },
+                      "text": "Database"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "DatabaseNote"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "text-body2"
+                      },
+                      "text": "Schema actions are destructive. Use only in dev/test."
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "children": [
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\tsystem.db.execUpdate(\"Exchange/Workflows/Schemas/Create\")\n\tself.props.value \u003d 0"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "name": "CreateSchema"
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "confirm": {
+                            "enabled": true
+                          },
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Create Schema"
+                          },
+                          "style": {
+                            "classes": "btn btn--destructiveOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      },
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\tsystem.db.execUpdate(\"Exchange/Workflows/Schemas/Truncate\")\n\tself.props.value \u003d 0"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "name": "TruncateDB"
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "confirm": {
+                            "enabled": true
+                          },
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Truncate Data"
+                          },
+                          "style": {
+                            "classes": "btn btn--destructiveOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      }
+                    ],
+                    "meta": {
+                      "name": "DbRow1"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "gap": "8px",
+                        "width": "100%"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\tsystem.db.execUpdate(\"Exchange/Workflows/Schemas/Drop\")\n\tself.props.value \u003d 0"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "name": "DropSchema"
+                        },
+                        "position": {
+                          "basis": "0px",
+                          "grow": 1
+                        },
+                        "props": {
+                          "confirm": {
+                            "enabled": true
+                          },
+                          "primary": false,
+                          "readyState": {
+                            "icon": {
+                              "path": "material/refresh",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Drop Schema"
+                          },
+                          "style": {
+                            "classes": "btn btn--destructiveOutline",
+                            "width": "100%"
+                          },
+                          "writingState": {
+                            "icon": {
+                              "path": "material/hourglass_empty",
+                              "style": {
+                                "height": "24px",
+                                "width": "2rem"
+                              }
+                            },
+                            "text": "Working..."
+                          }
+                        },
+                        "type": "ia.input.oneshotbutton"
+                      }
+                    ],
+                    "meta": {
+                      "name": "DbRow2"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "gap": "8px",
+                        "width": "100%"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "name": "Commands"
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "gap": "8px",
+                    "height": "100%",
+                    "overflowX": "hidden",
+                    "overflowY": "auto",
+                    "padding": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "ConcurrencyOverview"
+                    },
+                    "position": {
+                      "basis": "400px",
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.params.json": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.stats"
+                          },
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "boolStyle": "color:var(--qual-9);font-size:1.1em",
+                        "indent": 5,
+                        "keyStyle": "font-weight:bold",
+                        "nullStyle": "color:var(--error);font-size:1.1em;font-style:italic",
+                        "numericStyle": "font-weight:bold;color:var(--qual-7);font-size:1.1em",
+                        "stringStyle": "color:var(--qual-2);font-weight:bold",
+                        "symbolStyle": "color:var(--qual-10);font-size:1.1em"
+                      },
+                      "path": "Exchange/Workflows/Components/JSONViewer",
+                      "style": {
+                        "classes": "codebox"
+                      }
+                    },
+                    "type": "ia.display.view"
+                  }
+                ],
+                "meta": {
+                  "name": "Destructive"
+                },
+                "position": {
+                  "tabIndex": 1
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "height": "100%",
+                    "padding": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "name": "TabContainer"
+            },
+            "position": {
+              "position": "left"
+            },
+            "props": {
+              "menuType": "modern",
+              "tabSize": {
+                "width": 160
+              },
+              "tabs": [
+                "Commands",
+                "Concurrency Overview"
+              ]
+            },
+            "type": "ia.container.tab"
+          }
+        ],
+        "meta": {
+          "name": "SplitContainer"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "split": {
+            "position": "45%"
+          }
+        },
+        "type": "ia.container.split"
+      }
+    ],
+    "custom": {
+      "stats": "value"
+    },
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "height": "100%",
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

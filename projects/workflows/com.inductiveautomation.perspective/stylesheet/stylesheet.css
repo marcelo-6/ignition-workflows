@@ -1,0 +1,1121 @@
+/* ==========================================================================
+   THEME VARIABLES — central place to tweak colors & spacing
+   ========================================================================== */
+:root {
+	/* Brand & status colors */
+	/*	Green accent:  --qual-3*/
+	/*	Purple accent: --qual-1*/
+	/*	Blue accent:   --info*/
+	--primary:           var(--info);
+	--primary-hover:     var(--info);
+/*	--info:              var(--div-13);*/
+/*	--success:           var(--success);*/
+/*	--warning:           var(--warning);*/
+/*	--error:             var(--error);*/
+     --shadow:            var(--neutral-30);
+
+	/* Alarm severities */
+	--alarm-low:         var(--div-13);
+	--alarm-medium:      var(--warning);
+	--alarm-high:        var(--error);
+	--alarm-urgent:      var(--error);
+
+	/* Text roles */
+	--text-primary:      var(--neutral-80);
+	--text-secondary:    var(--neutral-60);
+	--text-title:        var(--primary);
+
+	/* Background roles */
+	--bg-primary:        var(--neutral-10);
+	--bg-secondary:      var(--neutral-20);
+	--bg-hover:          var(--neutral-30);
+
+	/* Spacing scale */
+	--spacing-xs:        4px;
+	--spacing-sm:        8px;
+	--spacing-md:        16px;
+	--spacing-lg:        32px;
+
+	/* Shape */
+	--border-radius:     4px;
+
+	/* Navigation metrics */
+	--nav-open-width:    250px;
+	--nav-closed-width:  48px;
+	--topbar-height:     50px;
+	--nav-link-height:   40px;
+
+	/* Breakpoints */
+	--breakpoint-small:  450px;
+	--breakpoint-medium: 800px;
+}
+
+
+/* ==========================================================================
+   NAV HEADER — overall container
+   ========================================================================== */
+.psc-nav-header {
+	background:   var(--bg-secondary);
+	color:        var(--text-primary);
+	font-size:    14px;
+	line-height:  17px;
+	border-radius: var(--border-radius);
+}
+
+.psc-nav-header-button {
+	display:         inline-flex;
+	align-items:     center;
+	justify-content: center;
+	padding:         var(--spacing-xs);
+	margin:          var(--spacing-xs);
+	border-radius:   var(--border-radius);
+	cursor:          pointer;
+	transition:      background-color 0.2s ease;
+	color:           var(--text-primary);
+	fill:            currentColor;
+}
+.psc-nav-header-button:hover {
+	background: var(--primary-hover);
+}
+/*.psc-nav-header-button:active {*/
+/*	animation: bounce 0.4s ease-out;*/
+/*}*/
+
+.psc-nav-header-button-separator {
+	width:     1px;
+	background: var(--neutral-30);
+	margin:     var(--spacing-sm) var(--spacing-xs) var(--spacing-sm) var(--spacing-xs);
+}
+
+/* ==========================================================================
+   GENERIC NAV BUTTON — shared nav-area buttons
+   ========================================================================== */
+.psc-nav-button {
+	display:        inline-flex;
+	align-items:    center;
+	justify-content:center;
+	padding:        var(--spacing-xs);
+	margin:         var(--spacing-xs);
+	border-radius:  var(--border-radius);
+	cursor:         pointer;
+}
+
+
+/* ==========================================================================
+   SIDE MENU LAYOUT & BEHAVIOR
+   ========================================================================== */
+.docked-view-left {
+	width: auto !important;
+}
+
+.psc-nav {
+	width:       var(--nav-closed-width);
+	background:  var(--bg-secondary);
+	transition:  width 0.2s ease-in-out;
+}
+
+.psc-nav-open,
+.psc-nav:hover {
+	width:      var(--nav-open-width);
+	background: var(--bg-secondary);
+	transition: all 0.2s ease-in-out;
+}
+
+
+/* ==========================================================================
+   NAV LINK STYLES & SELECTED INDICATOR
+   ========================================================================== */
+.psc-nav-link {
+	height:        var(--nav-link-height);
+	margin:        var(--spacing-xs) var(--spacing-xs) 0 var(--spacing-xs);
+	border-radius: var(--border-radius);
+	font-size:     clamp(14px, 1vw, 14px);
+}
+
+.psc-nav-link:hover,
+.psc-nav-link.psc-selected {
+	color:            var(--text-primary);
+	background-color: var(--bg-hover);
+	cursor:           pointer;
+	transition:       all 0.2s ease-in-out;
+	font-weight:      bold;
+}
+
+.psc-nav-open .psc-nav-link.psc-selected::before {
+	content:                    '';
+	position:                   relative;
+	left:                       var(--spacing-xs);
+	top:                        15%;
+	width:                      var(--spacing-xs);
+	height:                     70%;
+	background:                 var(--info);
+	border-top-left-radius:     var(--spacing-xs);
+	border-bottom-left-radius:  var(--spacing-xs);
+	pointer-events:             none;
+}
+
+/* ==========================================================================
+   CONTENT SHIFT WHEN NAV OPENS OR CLOSES
+   ========================================================================== */
+.client-root:has(.psc-nav-open) > .center-column.flex-col .center.view-parent {
+	margin:     var(--topbar-height) 0 0 var(--nav-open-width) !important;
+	transition: all 0.2s ease-in-out;
+}
+
+.client-root:not(:has(.psc-nav-open)) > .center-column.flex-col .center.view-parent {
+	margin:     var(--topbar-height) 0 0 var(--nav-closed-width) !important;
+	transition: all 0.2s ease-in-out;
+}
+
+
+/* ==========================================================================
+   ANIMATION: Fade text & icon from disabled to alarm color
+   ========================================================================== */
+@keyframes fade-white-to-red {
+	0%   { color: var(--callToAction--disabled); fill: currentColor; }
+	100% { color: var(--alarm-urgent, #e76f51);            fill: currentColor; }
+}
+
+.psc-nav-alarm-item {
+	animation: fade-white-to-red 1s ease-in-out infinite alternate;
+}
+
+
+/* ==========================================================================
+   NAV-SECTION COLLAPSE & ARROW ROTATION
+   ========================================================================== */
+.psc-nav-section .psc-nav-section-link {
+	max-height: 0;
+	overflow:   hidden;
+	transition: max-height 0.1s ease;
+}
+
+.psc-nav-section-open .psc-nav-section-link {
+	max-height: 500px;
+}
+
+.psc-nav-section .psc-nav-link > svg:last-child {
+	transition: transform 0.1s ease;
+	transform:  rotate(0deg);
+}
+
+.psc-nav-section-open .psc-nav-link > svg:last-child {
+	transform: rotate(90deg);
+}
+
+
+/* ==========================================================================
+   NAV-SECTION SEPARATOR — thin bar between sections
+   ========================================================================== */
+.psc-nav-section-separator {
+	height:     1px;
+	background: var(--neutral-30);
+	margin:     var(--spacing-xs) var(--spacing-sm) 0 var(--spacing-sm);
+}
+
+
+/* ==========================================================================
+   POPUP CHROME REMOVAL — strip borders, shadows, and focus rings
+   ========================================================================== */
+.popup-header.ia_popup__header,
+.body-wrapper,
+.ia_popup,
+.ia_popup:focus,
+.popup-header.ia_popup__header:focus,
+.body-wrapper:focus,
+.close-icon:focus {
+	border:         none !important;
+	box-shadow:     none !important;
+	outline:        none !important;
+	border-radius:  var(--border-radius);
+	padding:        var(--spacing-sm);
+}
+
+
+/* ==========================================================================
+   DASHBOARD CARD STYLES
+   ========================================================================== */
+.psc-dash-card {
+	position:       relative;
+	z-index:        1;
+	background:     var(--bg-primary);
+	border:         1px solid var(--neutral-30);
+	border-radius:  var(--border-radius);
+	box-shadow:     0 2px 4px rgba(0,0,40,0.15) !important;
+	margin:         var(--spacing-sm) var(--spacing-md);
+	overflow:       visible;
+}
+
+.psc-dash-card-title {
+	display:        flex;
+	align-items:    center;
+	justify-content: space-between;
+	padding:        var(--spacing-sm) var(--spacing-md);
+	background:     var(--bg-primary);
+	color:          var(--text-title);
+	font-size:      16px;
+	line-height:    20px;
+	font-weight:    600;
+}
+
+.psc-dash-card-embedded {
+	padding: var(--spacing-md);
+}
+
+.psc-dash-card-row {
+	display:        flex;
+	flex-wrap:      wrap;
+	gap:            var(--spacing-xs) var(--spacing-md);
+	align-items:    center;
+	margin-bottom:  var(--spacing-xs);
+}
+.psc-dash-card-row:last-child {
+	margin-bottom: 0;
+}
+
+.psc-dash-card-label {
+	flex:         1 1 auto;
+	color:        var(--text-secondary);
+	font-weight:  500;
+}
+
+.psc-dash-card-value {
+	flex:         0 0 auto;
+	color:        var(--text-primary);
+	font-weight:  600;
+}
+
+
+/* ==========================================================================
+   ALARM LIST ITEMS WITH SEPARATORS
+   ========================================================================== */
+.psc-alarm-item {
+	display:        flex;
+	justify-content: space-between;
+	align-items:    center;
+	padding:        var(--spacing-xs) var(--spacing-md);
+	position:       relative;
+}
+
+.psc-alarm-item:not(:last-child)::after {
+	content:     '';
+	position:    absolute;
+	bottom:      0;
+	left:        0;
+	right:       0;
+	height:      1px;
+	background:  var(--neutral-30);
+}
+
+.psc-alarm-name {
+	font-weight: 500;
+	color:       var(--text-title);
+}
+
+.psc-alarm-time {
+	font-size:   12px;
+	color:       var(--text-secondary);
+}
+
+
+/* ==========================================================================
+   ALARM ICONS & BLINK ANIMATIONS
+   ========================================================================== */
+.psc-alarm-icon {
+	display:        inline-block;
+	width:          64px;
+	height:         64px;
+	margin-right:   var(--spacing-md);
+	transition:     color 0.2s ease;
+	fill:           currentColor;
+}
+
+@keyframes blink-low {
+	0%,50%,100%  { color: var(--callToAction--disabled); }
+	25%,75%      { color: var(--alarm-low, #2a9d8f); }
+}
+@keyframes blink-medium {
+	0%,50%,100%  { color: var(--callToAction--disabled); }
+	25%,75%      { color: var(--alarm-medium, #e9c46a); }
+}
+@keyframes blink-high {
+	0%,50%,100%  { color: var(--callToAction--disabled); }
+	25%,75%      { color: var(--alarm-high, #f4a261); }
+}
+@keyframes blink-urgent {
+	0%,50%,100%  { color: var(--callToAction--disabled); }
+	25%,75%      { color: var(--alarm-urgent, #e76f51); }
+}
+
+.psc-alarm-code-0 .psc-alarm-icon { color: var(--callToAction--disabled); }
+.psc-alarm-code-1 .psc-alarm-icon { animation: blink-low 5s infinite; }
+.psc-alarm-code-2 .psc-alarm-icon { color: var(--alarm-low, #2a9d8f); }
+.psc-alarm-code-3 .psc-alarm-icon { animation: blink-low 5s infinite; }
+.psc-alarm-code-4 .psc-alarm-icon { color: var(--alarm-medium, #e9c46a); }
+.psc-alarm-code-5 .psc-alarm-icon { animation: blink-medium 5s infinite; }
+.psc-alarm-code-6 .psc-alarm-icon { color: var(--alarm-high, #f4a261); }
+.psc-alarm-code-7 .psc-alarm-icon { animation: blink-high 5s infinite; }
+.psc-alarm-code-8 .psc-alarm-icon { color: var(--alarm-urgent, #e76f51); }
+.psc-alarm-code-9 .psc-alarm-icon { animation: blink-urgent 5s infinite; }
+
+@keyframes bounce {
+	0%   { transform: scale(1); opacity: 1; }
+	30%  { transform: scale(1.3); opacity: 0.7; }
+	100% { transform: scale(1); opacity: 1; }
+}
+
+/*Toast notification styles*/
+/* Toast pop-up look & feel */
+.psc-toast-message-root{
+  /* colours & backplate */
+  background-color: var(--bg-secondary);
+  color:            var(--neutral-100);
+
+  /* 4 px rounded corners on every edge */
+  border-radius: 5px;
+
+  /* subtle drop shadow: 0 px X-offset | 4 px Y-offset | 4 px blur */
+  box-shadow: 0 4px 4px rgba(0,0,0,.25);
+
+  /* typography */
+  font-size:   18px;
+  font-weight: 500;
+  line-height: 30px;
+  text-align:  left;
+
+  /* let badges or icons poke outside the box if needed */
+  overflow: visible;
+  position: relative;
+/*  padding:         var(--spacing-xs);*/
+}
+
+.psc-toast-message-root::before {
+	content:                    '';
+	position:                   absolute;
+	width:                      var(--spacing-sm);
+	height:                     100%;
+/*	background:                 var(--info);*/
+	border-top-left-radius:     var(--spacing-xs);
+	border-bottom-left-radius:  var(--spacing-xs);
+	pointer-events:             none;
+}
+.psc-toast-message-notify::before {
+	background:                 var(--info);
+}
+.psc-toast-message-caution::before {
+	background:                 var(--qual-10);
+}
+.psc-toast-message-warning::before {
+	background:                 var(--warning);
+}
+.psc-toast-message-critical::before {
+	background:                 var(--error);
+}
+.psc-toast-message-success::before {
+	background:                 var(--success);
+}
+
+/* ─────────────────────────────────────────
+   Toast message label (text container)
+   ───────────────────────────────────────── */
+.psc-toast-message-label {
+  /* horizontal padding 10px, vertical 4px */
+  padding: 4px 15px;
+}
+
+/* ─────────────────────────────────────────
+   Toast message icon (e.g. close button)
+   ───────────────────────────────────────── */
+.psc-toast-message-icon {
+  padding: 6px;
+}
+
+
+.psc-toast-message-icon:hover {
+	background-color: var(--bg-hover);
+	cursor:           pointer;
+/*	transition:       all 0.2s ease-in-out;*/
+	font-weight:      bold;
+/*	padding:        var(--spacing-xs);*/
+/*	margin:         var(--spacing-xs);*/
+	border-radius:  var(--border-radius);
+}
+
+/* ─────────────────────────────────────────
+   Toast message expansion section (e.g. “Show more”)
+   ───────────────────────────────────────── */
+.psc-toast-message-expansion {
+  background-color: var(--bg-hover);
+  color:            var(--neutral-100);
+
+  /* 1px solid border in theme’s neutral color */
+/*  border: 1px solid var(--neutral-100);*/
+
+  /* 4px rounded corners on all edges */
+  border-radius:  var(--border-radius);
+
+  /* typography */
+  font-size:   16px;
+  font-weight: 500;
+  line-height: 30px;
+  text-align:  left;
+
+  /* box model */
+  margin:  var(--spacing-xs);
+  padding: 0px 0px 0px var(--spacing-md);
+
+  /* allow content to overflow if needed */
+  overflow: visible;
+}
+
+.psc-timeout-bar {
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 3px;
+  width:  100%;
+  border-radius:  var(--border-radius);
+  animation-name: shrink-time;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;   /* stay at 0% when done */
+}
+
+.psc-timeout-bar-notify {
+	background:                 var(--info);
+}
+.psc-timeout-bar-caution {
+	background:                 var(--qual-10);
+}
+.psc-timeout-bar-warning {
+	background:                 var(--warning);
+}
+.psc-timeout-bar-critical {
+	background:                 var(--error);
+}
+.psc-timeout-bar-success {
+	background:                 var(--success);
+}
+
+@keyframes shrink-time {
+  from { width: 100%; }
+  to   { width:   0%; }
+}
+
+/* Toast Notification CSS animations */
+@keyframes slide-in-right-enter {
+	from {transform: translateX(125%);}
+	to {transform: translateX(0%);}
+}
+
+@keyframes slide-in-right-exit {
+	from {transform: translateX(0%);}
+	to {transform: translateX(125%);}
+}
+
+@keyframes slide-in-left-enter {
+	from {transform: translateX(-125%);}
+	to {transform: translateX(0%);}
+}
+
+@keyframes slide-in-left-exit {
+	from {transform: translateX(0%);}
+	to {transform: translateX(-125%);}
+}
+
+@keyframes slide-in-top-enter {
+	from {transform: translateY(-125%);}
+	to {transform: translateY(0%);}
+}
+
+@keyframes slide-in-top-exit {
+	from {transform: translateY(0%);}
+	to {transform: translateY(-125%);}
+}
+
+@keyframes slide-in-bottom-enter {
+	from {transform: translateY(125%);}
+	to {transform: translateY(0%);}
+}
+
+@keyframes slide-in-bottom-exit {
+	from {transform: translateY(0%);}
+	to {transform: translateY(125%);}
+}
+
+@keyframes fade-in {
+	from {opacity: 0;}
+	to {opacity: 1;}
+}
+
+@keyframes fade-out {
+	from {opacity: 1;}
+	to {opacity: 0;}
+}
+
+/* ================================
+   Pump indicator (minimal)
+   - No border until alarm
+   - Hover background
+   - Badges sit INSIDE the corners
+   ================================ */
+
+.psc-ob-pumpIndicator {
+  --ob-radius: 10px;
+
+  /* colors */
+  --ob-hover-bg: var(--neutral-30, rgba(0, 0, 0, 0.16));
+  --ob-alarm: var(--error-60, #dc2626);
+
+  /* badge sizing */
+  --ob-badge-size: 18px;
+  --ob-badge-inset: 4px; /* distance from corner INSIDE border */
+  --ob-badge-bg: rgba(0, 0, 0, 0.12);
+
+  position: relative;
+  border-radius: var(--ob-radius);
+  cursor: pointer;
+
+  background: transparent;
+  border: none;
+
+  transition: background 120ms ease;
+}
+
+/* Hover highlight only */
+.psc-ob-pumpIndicator:hover {
+  background: var(--ob-hover-bg);
+}
+
+/* Alarm border (simple, single color) */
+.psc-ob-pumpIndicator.psc-has-alarm {
+  border: 2px solid var(--ob-alarm);
+}
+
+/* ================================
+   Badges (icons in the corners INSIDE border)
+   ================================ */
+
+.psc-ob-badge {
+  position: absolute;
+
+  width: var(--ob-badge-size);
+  height: var(--ob-badge-size);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  fill-color: var(--ob-badge-bg);
+
+/*  background: var(--ob-badge-bg);*/
+/*  border-radius: 999px;*/
+
+  /* make sure it's above the hover bg */
+  z-index: 5;
+
+  /* badges shouldn't block clicking the pump */
+  pointer-events: none;
+}
+
+/* inside-corner positions */
+.psc-ob-badge--tr { top: var(--ob-badge-inset); right: var(--ob-badge-inset); }
+.psc-ob-badge--tl { top: var(--ob-badge-inset); left:  var(--ob-badge-inset); }
+.psc-ob-badge--br { bottom: var(--ob-badge-inset); right: var(--ob-badge-inset); }
+.psc-ob-badge--bl { bottom: var(--ob-badge-inset); left:  var(--ob-badge-inset); }
+
+/* ====== Layout ====== */
+.psc-page {
+  padding: 16px;
+  background: var(--neutral-10);
+  color: var(--neutral-90);
+}
+
+.psc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.psc-spacer {
+  flex: 1 1 auto;
+}
+
+/* ====== Card / Panel ====== */
+.psc-card {
+  background: var(--neutral-10);
+  border: 1px solid var(--neutral-30);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.psc-panel {
+  background: var(--neutral-10);
+  border-left: 1px solid var(--neutral-30);
+  height: 100%;
+}
+
+.psc-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 10px 14px;
+  border-bottom: 1px solid var(--neutral-30);
+}
+
+.psc-panel-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* ====== Inputs / Filters ====== */
+.psc-input {
+  background: var(--neutral-10);
+  border: 1px solid var(--neutral-30);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: var(--neutral-90);
+}
+
+/*.psc-input:focus-within {*/
+/*/*  border-color: var(--neutral-50);*/*/
+/*    border-color: transparent;*/
+/*}*/
+.iaDropdownCommon_focused,
+.iaDropdownCommon_focused:focus,
+.iaDropdownCommon_focused:focus-within {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+
+.psc-filter-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ====== Buttons ====== */
+/* ====== Buttons (shadcn-ish) ====== */
+
+.psc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 8px 12px;
+  min-height: 36px;
+
+  border-radius: 10px;
+  border: 1px solid transparent;
+
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+
+  cursor: pointer;
+  user-select: none;
+
+  /* Smooth but not flashy */
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+}
+
+/* Focus ring (Perspective supports :focus-visible in modern browsers) */
+.psc-btn:focus-visible {
+  outline: 2px solid var(--neutral-50);
+  outline-offset: 2px;
+}
+
+/* Disabled */
+.psc-btn[disabled],
+.psc-btn.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ====== Variants ====== */
+
+/* ====== Buttons (shadcn-ish) ====== */
+
+.psc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 8px 12px;
+  min-height: 36px;
+
+  border-radius: 10px;
+  border: 1px solid transparent;
+
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+}
+
+.psc-btn:focus-visible {
+  outline: 2px solid var(--neutral-50);
+  outline-offset: 2px;
+}
+
+.psc-btn[disabled],
+.psc-btn.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ====== Variants ====== */
+
+/* default = solid primary */
+.psc-btn--default {
+  background: var(--primary);
+  color: var(--neutral-10);
+  border-color: transparent;
+}
+.psc-btn--default:hover { background: var(--neutral-30); }
+.psc-btn--default:active { background: var(--primary); }
+
+/* secondary = neutral filled */
+.psc-btn--secondary {
+  background: var(--neutral-20);
+  color: var(--neutral-90);
+  border-color: var(--neutral-30);
+}
+.psc-btn--secondary:hover { background: var(--neutral-25); }
+.psc-btn--secondary:active { background: var(--neutral-30); }
+
+/* outline = neutral border, transparent fill */
+.psc-btn--outline {
+  background: transparent;
+  color: var(--neutral-90);
+  border-color: var(--neutral-30);
+}
+.psc-btn--outline:hover { background: var(--neutral-15); }
+.psc-btn--outline:active { background: var(--neutral-20); }
+
+/* ghost = no border, subtle hover */
+.psc-btn--ghost {
+  background: transparent;
+  color: var(--neutral-90);
+  border-color: transparent;
+}
+.psc-btn--ghost:hover { background: var(--neutral-15); }
+.psc-btn--ghost:active { background: var(--neutral-20); }
+
+/* destructive = solid error */
+.psc-btn--destructive {
+  background: var(--error);
+  color: var(--neutral-10);
+  border-color: transparent;
+}
+.psc-btn--destructive:hover { background: var(--neutral-30); }
+.psc-btn--destructive:active { background: var(--error); }
+
+/* destructiveOutline = error border, transparent fill */
+.psc-btn--destructiveOutline {
+  background: transparent;
+  color: var(--error);
+  border-color: var(--error);
+}
+.psc-btn--destructiveOutline:hover { background: var(--neutral-15); }
+.psc-btn--destructiveOutline:active { background: var(--neutral-20); }
+
+/* secondaryOutline = neutral-ish outline but more muted than default outline */
+.psc-btn--secondaryOutline {
+  background: transparent;
+  color: var(--neutral-80);
+  border-color: var(--neutral-40);
+}
+.psc-btn--secondaryOutline:hover { background: var(--neutral-15); }
+.psc-btn--secondaryOutline:active { background: var(--neutral-20); }
+
+.psc-icon {
+  background: var(--neutral-20);
+  border: 1px solid var(--neutral-30);
+  border-radius: 8px;      /* slightly tighter than button */
+  padding: 6px;            /* icon-only sizing */
+  color: var(--neutral-90);
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;             /* consistent icon button size */
+  height: 32px;
+}
+
+.psc-icon:hover {
+  background: var(--neutral-25);
+}
+
+.psc-icon:active {
+  background: var(--neutral-30);
+}
+
+.psc-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+
+/* ====== Table ====== */
+.psc-table {
+  background: var(--neutral-10);
+  border: 1px solid var(--neutral-30);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.psc-table .ia_table__head {
+  background: var(--neutral-20);
+}
+
+.psc-table .ia_table__head .ia_table__cell {
+  color: var(--neutral-90);
+  font-weight: 600;
+  border-bottom: 1px solid var(--neutral-30);
+}
+
+.psc-table .ia_table__body .ia_table__row {
+  background: var(--neutral-10);
+    padding-left: 1px;
+}
+
+.psc-table .ia_table__body .ia_table__row:hover {
+  background: var(--neutral-15);
+}
+
+.psc-table .ia_table__body .ia_table__cell {
+  border-bottom: 1px solid var(--neutral-20);
+  color: var(--neutral-90);
+}
+.psc-table .ia_table__body .ia_table__cell,
+.psc-table .ia_table__head .ia_table__cell {
+/*  padding: 10px 12px;*/
+  padding: 1px;
+}
+/* ====== Table Empty State (shadcn-ish) ====== */
+/* Apply to the table's noData.style.classes */
+.psc-table-empty {
+  /* keeps the empty state centered and breathable */
+  padding: 28px 12px;
+}
+
+/* Apply to noData.textStyle.classes */
+.psc-table-empty-text {
+  color: var(--neutral-70);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+/* Optional: smaller helper line under the main text (if you use it elsewhere) */
+.psc-table-empty-subtext {
+  color: var(--neutral-60);
+  font-weight: 400;
+  text-align: center;
+}
+
+/* Optional icon styling: subtle, not loud */
+.psc-table-empty-icon {
+  opacity: 0.85;
+}
+.psc-table-empty-card {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 18px 18px;
+  border-radius: 12px;
+
+  background: var(--neutral-15);
+  border: 1px solid var(--neutral-20);
+}
+
+
+/* ====== Status Pill ====== */
+.psc-pill {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+
+/*  padding: 5px;*/
+/*  margin: 15px;*/
+  border-radius: 999px;
+  min-height: 24px;
+  max-height: 32px;
+  max-width: 120px;
+
+  /* solid dark fill */
+/*  background: var(--neutral-20);*/
+
+  font-weight: 100;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+
+  /* default text */
+  color: var(--neutral-10);
+}
+
+/* status = text color only */
+.psc-pill-success { background: transparent;
+color: var(--success);
+}
+.psc-pill-running { background: transparent;
+color: var(--info);
+}
+.psc-pill-error { background: transparent;
+color: var(--error);
+}
+.psc-pill-pending { background: transparent;
+color: var(--warning);
+}
+
+/* ====== Code blocks (inputs/outputs) ====== */
+.psc-codebox {
+  border: 1px solid var(--neutral-30);
+  background: var(--neutral-10);
+  border-radius: 12px;
+  padding: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  color: var(--neutral-90);
+  white-space: pre-wrap;
+  overflow: auto;
+  max-height: 500px;
+}
+
+.psc-text-h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--neutral-90);
+  letter-spacing: 0.2px;
+}
+
+.psc-text-h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--neutral-90);
+  letter-spacing: 0.2px;
+}
+
+.psc-text-h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--neutral-80);
+}
+
+.psc-text-h4 {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--neutral-80);
+}
+
+.psc-text-body1 {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--neutral-90);
+}
+
+.psc-text-body2 {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--neutral-70);
+}
+
+.psc-text-body3 {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--neutral-70);
+}
+
+.psc-text-body4 {
+  font-size: 11px;
+  font-weight: 200;
+  color: var(--neutral-70);
+}
+
+.psc-text-caption {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--neutral-60);
+}
+
+.psc-separator-row {
+	width:     1px;
+	background: var(--neutral-30);
+	margin:     var(--spacing-sm) var(--spacing-xs) var(--spacing-sm) var(--spacing-xs);
+}
+
+
+.psc-separator-column {
+	height:     1px;
+	background: var(--neutral-30);
+	margin:     var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) var(--spacing-sm);
+}
+
+/*splitContainer Styles*/
+/* 1) Keep the handle's hit area, but remove the full-height border/background */
+.ia_splitContainerComponent--split__handle.split-handle-horizontal {
+  background: transparent !important;
+  border: none !important;
+  cursor: col-resize !important;
+
+  /* ensure icon stays centered */
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  position: relative; /* needed for ::before */
+}
+
+/* 2) Draw a small "pill" only around the icon */
+.ia_splitContainerComponent--split__handle.split-handle-horizontal::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  /* pill size (tune these) */
+  width: 12px;
+  height: 44px;
+
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+
+  background: var(--neutral-15);
+  border: 1px solid var(--neutral-30);
+
+  /* don’t block dragging */
+  pointer-events: none;
+
+  transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+/* 3) Hover: subtle shadcn-like lift */
+.ia_splitContainerComponent--split__handle.split-handle-horizontal:hover::before {
+  background: var(--neutral-20);
+  border-color: var(--neutral-40);
+}
+
+/* 4) Active/dragging: ring (uses IA active class in your DOM) */
+.ia_splitContainerComponent--split__handle.split-handle-horizontal.split-handle-horizontal-active::before,
+.ia_splitContainerComponent--split__handle.split-handle-horizontal:active::before {
+  background: var(--neutral-25);
+  border-color: var(--neutral-50);
+/*  box-shadow: 0 0 0 3px rgba(120, 120, 120, 0.22);*/
+}
+

@@ -1,0 +1,459 @@
+{
+  "custom": {
+    "selection": {
+      "source": {},
+      "target": {}
+    }
+  },
+  "params": {},
+  "propConfig": {
+    "custom.selection": {
+      "persistent": true
+    },
+    "custom.selection.source.isTemplateNotAvailable": {
+      "binding": {
+        "config": {
+          "expression": "if({view.custom.selection.source.isWorkflowSelected} \u0026\u0026 {/root/SelectionSource/Template.props.params.noResults},True,False)"
+        },
+        "type": "expr"
+      }
+    },
+    "custom.selection.source.isTemplatedSelected": {
+      "binding": {
+        "config": {
+          "path": "/root/SelectionSource/Template.props.params.selected"
+        },
+        "transforms": [
+          {
+            "expression": "if(isBadOrError({value}), None, len({value})\u003e 0)",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.selection.source.isWorkflowSelected": {
+      "binding": {
+        "config": {
+          "path": "view.custom.selection.source.workflowName"
+        },
+        "transforms": [
+          {
+            "fallback": true,
+            "inputType": "scalar",
+            "mappings": [
+              {
+                "input": "",
+                "output": false
+              },
+              {
+                "input": null,
+                "output": false
+              }
+            ],
+            "outputType": "scalar",
+            "type": "map"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.selection.source.templateName": {
+      "binding": {
+        "config": {
+          "path": "/root/SelectionSource/Template.props.params.selected"
+        },
+        "transforms": [
+          {
+            "expression": "try(if(isBadOrError(jsonDecode({value})[\"templateName\"]),\"\", jsonDecode({value})[\"templateName\"]),\"\")",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.selection.source.templateVersion": {
+      "binding": {
+        "config": {
+          "path": "/root/SelectionSource/Template.props.params.selected"
+        },
+        "transforms": [
+          {
+            "expression": "try(if(isBadOrError(jsonDecode({value})[\"templateVersion\"]),\"\", jsonDecode({value})[\"templateVersion\"]),\"\")",
+            "type": "expression"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.selection.source.workflowName": {
+      "binding": {
+        "config": {
+          "path": "/root/SelectionSource/Workflow.props.params.selected"
+        },
+        "type": "property"
+      }
+    },
+    "custom.selection.target.isWorkflowSelected": {
+      "binding": {
+        "config": {
+          "path": "view.custom.selection.target.workflowName"
+        },
+        "transforms": [
+          {
+            "fallback": true,
+            "inputType": "scalar",
+            "mappings": [
+              {
+                "input": "",
+                "output": false
+              },
+              {
+                "input": null,
+                "output": false
+              }
+            ],
+            "outputType": "scalar",
+            "type": "map"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.selection.target.templateName": {
+      "binding": {
+        "config": {
+          "path": "/root/SelectionTarget/NewName.props.text"
+        },
+        "type": "property"
+      }
+    },
+    "custom.selection.target.workflowName": {
+      "binding": {
+        "config": {
+          "path": "/root/SelectionTarget/Workflow.props.params.selected"
+        },
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 316,
+      "width": 763
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "LabelHeader"
+            },
+            "position": {
+              "basis": "32px"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h2"
+              },
+              "text": "Source",
+              "textStyle": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Workflow"
+            },
+            "position": {
+              "basis": "42px",
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "refresh": false,
+                "selected": ""
+              },
+              "path": "Exchange/Workflows/Components/Workflows/Selection"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "Label"
+            },
+            "position": {
+              "basis": "32px"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selection.source.isTemplateNotAvailable"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "btn--destructiveOutline",
+                "marginTop": 5
+              },
+              "text": "No template available for this workflow"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "LatestOnly"
+            },
+            "position": {
+              "basis": "42px"
+            },
+            "props": {
+              "text": "Latest Templates Only"
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "name": "ActiveOnly"
+            },
+            "position": {
+              "basis": "42px"
+            },
+            "props": {
+              "text": "Active Templates Only"
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "name": "Template"
+            },
+            "position": {
+              "basis": "42px"
+            },
+            "propConfig": {
+              "props.params.templateQueryOptions.latestOnly": {
+                "binding": {
+                  "config": {
+                    "path": "../LatestOnly.props.selected"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.params.templateQueryOptions.status": {
+                "binding": {
+                  "config": {
+                    "path": "../ActiveOnly.props.selected"
+                  },
+                  "transforms": [
+                    {
+                      "expression": "if({value},\"active\", None)",
+                      "type": "expression"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.params.workflowName": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selection.source.workflowName"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "noResults": false,
+                "refresh": false,
+                "selected": null,
+                "templateQueryOptions": {}
+              },
+              "path": "Exchange/Workflows/Components/Parameters/Template Selection"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "name": "SelectionSource"
+        },
+        "position": {
+          "basis": "344px",
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "padding": 5
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "Icon"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "path": "material/arrow_right_alt"
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "Label"
+            },
+            "position": {
+              "basis": "32px"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h1"
+              },
+              "text": "Target",
+              "textStyle": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Workflow"
+            },
+            "position": {
+              "basis": "42px",
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "refresh": false,
+                "selected": ""
+              },
+              "path": "Exchange/Workflows/Components/Workflows/Selection",
+              "style": {
+                "marginTop": 5
+              }
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "NewName"
+            },
+            "position": {
+              "basis": "32px"
+            },
+            "props": {
+              "placeholder": "New name (optional)",
+              "style": {
+                "classes": "input",
+                "marginTop": 5
+              }
+            },
+            "type": "ia.input.text-field"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": [
+                  {
+                    "config": {
+                      "script": "\tnewTemplateName \u003d self.view.custom.selection.target.templateName if self.view.custom.selection.target.templateName else None\n\tr \u003d exchange.workflows.api.params.copyTemplateToWorkflow(\n\t\tsourceWorkflowName\u003dself.view.custom.selection.source.workflowName,\n\t\ttemplateName\u003dself.view.custom.selection.source.templateName,\n\t\ttargetWorkflowName\u003dself.view.custom.selection.target.workflowName,\n\t\tnewTemplateName\u003dnewTemplateName,\n\t\ttemplateVersion\u003dself.view.custom.selection.source.templateVersion,\n\t\tcreatedBy\u003dself.session.props.auth.user.userName\n\t)\n\t\n\t# Optional: reload to show new version\n\tif r.get(\"ok\"):\n\t\texchange.workflows.toast.show(\n            message\u003d\"Copied! {} v{}\".format(newTemplateName, r.get(\"templateVersion\")),\n            type\u003d\"success\",\n            closeButton\u003dTrue\n        )\n\telse:\n\t\texchange.workflows.toast.show(\n            message\u003dr.get(\"error\") or \"failed to copy\",\n            type\u003d\"error\",\n            closeButton\u003dTrue\n        )"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  },
+                  {
+                    "config": {
+                      "script": "\tself.props.value \u003d 0"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  }
+                ]
+              }
+            },
+            "meta": {
+              "name": "CopyTemplate"
+            },
+            "position": {
+              "basis": "34px"
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "!{view.custom.selection.source.isTemplateNotAvailable} \u0026\u0026\r\n{view.custom.selection.target.isWorkflowSelected}"
+                  },
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "primary": false,
+              "readyState": {
+                "icon": {
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Copy template"
+              },
+              "style": {
+                "classes": "btn btn--outline",
+                "marginTop": 5,
+                "maxWidth": 150
+              },
+              "writingState": {
+                "icon": {
+                  "path": "material/hourglass_empty",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Writing..."
+              }
+            },
+            "type": "ia.input.oneshotbutton"
+          }
+        ],
+        "meta": {
+          "name": "SelectionTarget"
+        },
+        "position": {
+          "basis": "344px",
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "type": "ia.container.flex"
+  }
+}

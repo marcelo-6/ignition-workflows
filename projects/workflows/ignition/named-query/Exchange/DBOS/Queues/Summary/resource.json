@@ -1,0 +1,45 @@
+{
+  "scope": "DG",
+  "version": 2,
+  "restricted": false,
+  "overridable": true,
+  "files": [
+    "query.sql"
+  ],
+  "attributes": {
+    "useMaxReturnSize": false,
+    "autoBatchEnabled": false,
+    "fallbackValue": "",
+    "maxReturnSize": 100,
+    "cacheUnit": "SEC",
+    "type": "Query",
+    "enabled": true,
+    "cacheAmount": 1,
+    "cacheEnabled": false,
+    "database": "DB",
+    "fallbackEnabled": false,
+    "lastModificationSignature": "43490675d82ebfb6d16228e6994f6c15ca7124b2b3060b9e7894b0c053fff692",
+    "permissions": [
+      {
+        "zone": "",
+        "role": ""
+      }
+    ],
+    "lastModification": {
+      "actor": "admin",
+      "timestamp": "2026-01-28T15:04:07Z"
+    },
+    "parameters": [
+      {
+        "type": "Parameter",
+        "identifier": "fromEpochMs",
+        "sqlType": 3
+      },
+      {
+        "type": "Parameter",
+        "identifier": "toEpochMs",
+        "sqlType": 3
+      }
+    ]
+  }
+}

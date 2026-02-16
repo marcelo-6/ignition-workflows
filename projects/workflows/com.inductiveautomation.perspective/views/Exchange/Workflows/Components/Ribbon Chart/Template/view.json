@@ -1,0 +1,1045 @@
+{
+  "custom": {
+    "background": "#161616",
+    "grid": "#D8D8D8",
+    "isDarkTheme": false,
+    "labels": "#5E5E5E"
+  },
+  "events": {
+    "system": {
+      "onStartup": {
+        "config": {
+          "script": "\t# Create component parameters if they do not exist.\n\tif not \u0027exampleData\u0027 in self.params:\n\t\tself.params.exampleData \u003d False\n\n\tif not \u0027instanceID\u0027 in self.params:\n\t\tself.params.instanceID \u003d \u0027ModeTimeline\u0027\n\n\tif not \u0027update\u0027 in self.params:\n\t\tself.params.update \u003d {\u0027onChange\u0027: True}\n\n\tif not \u0027data\u0027 in self.params:\n\t\tself.params.data \u003d {}\n\n\tif not \u0027modes\u0027 in self.params:\n\t\tself.params.modes \u003d []\n\n\tif not \u0027range\u0027 in self.params:\n\t\tself.params.range \u003d {\u0027start\u0027: None, \u0027end\u0027: None}\n\t\n\t# Load data on component startup\n\tmessage \u003d \u0027modeTimeline_load\u0027\t\n\tpayload \u003d {\n\t\t\t\u0027instanceID\u0027: self.params.instanceID\n\t\t\t}\t\n\tscope \u003d \u0027view\u0027\n\tsystem.perspective.sendMessage(message, payload,scope\u003dscope)"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {
+    "instanceID": "ModeTimeline",
+    "update": {
+      "onChange": true
+    }
+  },
+  "propConfig": {
+    "custom.background": {
+      "binding": {
+        "config": {
+          "path": "view.custom.isDarkTheme"
+        },
+        "transforms": [
+          {
+            "fallback": "#FAFAFA",
+            "inputType": "scalar",
+            "mappings": [
+              {
+                "input": false,
+                "output": "#161616"
+              }
+            ],
+            "outputType": "color",
+            "type": "map"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.grid": {
+      "binding": {
+        "config": {
+          "path": "view.custom.isDarkTheme"
+        },
+        "transforms": [
+          {
+            "fallback": "#515151",
+            "inputType": "scalar",
+            "mappings": [
+              {
+                "input": false,
+                "output": "#D8D8D8"
+              }
+            ],
+            "outputType": "color",
+            "type": "map"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.isDarkTheme": {
+      "binding": {
+        "config": {
+          "path": "session.props.theme"
+        },
+        "transforms": [
+          {
+            "code": "\treturn \"dark\" in value",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.labels": {
+      "binding": {
+        "config": {
+          "path": "view.custom.isDarkTheme"
+        },
+        "transforms": [
+          {
+            "fallback": "#BDBDBD",
+            "inputType": "scalar",
+            "mappings": [
+              {
+                "input": false,
+                "output": "#5E5E5E"
+              }
+            ],
+            "outputType": "color",
+            "type": "map"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.data": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t# If the \u0027Update/onChange\u0027 flag is set to true, update the chart\u0027s data.\n\tif (previousValue is None) or self.params.update.onChange:\n\t\tmessage \u003d \u0027modeTimeline_load\u0027\t\n\t\tpayload \u003d {\n\t\t\t\t\u0027instanceID\u0027: self.params.instanceID\n\t\t\t\t}\t\n\t\t\t\t\n\t\tsystem.perspective.sendMessage(message, payload)"
+      },
+      "paramDirection": "inout",
+      "persistent": false
+    },
+    "params.data.example": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.events[0]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.events[1]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_1": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_1.events": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_1.name": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_1[0].end": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_1[0].mode": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_1[0].start": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_1[1]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_2": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.machine_2.events[2]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example.mode1[0]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example[0]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example[0].category": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example[0].end": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example[0].start": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.data.example[1]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.exampleData": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t# Load/unload example data.\n\t# Load example data\n\tif (currentValue.value is True):\n\t\texampleData \u003d [\n\t\t  {\n\t\t\t\"events\": [\n\t\t\t  {\n\t\t\t\t\"mode\": \"CIP\",\n\t\t\t\t\"start\": 1569000471549,\n\t\t\t\t\"end\": 1569549471549\n\t\t\t  },\n\t\t\t  {\n\t\t\t\t\"mode\": \"Production\",\n\t\t\t\t\"start\": 1570000471549,\n\t\t\t\t\"end\": 1570149471549\n\t\t\t  }\n\t\t\t],\n\t\t\t\"name\": \"Machine 1\"\n\t\t  },\n\t\t  {\n\t\t\t\"events\": [\n\t\t\t  {\n\t\t\t\t\"mode\": \"CIP\",\n\t\t\t\t\"start\": 1570000471549,\n\t\t\t\t\"end\": 1571549471549\n\t\t\t  },\n\t\t\t  {\n\t\t\t\t\"mode\": \"Production\",\n\t\t\t\t\"start\": 1568700471549,\n\t\t\t\t\"end\": 1569800471549\n\t\t\t  },\n\t\t\t  {\n\t\t\t\t\"mode\": \"Specified Color Code\",\n\t\t\t\t\"start\": 1568000471549,\n\t\t\t\t\"end\": 1568679471549\n\t\t\t  }\n\t\t\t],\n\t\t\t\"name\": \"Machine 2\"\n\t\t  }\n\t\t]\n\t\texampleModes \u003d [\n\t\t  {\n\t\t\t\"name\": \"Production\"\n\t\t  },\n\t\t  {\n\t\t\t\"name\": \"CIP\"\n\t\t  },\n\t\t  {\n\t\t\t\"name\": \"Specified Color Code\",\n\t\t\t\"color\": \"#31a131\"\n\t\t  }\n\t\t]\n\t\texampleRange \u003d {\n\t\t  \"end\": 1571149471549,\n\t\t  \"start\": 1567149471549\n\t\t}\n\t\t\n\t\tself.params.data \u003d exampleData\n\t\tself.params.modes \u003d exampleModes\n\t\tself.params.range \u003d exampleRange\n\t\n\t"
+      },
+      "paramDirection": "inout",
+      "persistent": false
+    },
+    "params.instanceID": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t# If the \u0027Update/onChange\u0027 flag is set to true, update the chart\u0027s data.\n\tif (previousValue is None) or self.params.update.onChange:\n\t\tmessage \u003d \u0027modeTimeline_load\u0027\t\n\t\tpayload \u003d {\n\t\t\t\t\u0027instanceID\u0027: self.params.instanceID\n\t\t\t\t}\t\n\t\tsystem.perspective.sendMessage(message, payload)"
+      },
+      "paramDirection": "inout",
+      "persistent": false
+    },
+    "params.modes[0]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes[0].display": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes[0].name": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes[0].search": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes[1]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes[1].display": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes[1].name": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes[1].search": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.modes[2]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[0]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[10]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[11]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[12]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[1]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[2]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[3]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[4]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[5]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[6]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[7]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[8]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.processUnitIDs[9]": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.range": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t# If the \u0027Update/onChange\u0027 flag is set to true, update the chart\u0027s data.\n\tif (previousValue is None) or self.params.update.onChange:\n\t\tmessage \u003d \u0027modeTimeline_load\u0027\t\n\t\tpayload \u003d {\n\t\t\t\t\u0027instanceID\u0027: self.params.instanceID\n\t\t\t\t}\t\n\t\t\t\t\n\t\tsystem.perspective.sendMessage(message, payload)"
+      },
+      "paramDirection": "inout",
+      "persistent": false
+    },
+    "params.range.end": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.range.start": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.update": {
+      "paramDirection": "input"
+    },
+    "params.update.onChange": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t# If the \u0027Update/onChange\u0027 flag is set to true, update the chart\u0027s data.\n\tif (previousValue is None) or self.params.update.onChange:\n\t\tmessage \u003d \u0027modeTimeline_load\u0027\t\n\t\tpayload \u003d {\n\t\t\t\t\u0027instanceID\u0027: self.params.instanceID\n\t\t\t\t}\t\n\t\tsystem.perspective.sendMessage(message, payload)"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 500,
+      "width": 995
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "XYChart"
+        },
+        "position": {
+          "basis": "500px",
+          "grow": 1
+        },
+        "propConfig": {
+          "props.background.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.isDarkTheme"
+              },
+              "transforms": [
+                {
+                  "fallback": "#FAFAFA",
+                  "inputType": "scalar",
+                  "mappings": [
+                    {
+                      "input": false,
+                      "output": "#161616"
+                    }
+                  ],
+                  "outputType": "color",
+                  "type": "map"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.legend.labels.font.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.labels"
+              },
+              "type": "property"
+            }
+          },
+          "props.xAxes[0].appearance.grid.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.grid"
+              },
+              "type": "property"
+            }
+          },
+          "props.xAxes[0].appearance.labels.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.isDarkTheme"
+              },
+              "transforms": [
+                {
+                  "fallback": "#BDBDBD",
+                  "inputType": "scalar",
+                  "mappings": [
+                    {
+                      "input": false,
+                      "output": "#5E5E5E"
+                    }
+                  ],
+                  "outputType": "color",
+                  "type": "map"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.xAxes[0].appearance.labels.opacity": {
+            "binding": {
+              "config": {
+                "path": "view.custom.isDarkTheme"
+              },
+              "transforms": [
+                {
+                  "fallback": 0.9,
+                  "inputType": "scalar",
+                  "mappings": [
+                    {
+                      "input": false,
+                      "output": 0.99
+                    }
+                  ],
+                  "outputType": "scalar",
+                  "type": "map"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.xAxes[0].date.range.max": {
+            "binding": {
+              "config": {
+                "path": "view.params.range.end"
+              },
+              "type": "property"
+            },
+            "persistent": false
+          },
+          "props.xAxes[0].date.range.min": {
+            "binding": {
+              "config": {
+                "path": "view.params.range.start"
+              },
+              "type": "property"
+            },
+            "persistent": false
+          },
+          "props.xAxes[0].tooltip.background.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.background"
+              },
+              "type": "property"
+            }
+          },
+          "props.xAxes[0].tooltip.background.opacity": {
+            "binding": {
+              "config": {
+                "path": "view.custom.isDarkTheme"
+              },
+              "transforms": [
+                {
+                  "fallback": 0.9,
+                  "inputType": "scalar",
+                  "mappings": [
+                    {
+                      "input": false,
+                      "output": 0.99
+                    }
+                  ],
+                  "outputType": "scalar",
+                  "type": "map"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.yAxes[0].appearance.grid.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.grid"
+              },
+              "type": "property"
+            }
+          },
+          "props.yAxes[0].appearance.labels.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.labels"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "background": {
+            "opacity": 0,
+            "render": "color"
+          },
+          "cursor": {
+            "lineX": {
+              "stroke": {
+                "color": "#5C97E0",
+                "dashArray": "\u0027\u0027",
+                "opacity": 0.2
+              }
+            },
+            "lineY": {
+              "enabled": false
+            },
+            "series": "cursor"
+          },
+          "dataSources": {},
+          "legend": {
+            "labels": {
+              "font": {
+                "weight": 100
+              },
+              "text": "{name}"
+            }
+          },
+          "scrollBars": {
+            "horizontal": {
+              "enabled": false
+            },
+            "vertical": {
+              "enabled": false
+            }
+          },
+          "selection": {
+            "enabled": true
+          },
+          "series": [
+            {
+              "candlestick": {
+                "appearance": {
+                  "deriveFieldsFromData": {
+                    "fill": {
+                      "color": "",
+                      "opacity": ""
+                    },
+                    "stroke": {
+                      "color": "",
+                      "opacity": "",
+                      "width": ""
+                    }
+                  },
+                  "fill": {
+                    "color": "",
+                    "opacity": 1
+                  },
+                  "heatRules": {
+                    "dataField": "",
+                    "enabled": false,
+                    "max": "",
+                    "min": ""
+                  },
+                  "stacked": false,
+                  "stroke": {
+                    "color": "",
+                    "opacity": 1,
+                    "width": 1
+                  }
+                },
+                "high": {
+                  "x": "",
+                  "y": ""
+                },
+                "low": {
+                  "x": "",
+                  "y": ""
+                },
+                "open": {
+                  "x": "",
+                  "y": ""
+                }
+              },
+              "column": {
+                "appearance": {
+                  "deriveFieldsFromData": {
+                    "fill": {
+                      "color": "",
+                      "opacity": ""
+                    },
+                    "stroke": {
+                      "color": "",
+                      "opacity": "",
+                      "width": ""
+                    }
+                  },
+                  "fill": {
+                    "color": "",
+                    "opacity": 1
+                  },
+                  "heatRules": {
+                    "dataField": "",
+                    "enabled": false,
+                    "max": "",
+                    "min": ""
+                  },
+                  "height": 25,
+                  "stacked": true,
+                  "stroke": {
+                    "color": "",
+                    "opacity": 0,
+                    "width": 0
+                  },
+                  "width": 25
+                },
+                "open": {
+                  "x": "start",
+                  "y": ""
+                }
+              },
+              "data": {
+                "source": "cursor",
+                "x": "end",
+                "y": "unit"
+              },
+              "defaultState": {
+                "visible": true
+              },
+              "hiddenInLegend": true,
+              "label": {
+                "text": "cursor"
+              },
+              "line": {
+                "appearance": {
+                  "bullets": [
+                    {
+                      "deriveFieldsFromData": {
+                        "fill": {
+                          "color": "",
+                          "opacity": ""
+                        },
+                        "rotation": "",
+                        "stroke": {
+                          "color": "",
+                          "opacity": "",
+                          "width": ""
+                        }
+                      },
+                      "enabled": false,
+                      "fill": {
+                        "color": "",
+                        "opacity": 1
+                      },
+                      "heatRules": {
+                        "dataField": "",
+                        "enabled": false,
+                        "max": 100,
+                        "min": 2
+                      },
+                      "height": 10,
+                      "label": {
+                        "position": {
+                          "dx": 0,
+                          "dy": 0
+                        },
+                        "text": "{value}"
+                      },
+                      "render": "circle",
+                      "rotation": 0,
+                      "stroke": {
+                        "color": "",
+                        "opacity": 1,
+                        "width": 1
+                      },
+                      "tooltip": {
+                        "background": {
+                          "color": "",
+                          "opacity": 1
+                        },
+                        "cornerRadius": 3,
+                        "enabled": true,
+                        "pointerLength": 4,
+                        "text": "{name}: [bold]{valueY}[/]"
+                      },
+                      "width": 10
+                    }
+                  ],
+                  "connect": true,
+                  "fill": {
+                    "color": "",
+                    "opacity": 0
+                  },
+                  "minDistance": 0.5,
+                  "stroke": {
+                    "color": "",
+                    "dashArray": "",
+                    "opacity": 1,
+                    "width": 3
+                  },
+                  "tensionX": 1,
+                  "tensionY": 1
+                },
+                "open": {
+                  "x": "",
+                  "y": ""
+                }
+              },
+              "name": "cursor",
+              "render": "column",
+              "stepLine": {
+                "appearance": {
+                  "bullets": [
+                    {
+                      "deriveFieldsFromData": {
+                        "fill": {
+                          "color": "",
+                          "opacity": ""
+                        },
+                        "rotation": "",
+                        "stroke": {
+                          "color": "",
+                          "opacity": "",
+                          "width": ""
+                        }
+                      },
+                      "enabled": true,
+                      "fill": {
+                        "color": "",
+                        "opacity": 1
+                      },
+                      "heatRules": {
+                        "dataField": "",
+                        "enabled": false,
+                        "max": 100,
+                        "min": 2
+                      },
+                      "height": 10,
+                      "label": {
+                        "position": {
+                          "dx": 0,
+                          "dy": 0
+                        },
+                        "text": "{value}"
+                      },
+                      "render": "circle",
+                      "rotation": 0,
+                      "stroke": {
+                        "color": "",
+                        "opacity": 1,
+                        "width": 1
+                      },
+                      "tooltip": {
+                        "background": {
+                          "color": "",
+                          "opacity": 1
+                        },
+                        "cornerRadius": 3,
+                        "enabled": true,
+                        "pointerLength": 4,
+                        "text": "{name}: [bold]{valueY}[/]"
+                      },
+                      "width": 10
+                    }
+                  ],
+                  "connect": true,
+                  "fill": {
+                    "color": "",
+                    "opacity": 0
+                  },
+                  "minDistance": 0.5,
+                  "stroke": {
+                    "color": "",
+                    "dashArray": "",
+                    "opacity": 1,
+                    "width": 3
+                  },
+                  "tensionX": 1,
+                  "tensionY": 1
+                },
+                "open": {
+                  "x": "",
+                  "y": ""
+                }
+              },
+              "tooltip": {
+                "background": {
+                  "color": "",
+                  "opacity": 1
+                },
+                "cornerRadius": 3,
+                "enabled": true,
+                "pointerLength": 4,
+                "text": "[bold]{name}:[/]\n [light]{start.formatDate(\u0027EEEE M/d, hh:mm a\u0027)}[/] [bold]to[/] [light]{end.formatDate(\u0027EEEE M/d, hh:mm a\u0027)}[/]"
+              },
+              "visible": false,
+              "xAxis": "time",
+              "yAxis": "processUnit",
+              "zIndex": 0
+            }
+          ],
+          "style": {
+            "overflow": "visible"
+          },
+          "xAxes": [
+            {
+              "appearance": {
+                "font": {
+                  "size": "",
+                  "weight": 500
+                },
+                "grid": {
+                  "dashArray": "\"4,4\"",
+                  "minDistance": 120,
+                  "opacity": 0.35,
+                  "position": 0.5
+                },
+                "inside": false,
+                "labels": {
+                  "horizontalCenter": "middle",
+                  "rotation": 0,
+                  "verticalCenter": "middle",
+                  "wrap": true
+                },
+                "opposite": true
+              },
+              "category": {
+                "break": {
+                  "enabled": false,
+                  "endCategory": "",
+                  "size": 0.05,
+                  "startCategory": ""
+                }
+              },
+              "date": {
+                "baseInterval": {
+                  "count": 1,
+                  "enabled": false,
+                  "skipEmptyPeriods": false,
+                  "timeUnit": "day"
+                },
+                "break": {
+                  "enabled": false,
+                  "endDate": "",
+                  "size": 0.05,
+                  "startDate": ""
+                },
+                "format": "HH:mm:ss.SSS",
+                "inputFormat": "DD-MMM-yy HH:mm:ss",
+                "range": {
+                  "useStrict": false
+                }
+              },
+              "inversed": false,
+              "label": {
+                "color": "var(",
+                "enabled": false,
+                "text": "Time"
+              },
+              "name": "time",
+              "render": "date",
+              "tooltip": {
+                "background": {},
+                "cornerRadius": 3,
+                "enabled": true,
+                "pointerLength": 4,
+                "text": "[bold]{value.formatDate(\u0027EEEE M/d, hh:mm a\u0027)}[/]"
+              },
+              "value": {
+                "break": {
+                  "enabled": false,
+                  "endValue": 100,
+                  "size": 0.05,
+                  "startValue": 0
+                },
+                "format": "#,###.##",
+                "logarithmic": false,
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "visible": true
+            }
+          ],
+          "yAxes": [
+            {
+              "appearance": {
+                "font": {
+                  "size": "",
+                  "weight": 500
+                },
+                "grid": {
+                  "dashArray": "\"4,4\"",
+                  "minDistance": 0.05,
+                  "opacity": 0.25,
+                  "position": 0.05
+                },
+                "inside": false,
+                "labels": {
+                  "horizontalCenter": "middle",
+                  "opacity": 1,
+                  "rotation": 0,
+                  "verticalCenter": "middle",
+                  "wrap": true
+                },
+                "opposite": false
+              },
+              "category": {
+                "break": {
+                  "enabled": false,
+                  "endCategory": "",
+                  "size": 0,
+                  "startCategory": ""
+                }
+              },
+              "date": {
+                "baseInterval": {
+                  "count": 1,
+                  "enabled": false,
+                  "skipEmptyPeriods": false,
+                  "timeUnit": "hour"
+                },
+                "break": {
+                  "enabled": false,
+                  "endDate": "",
+                  "size": 0.05,
+                  "startDate": ""
+                },
+                "format": "M/d/yyyy",
+                "inputFormat": "yyyy-MM-dd kk:mm:ss",
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "inversed": true,
+              "label": {
+                "color": "#CFCFCF",
+                "enabled": false,
+                "text": "Process Unit"
+              },
+              "name": "processUnit",
+              "render": "category",
+              "tooltip": {
+                "background": {
+                  "color": "",
+                  "opacity": 1
+                },
+                "cornerRadius": 3,
+                "enabled": false,
+                "pointerLength": 4,
+                "text": ""
+              },
+              "value": {
+                "break": {
+                  "enabled": false,
+                  "endValue": 100,
+                  "size": 0.05,
+                  "startValue": 0
+                },
+                "format": "#,###.##",
+                "logarithmic": false,
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "visible": true
+            }
+          ]
+        },
+        "scripts": {
+          "customMethods": [
+            {
+              "name": "buildSeries",
+              "params": [
+                "name",
+                "datasource",
+                "color",
+                "visible"
+              ],
+              "script": "\tseries \u003d {\n\t\t  \"name\": name,\n\t\t  \"label\": {\n\t\t    \"text\": name\n\t\t  },\n\t\t  \"visible\": visible,\n\t\t  \"hiddenInLegend\": not visible,\n\t\t  \"defaultState\": {\n\t\t    \"visible\": True\n\t\t  },\n\t\t  \"data\": {\n\t\t    \"source\": datasource,\n\t\t    \"x\": \"end\",\n\t\t    \"y\": \"unit\"\n\t\t  },\n\t\t  \"xAxis\": \"time\",\n\t\t  \"yAxis\": \"processUnit\",\n\t\t  \"zIndex\": 0,\n\t\t  \"tooltip\": {\n\t\t    \"enabled\": True,\n\t\t    \"text\": \"[bold]{name}[/]\\n[light]{duration_text}[/]\\n[light]Attempts: {attempts}[/]\",\n\t\t    \"cornerRadius\": 10,\n\t\t    \"pointerLength\": 6,\n\t\t    \"background\": {\n\t\t      \"color\": \"#E72929\",\n\t\t      \"opacity\": 1\n\t\t    }\n\t\t  },\n\t\t  \"render\": \"column\",\n\t\t  \"candlestick\": {\n\t\t    \"open\": {\n\t\t      \"x\": \"\",\n\t\t      \"y\": \"\"\n\t\t    },\n\t\t    \"high\": {\n\t\t      \"x\": \"\",\n\t\t      \"y\": \"\"\n\t\t    },\n\t\t    \"low\": {\n\t\t      \"x\": \"\",\n\t\t      \"y\": \"\"\n\t\t    },\n\t\t    \"appearance\": {\n\t\t      \"fill\": {\n\t\t        \"color\": \"\",\n\t\t        \"opacity\": 1\n\t\t      },\n\t\t      \"stroke\": {\n\t\t        \"color\": \"\",\n\t\t        \"opacity\": 1,\n\t\t        \"width\": 1\n\t\t      },\n\t\t      \"stacked\": False,\n\t\t      \"deriveFieldsFromData\": {\n\t\t        \"fill\": {\n\t\t          \"color\": \"\",\n\t\t          \"opacity\": \"\"\n\t\t        },\n\t\t        \"stroke\": {\n\t\t          \"color\": \"\",\n\t\t          \"opacity\": \"\",\n\t\t          \"width\": \"\"\n\t\t        }\n\t\t      },\n\t\t      \"heatRules\": {\n\t\t        \"enabled\": False,\n\t\t        \"max\": \"\",\n\t\t        \"min\": \"\",\n\t\t        \"dataField\": \"\"\n\t\t      }\n\t\t    }\n\t\t  },\n\t\t  \"column\": {\n\t\t    \"open\": {\n\t\t      \"x\": \"start\",\n\t\t      \"y\": \"\"\n\t\t    },\n\t\t    \"appearance\": {\n\t\t      \"width\": 22,\n\t\t      \"height\": 22,\n\t\t      \"fill\": {\n\t\t        \"color\": color,\n\t\t        \"opacity\": 1\n\t\t      },\n\t\t      \"stroke\": {\n\t\t        \"color\": \"\",\n\t\t        \"opacity\": 0,\n\t\t        \"width\": 0\n\t\t      },\n\t\t      \"stacked\": True,\n\t\t      \"deriveFieldsFromData\": {\n\t\t        \"fill\": {\n\t\t          \"color\": \"\",\n\t\t          \"opacity\": \"\"\n\t\t        },\n\t\t        \"stroke\": {\n\t\t          \"color\": \"\",\n\t\t          \"opacity\": \"\",\n\t\t          \"width\": \"\"\n\t\t        }\n\t\t      },\n\t\t      \"heatRules\": {\n\t\t        \"enabled\": False,\n\t\t        \"max\": \"\",\n\t\t        \"min\": \"\",\n\t\t        \"dataField\": \"\"\n\t\t      }\n\t\t    }\n\t\t  },\n\t\t  \"line\": {\n\t\t    \"open\": {\n\t\t      \"x\": \"\",\n\t\t      \"y\": \"\"\n\t\t    },\n\t\t    \"appearance\": {\n\t\t      \"connect\": True,\n\t\t      \"tensionX\": 1,\n\t\t      \"tensionY\": 1,\n\t\t      \"minDistance\": 0.5,\n\t\t      \"stroke\": {\n\t\t        \"width\": 3,\n\t\t        \"opacity\": 1,\n\t\t        \"color\": \"\",\n\t\t        \"dashArray\": \"\"\n\t\t      },\n\t\t      \"fill\": {\n\t\t        \"color\": \"\",\n\t\t        \"opacity\": 0\n\t\t      },\n\t\t      \"bullets\": [\n\t\t        {\n\t\t          \"enabled\": False,\n\t\t          \"render\": \"circle\",\n\t\t          \"width\": 10,\n\t\t          \"height\": 10,\n\t\t          \"label\": {\n\t\t            \"text\": \"{value}\",\n\t\t            \"position\": {\n\t\t              \"dx\": 0,\n\t\t              \"dy\": 0\n\t\t            }\n\t\t          },\n\t\t          \"tooltip\": {\n\t\t            \"enabled\": True,\n\t\t            \"text\": \"{name}: [bold]{valueY}[/]\",\n\t\t            \"cornerRadius\": 3,\n\t\t            \"pointerLength\": 4,\n\t\t            \"background\": {\n\t\t              \"color\": \"\",\n\t\t              \"opacity\": 1\n\t\t            }\n\t\t          },\n\t\t          \"fill\": {\n\t\t            \"color\": \"\",\n\t\t            \"opacity\": 1\n\t\t          },\n\t\t          \"stroke\": {\n\t\t            \"color\": \"\",\n\t\t            \"width\": 1,\n\t\t            \"opacity\": 1\n\t\t          },\n\t\t          \"rotation\": 0,\n\t\t          \"deriveFieldsFromData\": {\n\t\t            \"fill\": {\n\t\t              \"color\": \"\",\n\t\t              \"opacity\": \"\"\n\t\t            },\n\t\t            \"stroke\": {\n\t\t              \"color\": \"\",\n\t\t              \"opacity\": \"\",\n\t\t              \"width\": \"\"\n\t\t            },\n\t\t            \"rotation\": \"\"\n\t\t          },\n\t\t          \"heatRules\": {\n\t\t            \"enabled\": False,\n\t\t            \"max\": 100,\n\t\t            \"min\": 2,\n\t\t            \"dataField\": \"\"\n\t\t          }\n\t\t        }\n\t\t      ]\n\t\t    }\n\t\t  },\n\t\t  \"stepLine\": {\n\t\t    \"open\": {\n\t\t      \"x\": \"\",\n\t\t      \"y\": \"\"\n\t\t    },\n\t\t    \"appearance\": {\n\t\t      \"connect\": True,\n\t\t      \"tensionX\": 1,\n\t\t      \"tensionY\": 1,\n\t\t      \"minDistance\": 0.5,\n\t\t      \"stroke\": {\n\t\t        \"width\": 3,\n\t\t        \"opacity\": 1,\n\t\t        \"color\": \"\",\n\t\t        \"dashArray\": \"\"\n\t\t      },\n\t\t      \"fill\": {\n\t\t        \"color\": \"\",\n\t\t        \"opacity\": 0\n\t\t      },\n\t\t      \"bullets\": [\n\t\t        {\n\t\t          \"enabled\": True,\n\t\t          \"render\": \"circle\",\n\t\t          \"width\": 10,\n\t\t          \"height\": 10,\n\t\t          \"label\": {\n\t\t            \"text\": \"{value}\",\n\t\t            \"position\": {\n\t\t              \"dx\": 0,\n\t\t              \"dy\": 0\n\t\t            }\n\t\t          },\n\t\t          \"tooltip\": {\n\t\t            \"enabled\": True,\n\t\t            \"text\": \"{name}: [bold]{valueY}[/]\",\n\t\t            \"cornerRadius\": 3,\n\t\t            \"pointerLength\": 4,\n\t\t            \"background\": {\n\t\t              \"color\": \"\",\n\t\t              \"opacity\": 1\n\t\t            }\n\t\t          },\n\t\t          \"fill\": {\n\t\t            \"color\": \"\",\n\t\t            \"opacity\": 1\n\t\t          },\n\t\t          \"stroke\": {\n\t\t            \"color\": \"\",\n\t\t            \"width\": 1,\n\t\t            \"opacity\": 1\n\t\t          },\n\t\t          \"rotation\": 0,\n\t\t          \"deriveFieldsFromData\": {\n\t\t            \"fill\": {\n\t\t              \"color\": \"\",\n\t\t              \"opacity\": \"\"\n\t\t            },\n\t\t            \"stroke\": {\n\t\t              \"color\": \"\",\n\t\t              \"opacity\": \"\",\n\t\t              \"width\": \"\"\n\t\t            },\n\t\t            \"rotation\": \"\"\n\t\t          },\n\t\t          \"heatRules\": {\n\t\t            \"enabled\": False,\n\t\t            \"max\": 100,\n\t\t            \"min\": 2,\n\t\t            \"dataField\": \"\"\n\t\t          }\n\t\t        }\n\t\t      ]\n\t\t    }\n\t\t  }\n\t\t}\n\t\n\treturn series"
+            },
+            {
+              "name": "load",
+              "params": [],
+              "script": "\t# Goal: build a new datasources object along with matching series object.\n\tdataSources \u003d {}\n\tseries \u003d []\n\t\n\t# Controlling parameters\t\n\tdateStart \u003d self.view.params.range.start\n\tdateEnd \u003d self.view.params.range.end\n\tchartData \u003d self.view.params.data\n\tmodes \u003d self.getModes()\n\t\n\t# Build the chart series\n\tseries \u003d self.getSeries(modes)\n\t\n\t# Build the chart DataSources\n\tdataSources \u003d self.getDataSources(series)\t\n\t\t\n\t# Apply the new datasources/series to the chart.\n\tself.props.series \u003d series\n\tself.props.dataSources \u003d dataSources"
+            },
+            {
+              "name": "unload",
+              "params": [],
+              "script": "\t# Remove all datasources from the chart.\n\tself.props.dataSources \u003d {}\n\tself.props.series \u003d []"
+            },
+            {
+              "name": "isPayloadInstance",
+              "params": [
+                "payload"
+              ],
+              "script": "\t# Check that the message is intended for this instance ID\n\tflag \u003d False\n\tif payload:\n\t\tpayloadInstanceID \u003d payload[\u0027instanceID\u0027] if \u0027instanceID\u0027 in payload else -1\n\t\t\n\t\tif payloadInstanceID \u003d\u003d self.view.params.instanceID:\n\t\t\tflag \u003d True\n\t\t\t\n\treturn flag"
+            },
+            {
+              "name": "getModes",
+              "params": [],
+              "script": "\t# Return a list of all the modes to graph on the chart.\n\t\n\t# Controlling paramters\n\tmodes \u003d self.view.params.modes\n\tchartData \u003d self.view.params.data\n\t\t\n\t# If the modes list is undefined, gather data for all the modes of all the given process units.\n\tif not (len(modes) \u003e 0):\n\t\t\n\t\tmodes \u003d []\n\t\t\t\t\t\n\t\t# Add the new modes to the modes list, only if they don\u0027t already exist.\n\t\tfor unit in chartData:\n\t\t\tfor event in unit[\u0027events\u0027]:\n\t\t\t\n\t\t\t\t# Read each mode.\n\t\t\t\tnewMode \u003d event[\u0027mode\u0027] if \u0027mode\u0027 in event else None\t\t\t\n\t\t\t\tif newMode:\n\t\n\t\t\t\t\t# Check if the mode is unique.\n\t\t\t\t\tuniqueFlag \u003d True\n\t\t\t\t\tfor existingMode in modes:\n\t\t\t\t\t\tif newMode \u003d\u003d existingMode[\u0027name\u0027]:\n\t\t\t\t\t\t\tuniqueFlag \u003d False\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\t\t\n\t\t\t\t\t# If the mode is unique, add it to the list.\n\t\t\t\t\tif uniqueFlag \u003d\u003d True:\n\t\t\t\t\t\tmodes.append(\n\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\u0027name\u0027: newMode,\n\t\t\t\t\t\t\t\t\u0027color\u0027: \u0027\u0027\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t)\t\t\n\treturn modes"
+            },
+            {
+              "name": "getSeries",
+              "params": [
+                "modes"
+              ],
+              "script": "\t# For each mode, build a new series.\n\tseries \u003d []\n\tfor mode in modes:\n\t\n\t\tnewSeriesName \u003d mode[\u0027name\u0027].strip() if \u0027name\u0027 in mode else \u0027\u0027\n\t\tnewSeriesDatasource \u003d mode[\u0027name\u0027].replace(\u0027 \u0027, \u0027\u0027).replace(\u0027/\u0027, \u0027\u0027).lower() if \u0027name\u0027 in mode else \u0027\u0027\t\n\t\tnewSeriesColor \u003d mode[\u0027color\u0027]  if \u0027color\u0027 in mode else \u0027\u0027\n\n\t\tnewSeries \u003d self.buildSeries(newSeriesName, newSeriesDatasource, newSeriesColor, True)\n\t\t\n\t\tseries.append(newSeries)\n\t\t\n\t# Build a series for the dedicated cursor.\n\tseries.append(self.buildSeries(\u0027cursor\u0027, \u0027cursor\u0027, \u0027\u0027, False))\n\t\n\treturn series"
+            },
+            {
+              "name": "getDataSources",
+              "params": [
+                "series"
+              ],
+              "script": "\t# Controlling paramters\n\tchartData \u003d self.view.params.data\n\tdataSources \u003d {}\n\t\n\t# For each series, gather the data.\n\tfor s in series:\t\n\t\t\t\t\n\t\t# Controlling parameters\n\t\tseriesMode \u003d s[\u0027name\u0027]\n\t\tseriesEvents \u003d []\n\t\t\n\t\t# Build the data for each event.\n\t\tfor unit in chartData:\n\t\t\n\t\t\tunitSeriesEvents \u003d []\t\n\t\t\tfor event in unit[\u0027events\u0027]:\n\t\t\t\n\t\t\t\teventMode \u003d event[\u0027mode\u0027] if \u0027mode\u0027 in event else None\n\t\t\t\tif eventMode \u003d\u003d seriesMode:\n\t\t\t\t\t\t\t\t\n\t\t\t\t\tcurrentEvent \u003d {\n\t\t\t\t\t\t\u0027unit\u0027: unit[\u0027name\u0027] if \u0027name\u0027 in unit else None,\n\t\t\t\t\t\t\u0027start\u0027: event[\u0027start\u0027] if \u0027start\u0027 in event else None,\n\t\t\t\t\t\t\u0027end\u0027: event[\u0027end\u0027] if \u0027end\u0027 in event else None,\n\t\t\t\t\t\t\u0027duration_ms\u0027: event[\u0027duration_ms\u0027] if \u0027duration_ms\u0027 in event else None,\n\t\t\t\t\t\t\u0027duration_text\u0027: event[\u0027duration_text\u0027] if \u0027duration_text\u0027 in event else None,\n\t\t\t\t\t\t\u0027attempts\u0027: event[\u0027attempts\u0027] if \u0027attempts\u0027 in event else None\n\t\t\t\t\t}\n\t\t\t\t\n\t\t\t\t\tunitSeriesEvents.append(currentEvent)\n\t\t\t\t\n\t\t\t\t\t\n\t\t\t# If no series were created for a unit, put an empty data entry to enforce proper rendering.\n\t\t\t# This should not be required, but is needed because the property we need in the AMCharts Library isn\u0027t exposed by Ignition.\t\t\t\n\t\t\tif not (len(unitSeriesEvents) \u003e 0):\n\t\t\t\tcurrentEvent \u003d {\n\t\t\t\t\t\u0027unit\u0027: unit[\u0027name\u0027] if \u0027name\u0027 in unit else None,\n\t\t\t\t\t\u0027start\u0027: 0,\n\t\t\t\t\t\u0027end\u0027: 1\n\t\t\t\t}\t\t\n\t\t\t\t\t\n\t\t\t\tunitSeriesEvents.append(currentEvent)\n\t\t\t\n\t\t\tseriesEvents.extend(unitSeriesEvents)\t\n\t\t\n\t\t# If the events exist for the series, create a datasource.\n\t\tif len(seriesEvents) \u003e 0:\n\t\t\tdataSources[s[\u0027data\u0027][\u0027source\u0027]] \u003d seriesEvents\t\t\t\n\t\t\t\n\treturn dataSources"
+            }
+          ],
+          "extensionFunctions": null,
+          "messageHandlers": [
+            {
+              "messageType": "modeTimeline_unload",
+              "pageScope": true,
+              "script": "\t# If the payload is for this chart, unload the chart\n\tif self.isPayloadInstance(payload):\n\t\tself.unload()",
+              "sessionScope": false,
+              "viewScope": false
+            },
+            {
+              "messageType": "modeTimeline_load",
+              "pageScope": true,
+              "script": "\t# If the payload is for this chart, load the chart\n\tif self.isPayloadInstance(payload):\n\t\tself.load()",
+              "sessionScope": false,
+              "viewScope": false
+            }
+          ]
+        },
+        "type": "ia.chart.xy"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "overflow": "visible"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

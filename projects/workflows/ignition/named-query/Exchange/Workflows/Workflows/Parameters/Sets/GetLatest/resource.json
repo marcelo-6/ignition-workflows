@@ -1,0 +1,45 @@
+{
+  "scope": "DG",
+  "version": 2,
+  "restricted": false,
+  "overridable": true,
+  "files": [
+    "query.sql"
+  ],
+  "attributes": {
+    "useMaxReturnSize": false,
+    "autoBatchEnabled": false,
+    "fallbackValue": "",
+    "maxReturnSize": 100,
+    "cacheUnit": "SEC",
+    "type": "Query",
+    "enabled": true,
+    "cacheAmount": 1,
+    "cacheEnabled": false,
+    "database": "",
+    "fallbackEnabled": false,
+    "lastModificationSignature": "438936fd1c0178b6f3ef80a71381a0886eae161335cc3c781c219e4e332393bf",
+    "permissions": [
+      {
+        "zone": "",
+        "role": ""
+      }
+    ],
+    "lastModification": {
+      "actor": "admin",
+      "timestamp": "2026-02-04T10:44:40Z"
+    },
+    "parameters": [
+      {
+        "type": "Parameter",
+        "identifier": "workflowName",
+        "sqlType": 7
+      },
+      {
+        "type": "Parameter",
+        "identifier": "templateName",
+        "sqlType": 7
+      }
+    ]
+  }
+}

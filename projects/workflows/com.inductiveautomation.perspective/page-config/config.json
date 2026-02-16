@@ -1,0 +1,71 @@
+{
+  "pages": {
+    "/": {
+      "title": "",
+      "viewPath": "Exchange/Workflows/Components/Parameters/Template Editor"
+    },
+    "/admin": {
+      "title": "",
+      "viewPath": "Exchange/Workflows/Pages/Admin"
+    },
+    "/admin/logs": {
+      "title": "",
+      "viewPath": "Exchange/Workflows/Components/Admin/Logs"
+    },
+    "/admin/threads": {
+      "title": "",
+      "viewPath": "Exchange/Workflows/Components/Admin/Threads"
+    },
+    "/queues": {
+      "title": "",
+      "viewPath": "Exchange/Workflows/Pages/Queue Status"
+    },
+    "/runs": {
+      "title": "",
+      "viewPath": "Exchange/Workflows/Pages/Monitor"
+    },
+    "/runs/:uuid": {
+      "title": "",
+      "viewPath": "Exchange/Workflows/Pages/Workflow Details"
+    },
+    "/runs/:uuid/steps": {
+      "title": "",
+      "viewPath": "Exchange/Workflows/Pages/Workflow Steps Details"
+    }
+  },
+  "sharedDocks": {
+    "cornerPriority": "top-bottom",
+    "left": [
+      {
+        "anchor": "fixed",
+        "autoBreakpoint": 640,
+        "content": "push",
+        "handle": "hide",
+        "iconUrl": "",
+        "id": "leftMenu",
+        "modal": false,
+        "resizable": false,
+        "show": "visible",
+        "size": 40,
+        "viewParams": {},
+        "viewPath": "Exchange/Nav/Sidemenu/Left Menu"
+      }
+    ],
+    "top": [
+      {
+        "anchor": "fixed",
+        "autoBreakpoint": 480,
+        "content": "push",
+        "handle": "hide",
+        "iconUrl": "",
+        "id": "header",
+        "modal": false,
+        "resizable": false,
+        "show": "visible",
+        "size": 50,
+        "viewParams": {},
+        "viewPath": "Exchange/Nav/Header/Header"
+      }
+    ]
+  }
+}

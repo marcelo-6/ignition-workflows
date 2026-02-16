@@ -1,0 +1,150 @@
+{
+  "custom": {},
+  "params": {
+    "boolStyle": "color:var(--qual-9);font-size:1.1em",
+    "indent": 2,
+    "json": "{\"bool\": true,\"numeric1\": -123.456,\"numeric2\": 1e65,\"array\":[1, 2, true, null, \"string\",\" not null \",[],{}],\"null\": null, \"object\": {\"nested\": {\"test\": 1}},\"super long string\": \"Ignition is the complete system integration tool, it’s totally cross-platform, and built upon trusted information technologies like SQL and Python, as well as open process technologies like OPC UA and MQTT. The Ignition platform’s open API and its ability to easily connect to any database, PLC, field device and line-of-business application makes it the ideal bridge to seamlessly integrate operational and enterprise systems together. Testing a very long: \\\"complex\\\" string\",\"[default]Folder/example tag\": {}, \"test2\": {}}",
+    "keyStyle": "font-weight:bold",
+    "nullStyle": "color:var(--error);font-size:1.1em;font-style:italic",
+    "numericStyle": "font-weight:bold;color:var(--qual-7);font-size:1.1em",
+    "stringStyle": "color:var(--qual-2);font-weight:bold",
+    "symbolStyle": "color:var(--qual-10);font-size:1.1em"
+  },
+  "propConfig": {
+    "params.boolStyle": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.indent": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.json": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.keyStyle": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.nullStyle": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.numericStyle": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.stringStyle": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.symbolStyle": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 500,
+      "width": 500
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\texchange.workflows.util.perspective.textToClipboard(self.view.params.json)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "Command",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-left",
+                "text": "Copy to clipboard"
+              }
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "path": "material/content_copy",
+              "style": {
+                "classes": "icon"
+              }
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "name": "Copy"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "flex-end"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "Markdown"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.source": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "boolStyle": "{view.params.boolStyle}",
+                  "indent": "{view.params.indent}",
+                  "json": "{view.params.json}",
+                  "keyStyle": "{view.params.keyStyle}",
+                  "nullStyle": "{view.params.nullStyle}",
+                  "numericStyle": "{view.params.numericStyle}",
+                  "stringStyle": "{view.params.stringStyle}",
+                  "symbolStyle": "{view.params.symbolStyle}"
+                },
+                "waitOnAll": true
+              },
+              "transforms": [
+                {
+                  "code": "\timport json, re\n\tif not value.json:\n\t\treturn \"\"\n\ttry:\n\t\t# pretty print json\n\t\tjsonText \u003d \u0027\u003cpre\u003e\u003ccode\u003e\u0027 + json.dumps(json.loads(value.json), indent\u003dvalue.indent) + \u0027\u003c/pre\u003e\u003c/code\u003e\u0027\n\t\t\n\t\t# strings\n\t\tjsonText \u003d re.sub(r\u0027(\".*\"): (\".*\")\u0027, r\"\u003cspan style\u003d\u0027%s\u0027\u003e\\1\u003c/span\u003e: \u003cspan style\u003d\u0027%s\u0027\u003e\\2\u003c/span\u003e\" %(value.keyStyle, value.stringStyle), jsonText)\n\t\tjsonText \u003d re.sub(r\u0027(\\s+)(\".*\")([,\\s]*\\n)\u0027, r\"\\1\u003cspan style\u003d\u0027%s\u0027\u003e\\2\u003c/span\u003e\\3\" %value.stringStyle, jsonText)\n\t\t\n\t\t# numerics\n\t\tjsonText \u003d re.sub(r\u0027(\\s+)([\\d-][\\d.-e+]*(?:[,\\s]*\\n))\u0027, r\"\\1\u003cspan style\u003d\u0027%s\u0027\u003e\\2\u003c/span\u003e\" %value.numericStyle, jsonText)\n\n\t\t# booleans\n\t\tjsonText \u003d re.sub(r\u0027(\\s+)((?:true)|(?:false)(?:[,\\s]))\u0027, r\"\\1\u003cspan style\u003d\u0027%s\u0027\u003e\\2\u003c/span\u003e\" %value.boolStyle, jsonText)\n\n\t\t# nulls\n\t\tjsonText \u003d re.sub(r\u0027(\\s+)(null)([\\n,\\r]+)\u0027, r\"\\1\u003cspan style\u003d\u0027%s\u0027\u003e\\2\u003c/span\u003e\\3\" %value.nullStyle, jsonText)\n\n\t\t# keys\n\t\tjsonText \u003d re.sub(r\u0027(\".*\"):\u0027, r\"\u003cspan style\u003d\u0027%s\u0027\u003e\\1\u003c/span\u003e:\" %value.keyStyle, jsonText)\n\t\t\n\t\t# symbols\n\t\tjsonText \u003d re.sub(r\u0027(\\[\\]|{})([\\n,\\r]+)\u0027, r\"\u003cspan style\u003d\u0027%s\u0027\u003e\\1\u003c/span\u003e\\2\" %value.symbolStyle, jsonText)\n\t\tjsonText \u003d re.sub(r\u0027([{}\\[\\]])([\\n,\\r]+)\u0027, r\"\u003cspan style\u003d\u0027%s\u0027\u003e\\1\u003c/span\u003e\\2\" %value.symbolStyle, jsonText)\n\t\tjsonText \u003d re.sub(r\u0027(\\n[{}\\[\\]])\u0027, r\"\u003cspan style\u003d\u0027%s\u0027\u003e\\1\u003c/span\u003e\" %value.symbolStyle, jsonText)\n\t\t\n\t\t\n\t\treturn jsonText\n\texcept Exception as e:\n\t\treturn str(e)",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "markdown": {
+            "escapeHtml": false
+          }
+        },
+        "type": "ia.display.markdown"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "type": "ia.container.flex"
+  }
+}

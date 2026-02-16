@@ -1,0 +1,1260 @@
+{
+  "custom": {
+    "commandsEnabled": true,
+    "events": "[]",
+    "workflow": [
+      {
+        "application_version": "Unknown",
+        "claimed_at_epoch_ms": "Unknown",
+        "claimed_by": "Unknown",
+        "completed_at_epoch_ms": "Unknown",
+        "created_at_epoch_ms": "Unknown",
+        "deadline_epoch_ms": "Unknown",
+        "deduplication_id": "Unknown",
+        "error_json": "Unknown",
+        "heartbeat_at_epoch_ms": "Unknown",
+        "inputs_json": "Unknown",
+        "partition_key": "Unknown",
+        "priority": "Unknown",
+        "queue_name": "Unknown",
+        "result_json": "Unknown",
+        "started_at_epoch_ms": "Unknown",
+        "status": "Unknown",
+        "updated_at_epoch_ms": "Unknown",
+        "workflow_id": "Unknown",
+        "workflow_name": "Unknown"
+      }
+    ]
+  },
+  "params": {
+    "selectedWorkflowUUID": "35b2cd69-f066-4f83-8052-73407fcdc5f8"
+  },
+  "propConfig": {
+    "custom.commandsEnabled": {
+      "binding": {
+        "config": {
+          "expression": "try(len({view.params.selectedWorkflowUUID})\u003e0,False)"
+        },
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.events": {
+      "binding": {
+        "config": {
+          "parameters": {
+            "workflowId": "{view.params.selectedWorkflowUUID}"
+          },
+          "polling": {
+            "enabled": true,
+            "rate": "1"
+          },
+          "queryPath": "Exchange/Workflows/Workflows/ListEvents",
+          "returnFormat": "json"
+        },
+        "transforms": [
+          {
+            "code": "\treturn system.util.jsonEncode(value, 2)",
+            "type": "script"
+          }
+        ],
+        "type": "query"
+      },
+      "persistent": true
+    },
+    "custom.workflow": {
+      "binding": {
+        "config": {
+          "parameters": {
+            "workflowId": "{view.params.selectedWorkflowUUID}"
+          },
+          "polling": {
+            "enabled": true,
+            "rate": "1"
+          },
+          "queryPath": "Exchange/Workflows/Workflows/GetDetail",
+          "returnFormat": "json"
+        },
+        "transforms": [
+          {
+            "code": "\ttemplate \u003d [\n\t\t\t\t  {\n\t\t\t\t    \"workflow_id\": \"Unknown\",\n\t\t\t\t    \"workflow_name\": \"Unknown\",\n\t\t\t\t    \"status\":\"Unknown\",\n\t\t\t\t    \"queue_name\": \"Unknown\",\n\t\t\t\t    \"partition_key\": \"Unknown\",\n\t\t\t\t    \"priority\": \"Unknown\",\n\t\t\t\t    \"deduplication_id\": \"Unknown\",\n\t\t\t\t    \"application_version\": \"Unknown\",\n\t\t\t\t    \"inputs_json\": \"Unknown\",\n\t\t\t\t    \"result_json\": \"Unknown\",\n\t\t\t\t    \"error_json\": \"Unknown\",\n\t\t\t\t    \"created_at_epoch_ms\": \"Unknown\",\n\t\t\t\t    \"updated_at_epoch_ms\": \"Unknown\",\n\t\t\t\t    \"started_at_epoch_ms\": \"Unknown\",\n\t\t\t\t    \"completed_at_epoch_ms\": \"Unknown\",\n\t\t\t\t    \"claimed_by\": \"Unknown\",\n\t\t\t\t    \"claimed_at_epoch_ms\": \"Unknown\",\n\t\t\t\t    \"heartbeat_at_epoch_ms\": \"Unknown\",\n\t\t\t\t    \"deadline_epoch_ms\": \"Unknown\"\n\t\t\t\t  }]\n\ttry:\n\t\tif value and len(value) \u003e 0: \n\t\t\treturn value\n\t\telse:\n\t\t\treturn template\n\texcept:\n\t\treturn template",
+            "type": "script"
+          }
+        ],
+        "type": "query"
+      },
+      "persistent": true
+    },
+    "params.selectedWorkflowUUID": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 491
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "Label"
+            },
+            "position": {
+              "basis": "32px",
+              "grow": 1
+            },
+            "props": {
+              "style": {
+                "classes": "text-h2"
+              },
+              "text": "Worfklow Details"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\tif self.view.params.selectedWorkflowUUID in self.page.props.path:\n\t\tsystem.perspective.navigate(page\u003d\"/runs/\"+self.view.params.selectedWorkflowUUID+\"/steps\")\n\telse:\n\t\tsystem.perspective.navigate(page\u003d\"/runs/\"+self.view.params.selectedWorkflowUUID)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "Icon",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-left",
+                "text": "Navigate to Details"
+              }
+            },
+            "position": {
+              "basis": "30px"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "expression": "if(isBadOrError({view.params.selectedWorkflowUUID}),False,if(isNull({view.params.selectedWorkflowUUID}),False,len({view.params.selectedWorkflowUUID})\u003e0))"
+                  },
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "path": "material/fullscreen",
+              "style": {
+                "classes": "icon"
+              }
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "name": "Header"
+        },
+        "position": {
+          "basis": "32px",
+          "shrink": 0
+        },
+        "props": {
+          "justify": "space-between"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": [
+                  {
+                    "config": {
+                      "script": "\t# Perspective Button Script: cancel workflow via DB (cooperative)\n\t\n\twid \u003d self.view.params.selectedWorkflowUUID\n\trt \u003d exchange.workflows.api.service.cancel(wid, reason\u003d\"UI cancel\")"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  },
+                  {
+                    "config": {
+                      "script": "\tself.props.value \u003d 0"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  }
+                ]
+              }
+            },
+            "meta": {
+              "name": "Cancel"
+            },
+            "position": {
+              "basis": "120px"
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.commandsEnabled"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "primary": false,
+              "readyState": {
+                "icon": {
+                  "path": "material/cancel",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Cancel"
+              },
+              "style": {
+                "classes": "btn btn--secondaryOutline",
+                "marginRight": 5
+              },
+              "writingState": {
+                "icon": {
+                  "path": "material/hourglass_empty",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Canceling..."
+              }
+            },
+            "type": "ia.input.oneshotbutton"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": [
+                  {
+                    "config": {
+                      "script": "\t# Perspective Button Script: send mailbox command (HOLD / RESUME / RESET)\n\t\n\tcmd \u003d \"HOLD\"  # \u003c-- change per button\n\twid \u003d self.view.params.selectedWorkflowUUID  # or wherever you store it\n\t\n\trt \u003d exchange.workflows.engine.instance.getWorkflows(dbName\u003d\"WorkflowsDB\")\n\trt.send(wid, {\"cmd\": cmd}, topic\u003d\"cmd\")"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  },
+                  {
+                    "config": {
+                      "script": "\tself.props.value \u003d 0"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  }
+                ]
+              }
+            },
+            "meta": {
+              "name": "Hold"
+            },
+            "position": {
+              "basis": "120px"
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.commandsEnabled"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "primary": false,
+              "readyState": {
+                "icon": {
+                  "path": "material/pause_circle_filled",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Hold"
+              },
+              "style": {
+                "classes": "btn btn--secondaryOutline",
+                "marginRight": 5
+              },
+              "writingState": {
+                "icon": {
+                  "path": "material/hourglass_empty",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Holding..."
+              }
+            },
+            "type": "ia.input.oneshotbutton"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": [
+                  {
+                    "config": {
+                      "script": "\t# Perspective Button Script: send mailbox command (HOLD / RESUME / RESET)\n\t\n\tcmd \u003d \"RESUME\"  # \u003c-- change per button\n\twid \u003d self.view.params.selectedWorkflowUUID  # or wherever you store it\n\t\n\trt \u003d exchange.workflows.engine.instance.getWorkflows(dbName\u003d\"WorkflowsDB\")\n\trt.send(wid, {\"cmd\": cmd}, topic\u003d\"cmd\")"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  },
+                  {
+                    "config": {
+                      "script": "\tself.props.value \u003d 0"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  }
+                ]
+              }
+            },
+            "meta": {
+              "name": "Resume"
+            },
+            "position": {
+              "basis": "120px"
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.commandsEnabled"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "primary": false,
+              "readyState": {
+                "icon": {
+                  "path": "material/play_circle_filled",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Resume"
+              },
+              "style": {
+                "classes": "btn btn--secondaryOutline",
+                "marginRight": 5
+              },
+              "writingState": {
+                "icon": {
+                  "path": "material/hourglass_empty",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Resuming..."
+              }
+            },
+            "type": "ia.input.oneshotbutton"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": [
+                  {
+                    "config": {
+                      "script": "\t# Perspective Button Script: send mailbox command (HOLD / RESUME / RESET)\n\t\n\tcmd \u003d \"RESET\"  # \u003c-- change per button\n\twid \u003d self.view.params.selectedWorkflowUUID\n\t\n\trt \u003d exchange.workflows.engine.instance.getWorkflows(dbName\u003d\"WorkflowsDB\")\n\trt.send(wid, {\"cmd\": cmd}, topic\u003d\"cmd\")"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  },
+                  {
+                    "config": {
+                      "script": "\tself.props.value \u003d 0"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  }
+                ]
+              }
+            },
+            "meta": {
+              "name": "Reset"
+            },
+            "position": {
+              "basis": "120px"
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.commandsEnabled"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "primary": false,
+              "readyState": {
+                "icon": {
+                  "path": "material/refresh",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Reset"
+              },
+              "style": {
+                "classes": "btn btn--secondaryOutline",
+                "marginRight": 5
+              },
+              "writingState": {
+                "icon": {
+                  "path": "material/hourglass_empty",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Resetting..."
+              }
+            },
+            "type": "ia.input.oneshotbutton"
+          }
+        ],
+        "meta": {
+          "name": "Commands"
+        },
+        "position": {
+          "basis": "100px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "flex-start",
+          "style": {
+            "padding": 5
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "#\tsystem.perspective.openPopup(id\u003d\"Setps\", view\u003d\"Exchange/Workflows/Components/Steps Output Table\", params\u003d{\"value\":{\"workflow_id\":self.view.params.selectedWorkflowUUID}}, title\u003d\"Steps Output\", showCloseIcon\u003dTrue, draggable\u003dTrue, resizable\u003dTrue, modal\u003dFalse, overlayDismiss\u003dTrue)\n\tsystem.perspective.openPopup(id\u003d\"Setps\", view\u003d\"Exchange/Workflows/Components/Steps/Tree and Timeline\", params\u003d{\"workflow_id\":self.view.params.selectedWorkflowUUID}, title\u003d\"Steps Output\", showCloseIcon\u003dTrue, draggable\u003dTrue, resizable\u003dTrue, modal\u003dFalse, overlayDismiss\u003dTrue)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "Button"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/alt_route"
+            }
+          },
+          "primary": false,
+          "style": {
+            "classes": "btn btn--secondaryOutline",
+            "marginBottom": 15
+          },
+          "text": "Show Workflow Steps"
+        },
+        "type": "ia.input.button"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "#\tsystem.perspective.openPopup(id\u003d\"Setps\", view\u003d\"Exchange/Workflows/Components/Steps Output Table\", params\u003d{\"value\":{\"workflow_id\":self.view.params.selectedWorkflowUUID}}, title\u003d\"Steps Output\", showCloseIcon\u003dTrue, draggable\u003dTrue, resizable\u003dTrue, modal\u003dFalse, overlayDismiss\u003dTrue)\n\tsystem.perspective.openPopup(id\u003d\"Setps\", view\u003d\"Exchange/Workflows/Components/Stream Table\", params\u003d{\"value\":{\"workflow_id\":self.view.params.selectedWorkflowUUID}}, title\u003d\"Workflow Stream\", showCloseIcon\u003dTrue, draggable\u003dTrue, resizable\u003dTrue, modal\u003dFalse, overlayDismiss\u003dTrue)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "Button_0"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/view_stream"
+            }
+          },
+          "primary": false,
+          "style": {
+            "classes": "btn btn--secondaryOutline"
+          },
+          "text": "Show Workflow Stream"
+        },
+        "type": "ia.input.button"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "Header"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h2"
+              },
+              "text": "Information"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Label Name"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h3"
+              },
+              "text": "Name"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Name",
+              "tooltip": {
+                "location": "bottom"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].workflow_name"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "text-body3"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Label ID"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h3"
+              },
+              "text": "ID"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ID"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].workflow_id"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "text-body3"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Label Status"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h3"
+              },
+              "text": "Status"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Status"
+            },
+            "propConfig": {
+              "props.params.value": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].status"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "Exchange/Workflows/Components/Status"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "Label Created At"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h3"
+              },
+              "text": "Created At"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Created At"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].created_at_epoch_ms"
+                  },
+                  "transforms": [
+                    {
+                      "expression": "if(isNull({value}) || {value} \u003d \"Unknown\",\"Never created\", dateFormat(fromMillis({value}), \"dd-MMM-YY HH:mm:ss:S (z)\"))",
+                      "type": "expression"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "text-body3"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Label Started At"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h3"
+              },
+              "text": "Started At"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Started At"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].started_at_epoch_ms"
+                  },
+                  "transforms": [
+                    {
+                      "expression": "if(isNull({value}) || {value} \u003d \"Unknown\",\"Never started\", dateFormat(fromMillis({value}), \"dd-MMM-YY HH:mm:ss:S (z)\"))",
+                      "type": "expression"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "text-body3"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Label Updated At"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h3"
+              },
+              "text": "Updated At"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Updated At"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].updated_at_epoch_ms"
+                  },
+                  "transforms": [
+                    {
+                      "expression": "if(isNull({value}) || {value} \u003d \"Unknown\",\"Never updated\", dateFormat(fromMillis({value}), \"dd-MMM-YY HH:mm:ss:S (z)\"))",
+                      "type": "expression"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "text-body3"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Label Completed At"
+            },
+            "props": {
+              "style": {
+                "classes": "text-h3"
+              },
+              "text": "Completed At"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "Completed At"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].completed_at_epoch_ms"
+                  },
+                  "transforms": [
+                    {
+                      "expression": "if(isNull({value}) || {value} \u003d \"Unknown\",\"Not yet completed\", dateFormat(fromMillis({value}), \"dd-MMM-YY HH:mm:ss:S (z)\"))",
+                      "type": "expression"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "text-body3"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "Status Information"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "borderBottomStyle": "none",
+            "borderLeftStyle": "none",
+            "borderRightStyle": "none",
+            "borderTopColor": "var(neutral-90)",
+            "borderTopStyle": "solid",
+            "borderTopWidth": 1,
+            "marginTop": 15
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "Header"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "text-h2"
+              },
+              "text": "Data"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "Label"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "text-h3"
+                  },
+                  "text": "Input"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "events": {
+                  "dom": {
+                    "onClick": {
+                      "config": {
+                        "script": "\tsystem.perspective.openPopup(\n\t\t\t\t\t\t\t\tid\u003d\"Workflow-Input\",\n\t\t\t\t\t\t\t\tview\u003d\"Exchange/Workflows/Components/JSONViewer\",\n\t\t\t\t\t\t\t\tparams\u003d{\"json\":self.parent.parent.getChild(\"Input\").props.text},\n\t\t\t\t\t\t\t\ttitle\u003d\"Workflow Input\",\n\t\t\t\t\t\t\t\tshowCloseIcon\u003dTrue,\n\t\t\t\t\t\t\t\tdraggable\u003dFalse,\n\t\t\t\t\t\t\t\tresizable\u003dTrue,\n\t\t\t\t\t\t\t\tmodal\u003dTrue,\n\t\t\t\t\t\t\t\toverlayDismiss\u003dTrue)"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "Expand",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-left",
+                    "text": "Expand"
+                  }
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isBadOrError({view.params.selectedWorkflowUUID}),False,if(isNull({view.params.selectedWorkflowUUID}),False,len({view.params.selectedWorkflowUUID})\u003e0))"
+                      },
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "path": "material/fullscreen",
+                  "style": {
+                    "classes": "icon"
+                  }
+                },
+                "type": "ia.display.icon"
+              }
+            ],
+            "meta": {
+              "name": "Input Label"
+            },
+            "position": {
+              "basis": "42px",
+              "grow": 1
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "space-between"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "Input"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].inputs_json"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "rejectUpdatesWhileFocused": false,
+              "spellcheck": false,
+              "style": {
+                "classes": "text-body3 codebox"
+              }
+            },
+            "type": "ia.input.text-area"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "Label"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "text-h3"
+                  },
+                  "text": "Output"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "events": {
+                  "dom": {
+                    "onClick": {
+                      "config": {
+                        "script": "\tsystem.perspective.openPopup(\n\t\t\t\t\t\t\t\tid\u003d\"Workflow-Output\",\n\t\t\t\t\t\t\t\tview\u003d\"Exchange/Workflows/Components/JSONViewer\",\n\t\t\t\t\t\t\t\tparams\u003d{\"json\":self.parent.parent.getChild(\"Output\").props.text},\n\t\t\t\t\t\t\t\ttitle\u003d\"Workflow Output\",\n\t\t\t\t\t\t\t\tshowCloseIcon\u003dTrue,\n\t\t\t\t\t\t\t\tdraggable\u003dFalse,\n\t\t\t\t\t\t\t\tresizable\u003dFalse,\n\t\t\t\t\t\t\t\tmodal\u003dTrue,\n\t\t\t\t\t\t\t\toverlayDismiss\u003dTrue)"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "Expand",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-left",
+                    "text": "Expand"
+                  }
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isBadOrError({view.params.selectedWorkflowUUID}),False,if(isNull({view.params.selectedWorkflowUUID}),False,len({view.params.selectedWorkflowUUID})\u003e0))"
+                      },
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "path": "material/fullscreen",
+                  "style": {
+                    "classes": "icon"
+                  }
+                },
+                "type": "ia.display.icon"
+              }
+            ],
+            "meta": {
+              "name": "Output Label"
+            },
+            "position": {
+              "basis": "42px",
+              "grow": 1
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "space-between"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "Output"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].result_json"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "rejectUpdatesWhileFocused": false,
+              "spellcheck": false,
+              "style": {
+                "classes": "text-body3 codebox"
+              }
+            },
+            "type": "ia.input.text-area"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "Label"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "text-h3"
+                  },
+                  "text": "Errors"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "events": {
+                  "dom": {
+                    "onClick": {
+                      "config": {
+                        "script": "\tsystem.perspective.openPopup(\n\t\t\t\t\t\t\t\tid\u003d\"Workflow-Errors\",\n\t\t\t\t\t\t\t\tview\u003d\"Exchange/Workflows/Components/JSONViewer\",\n\t\t\t\t\t\t\t\tparams\u003d{\"json\":self.parent.parent.getChild(\"Error\").props.text},\n\t\t\t\t\t\t\t\ttitle\u003d\"Workflow Errors\",\n\t\t\t\t\t\t\t\tshowCloseIcon\u003dTrue,\n\t\t\t\t\t\t\t\tdraggable\u003dFalse,\n\t\t\t\t\t\t\t\tresizable\u003dFalse,\n\t\t\t\t\t\t\t\tmodal\u003dTrue,\n\t\t\t\t\t\t\t\toverlayDismiss\u003dTrue)"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "Expand",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-left",
+                    "text": "Expand"
+                  }
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isBadOrError({view.params.selectedWorkflowUUID}),False,if(isNull({view.params.selectedWorkflowUUID}),False,len({view.params.selectedWorkflowUUID})\u003e0))"
+                      },
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "path": "material/fullscreen",
+                  "style": {
+                    "classes": "icon"
+                  }
+                },
+                "type": "ia.display.icon"
+              }
+            ],
+            "meta": {
+              "name": "Error Label"
+            },
+            "position": {
+              "basis": "42px",
+              "grow": 1
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "space-between"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "Error"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workflow[0].error_json"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "rejectUpdatesWhileFocused": false,
+              "spellcheck": false,
+              "style": {
+                "classes": "text-body3 codebox"
+              }
+            },
+            "type": "ia.input.text-area"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "Label"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "text-h3"
+                  },
+                  "text": "Events"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "events": {
+                  "dom": {
+                    "onClick": {
+                      "config": {
+                        "script": "\tsystem.perspective.openPopup(\n\t\t\t\t\t\t\t\tid\u003d\"Workflow-Events\",\n\t\t\t\t\t\t\t\tview\u003d\"Exchange/Workflows/Components/JSONViewer\",\n\t\t\t\t\t\t\t\tparams\u003d{\"json\":self.parent.parent.getChild(\"Events\").props.text},\n\t\t\t\t\t\t\t\ttitle\u003d\"Workflow Events\",\n\t\t\t\t\t\t\t\tshowCloseIcon\u003dTrue,\n\t\t\t\t\t\t\t\tdraggable\u003dFalse,\n\t\t\t\t\t\t\t\tresizable\u003dFalse,\n\t\t\t\t\t\t\t\tmodal\u003dTrue,\n\t\t\t\t\t\t\t\toverlayDismiss\u003dTrue)"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "Expand",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-left",
+                    "text": "Expand"
+                  }
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isBadOrError({view.params.selectedWorkflowUUID}),False,if(isNull({view.params.selectedWorkflowUUID}),False,len({view.params.selectedWorkflowUUID})\u003e0))"
+                      },
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "path": "material/fullscreen",
+                  "style": {
+                    "classes": "icon"
+                  }
+                },
+                "type": "ia.display.icon"
+              }
+            ],
+            "meta": {
+              "name": "Events Label"
+            },
+            "position": {
+              "basis": "42px",
+              "grow": 1
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "space-between"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "Events"
+            },
+            "position": {
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.events"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "rejectUpdatesWhileFocused": false,
+              "spellcheck": false,
+              "style": {
+                "classes": "text-body3 codebox"
+              },
+              "wrap": "off"
+            },
+            "type": "ia.input.text-area"
+          }
+        ],
+        "meta": {
+          "name": "Data"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "direction": "column",
+          "style": {
+            "borderBottomStyle": "none",
+            "borderLeftStyle": "none",
+            "borderRightStyle": "none",
+            "borderTopColor": "var(neutral-90)",
+            "borderTopStyle": "solid",
+            "borderTopWidth": 1,
+            "marginTop": 15
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "alignContent": "center",
+      "direction": "column",
+      "style": {
+        "padding": 15
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

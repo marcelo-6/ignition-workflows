@@ -1,0 +1,71 @@
+{
+  "custom": {
+    "selectedWorkflowUUID": "9374b6e6-5150-4a00-bda7-41c12d72c9d9"
+  },
+  "params": {},
+  "propConfig": {
+    "custom.selectedWorkflowUUID": {
+      "binding": {
+        "config": {
+          "path": "/root/Workflows List.props.params.selectedUUID"
+        },
+        "type": "property"
+      },
+      "persistent": true
+    }
+  },
+  "props": {},
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Workflows List"
+        },
+        "position": {
+          "position": "left"
+        },
+        "props": {
+          "params": {
+            "selectedUUID": "9374b6e6-5150-4a00-bda7-41c12d72c9d9"
+          },
+          "path": "Exchange/Workflows/Components/Workflows List"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Details"
+        },
+        "position": {
+          "position": "right"
+        },
+        "propConfig": {
+          "props.params.selectedWorkflowUUID": {
+            "binding": {
+              "config": {
+                "path": "view.custom.selectedWorkflowUUID"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "Exchange/Workflows/Components/Details"
+        },
+        "type": "ia.display.view"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "split": {
+        "position": "80%"
+      },
+      "style": {
+        "classes": "split-container-horizontal"
+      }
+    },
+    "type": "ia.container.split"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "custom": {},
+  "params": {},
+  "props": {
+    "defaultSize": {
+      "height": 527
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Controls"
+        },
+        "props": {
+          "path": "Exchange/Workflows/Components/Admin/Controls"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "Retention Policy"
+        },
+        "position": {
+          "tabIndex": 1
+        },
+        "props": {
+          "path": "Exchange/Workflows/Components/Admin/Retention Policy"
+        },
+        "type": "ia.display.view"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "tabSize": {
+        "width": 200
+      },
+      "tabs": [
+        "Backend Control / Test",
+        "Retention Policy"
+      ]
+    },
+    "type": "ia.container.tab"
+  }
+}

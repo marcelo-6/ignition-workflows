@@ -1,0 +1,92 @@
+# 2003 (UID/GID of ignition user inside of container)
+# Set permissions for container to write to the mounted folder:
+# sudo chown -R 2003:2003 ./projects
+# Get current user to have same access
+# sudo groupadd -g 2003 appgroup 2>/dev/null
+# sudo usermod -aG 2003 $USER
+# sudo chmod -R g+rw ./projects
+# jdbc:postgresql://postgres:5432/ignition
+---
+x-default-logging:
+  &default-logging
+  logging:
+    options:
+      max-size: '100m'
+      max-file: '5'
+    driver: json-file
+
+x-ignition-opts:
+  &ignition-opts
+  <<: *default-logging
+  build:
+    context: ./gw-build
+    args:
+      IGNITION_VERSION: ${IGNITION_VERSION:-latest}
+  container_name: ign-workflows
+  restart: unless-stopped
+  env_file: .env
+  secrets:
+    - gateway-admin-username
+    - gateway-admin-password
+services:
+  gateway:
+    <<: *ignition-opts
+    hostname: ignition
+    ports:
+      - "${GATEWAY_PORT:-8088}:8088" 
+      - "${GATEWAY_HTTPS_PORT:-8043}:8043"
+    command: >
+      -n ign-workflows
+      -m ${GATEWAY_MAX_MEMORY:-1024}
+      --
+      wrapper.java.initmemory=512
+      -Dignition.allowunsignedmodules=true
+    environment:
+      GATEWAY_ADMIN_USERNAME_FILE: /run/secrets/gateway-admin-username
+      GATEWAY_ADMIN_PASSWORD_FILE: /run/secrets/gateway-admin-password
+    volumes:
+      - gw-data:/usr/local/bin/ignition/data
+      - ./projects:/usr/local/bin/ignition/data/projects/ # expose Projects to version control 
+    healthcheck:
+      test: /usr/bin/curl -sS http://localhost:8088/StatusPing | grep -c RUNNING > /dev/null
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  postgres:
+    <<: *default-logging
+    image: postgres:16
+    container_name: ign-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/postgres-user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+      POSTGRES_DB: ${POSTGRES_DB:-base}
+    secrets:
+      - postgres-user
+      - postgres-password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U \"$$(cat /run/secrets/postgres-user)\" -d \"${POSTGRES_DB:-base}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+secrets:
+  gateway-admin-password:
+    file: secrets/GATEWAY_ADMIN_PASSWORD
+  gateway-admin-username:
+    file: secrets/GATEWAY_ADMIN_USERNAME
+  postgres-user:
+    file: secrets/POSTGRES_USER
+  postgres-password:
+    file: secrets/POSTGRES_PASSWORD
+ 
+volumes:
+  gw-data:
+  pgdata:

@@ -1,0 +1,193 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "workflow_id": "bf347dd0-e072-4d6e-8f2a-3444a38b5761"
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 445
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Table"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.data": {
+            "binding": {
+              "config": {
+                "parameters": {
+                  "workflowId": "{view.params.value.workflow_id}"
+                },
+                "polling": {
+                  "enabled": true,
+                  "rate": "1"
+                },
+                "queryPath": "Exchange/Workflows/Workflows/ListStream"
+              },
+              "transforms": [
+                {
+                  "expression": "if(isBadOrError({value}),Null, {value})",
+                  "type": "expression"
+                }
+              ],
+              "type": "query"
+            }
+          }
+        },
+        "props": {
+          "columns": [
+            {
+              "align": "center",
+              "editable": false,
+              "field": "key",
+              "filter": {
+                "enabled": false,
+                "visible": "on-hover"
+              },
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": "text-h3"
+                },
+                "title": "Key"
+              },
+              "justify": "auto",
+              "numberFormat": "0,0",
+              "render": "number",
+              "resizable": true,
+              "sort": "ascending",
+              "sortable": true,
+              "strictWidth": true,
+              "style": {
+                "classes": "text-body1"
+              },
+              "visible": true,
+              "width": 60
+            },
+            {
+              "align": "left",
+              "editable": false,
+              "field": "value_json",
+              "filter": {
+                "enabled": true,
+                "visible": "on-hover"
+              },
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": "text-h3"
+                },
+                "title": "Value"
+              },
+              "justify": "auto",
+              "render": "string",
+              "resizable": true,
+              "sort": "none",
+              "sortable": true,
+              "strictWidth": false,
+              "style": {
+                "classes": "text-body1"
+              },
+              "visible": true,
+              "width": ""
+            },
+            {
+              "align": "center",
+              "dateFormat": "DD-MMM-YY HH:mm:ss.SSS (z)",
+              "editable": false,
+              "field": "created_at_epoch_ms",
+              "filter": {
+                "enabled": true,
+                "visible": "on-hover"
+              },
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": "text-h3"
+                },
+                "title": "Created At"
+              },
+              "justify": "auto",
+              "render": "date",
+              "resizable": true,
+              "sortable": true,
+              "strictWidth": true,
+              "style": {
+                "classes": ""
+              },
+              "viewPath": "",
+              "visible": true,
+              "width": 200
+            }
+          ],
+          "dragOrderable": false,
+          "emptyMessage": {
+            "noData": {
+              "icon": {
+                "color": "var(--neutral-60)",
+                "path": "material/inbox",
+                "style": {
+                  "classes": "table-empty-icon"
+                }
+              },
+              "style": {
+                "classes": "table-empty"
+              },
+              "text": "No results",
+              "textStyle": {
+                "classes": "table-empty-text"
+              }
+            },
+            "noFilterResults": {
+              "icon": {
+                "color": "var(--neutral-60)",
+                "path": "material/search_off",
+                "style": {
+                  "classes": "table-empty-icon"
+                }
+              },
+              "style": {
+                "classes": "table-empty"
+              },
+              "text": "No results match your filters",
+              "textStyle": {
+                "classes": "table-empty-text"
+              }
+            }
+          },
+          "sortOrder": [
+            "screated_at_epoch_ms"
+          ],
+          "style": {
+            "classes": "table"
+          }
+        },
+        "type": "ia.display.table"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "type": "ia.container.flex"
+  }
+}

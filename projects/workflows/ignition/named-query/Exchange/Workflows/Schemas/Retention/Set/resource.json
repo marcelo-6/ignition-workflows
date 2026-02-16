@@ -1,0 +1,55 @@
+{
+  "scope": "DG",
+  "version": 2,
+  "restricted": false,
+  "overridable": true,
+  "files": [
+    "query.sql"
+  ],
+  "attributes": {
+    "useMaxReturnSize": false,
+    "autoBatchEnabled": false,
+    "fallbackValue": "",
+    "maxReturnSize": 100,
+    "cacheUnit": "SEC",
+    "type": "UpdateQuery",
+    "enabled": true,
+    "cacheAmount": 1,
+    "cacheEnabled": false,
+    "database": "",
+    "fallbackEnabled": false,
+    "lastModificationSignature": "f2afc5a7b6f9cb23e9d10d14d351edd890dfd272ff3c29bf6bb8e7a75b69d615",
+    "permissions": [
+      {
+        "zone": "",
+        "role": ""
+      }
+    ],
+    "lastModification": {
+      "actor": "admin",
+      "timestamp": "2026-02-04T09:45:53Z"
+    },
+    "parameters": [
+      {
+        "type": "Parameter",
+        "identifier": "timeThresholdHours",
+        "sqlType": 2
+      },
+      {
+        "type": "Parameter",
+        "identifier": "rowsThreshold",
+        "sqlType": 2
+      },
+      {
+        "type": "Parameter",
+        "identifier": "globalTimeoutHours",
+        "sqlType": 2
+      },
+      {
+        "type": "Parameter",
+        "identifier": "updatedAtEpochMs",
+        "sqlType": 3
+      }
+    ]
+  }
+}

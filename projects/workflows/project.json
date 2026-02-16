@@ -1,0 +1,7 @@
+{
+  "title": "Workflows",
+  "description": "IGN Implementation of DBOS",
+  "enabled": true,
+  "inheritable": false,
+  "parent": ""
+}

@@ -1,0 +1,149 @@
+{
+  "custom": {},
+  "params": {},
+  "props": {},
+  "root": {
+    "children": [
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\t# Load the component data\n\tmessage \u003d \u0027modeTimeline_load\u0027\n\tpayload \u003d {\n\t\t\t\u0027instanceID\u0027: self.props.params.instanceID\n\t\t\t}\n\tsystem.perspective.sendMessage(message, payload)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "EmbeddedView"
+        },
+        "position": {
+          "basis": "415px",
+          "shrink": 0
+        },
+        "props": {
+          "params": {
+            "data": [
+              {
+                "events": [
+                  {
+                    "end": 1569549471549,
+                    "mode": "CIP",
+                    "start": 1569000471549
+                  },
+                  {
+                    "end": 1570149471549,
+                    "mode": "Production",
+                    "start": 1570000471549
+                  }
+                ],
+                "name": "Machine 1"
+              },
+              {
+                "events": [
+                  {
+                    "end": 1571549471549,
+                    "mode": "CIP",
+                    "start": 1570000471549
+                  },
+                  {
+                    "end": 1569800471549,
+                    "mode": "Production",
+                    "start": 1568700471549
+                  },
+                  {
+                    "end": 1568679471549,
+                    "mode": "Specified Color Code",
+                    "start": 1568000471549
+                  }
+                ],
+                "name": "Machine 2"
+              }
+            ],
+            "exampleData": true,
+            "instanceID": "EmbeddedViewInstance",
+            "modes": [
+              {
+                "name": "Production"
+              },
+              {
+                "name": "CIP"
+              },
+              {
+                "color": "#31a131",
+                "name": "Specified Color Code"
+              }
+            ],
+            "range": {
+              "end": 1571149471549,
+              "start": 1567149471549
+            },
+            "update": {
+              "onChange": true
+            }
+          },
+          "path": "Exchange/Workflows/Components/Ribbon Chart/Template",
+          "style": {
+            "overflow": "visible"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\tmessage \u003d \u0027modeTimeline_load\u0027\n\tpayload \u003d {\n\t\t\t\u0027instanceID\u0027: self.getSibling(\"EmbeddedView\").props.params.instanceID\n\t}\n\tsystem.perspective.sendMessage(message, payload)\n\t"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "Load Button"
+        },
+        "position": {
+          "basis": "44px"
+        },
+        "props": {
+          "text": "Load Component"
+        },
+        "type": "ia.input.button"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\tmessage \u003d \u0027modeTimeline_unload\u0027\n\tpayload \u003d {\n\t\t\t\u0027instanceID\u0027: self.getSibling(\"EmbeddedView\").props.params.instanceID\n\t}\n\tsystem.perspective.sendMessage(message, payload)\n\t"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "Unload Button"
+        },
+        "position": {
+          "basis": "44px"
+        },
+        "props": {
+          "text": "Unload Component"
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "custom": {},
+  "events": {
+    "system": {
+      "onStartup": {
+        "config": {
+          "script": "\tself.getChild(\"root\").getChild(\"Dropdown\").refresh()"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {
+    "refresh": false,
+    "selected": ""
+  },
+  "propConfig": {
+    "params.refresh": {
+      "onChange": {
+        "enabled": null,
+        "script": "\tself.getChild(\"root\").getChild(\"Dropdown\").refresh()"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.selected": {
+      "binding": {
+        "config": {
+          "path": "/root/Dropdown.props.value"
+        },
+        "type": "property"
+      },
+      "paramDirection": "output",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 43,
+      "width": 306
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Dropdown"
+        },
+        "position": {
+          "basis": "350px"
+        },
+        "props": {
+          "options": [
+            {
+              "label": "demo.commands_60s",
+              "value": "demo.commands_60s"
+            },
+            {
+              "label": "demo.one_minute_progress",
+              "value": "demo.one_minute_progress"
+            },
+            {
+              "label": "tests.cancel_cooperative",
+              "value": "tests.cancel_cooperative"
+            },
+            {
+              "label": "tests.fast_enqueue_target",
+              "value": "tests.fast_enqueue_target"
+            },
+            {
+              "label": "tests.hold_resume",
+              "value": "tests.hold_resume"
+            },
+            {
+              "label": "tests.maintenance_long_running",
+              "value": "tests.maintenance_long_running"
+            },
+            {
+              "label": "tests.partition_sleep",
+              "value": "tests.partition_sleep"
+            },
+            {
+              "label": "tests.retry_workflow",
+              "value": "tests.retry_workflow"
+            },
+            {
+              "label": "tests.step_persist_smoke",
+              "value": "tests.step_persist_smoke"
+            },
+            {
+              "label": "tests.timeout_short",
+              "value": "tests.timeout_short"
+            }
+          ],
+          "placeholder": {
+            "text": "Select registered workflow..."
+          },
+          "showClearIcon": true,
+          "style": {
+            "classes": "input"
+          }
+        },
+        "scripts": {
+          "customMethods": [
+            {
+              "name": "refresh",
+              "params": [],
+              "script": "\tfrom exchange.workflows.api import service as workflowsService\n\tfrom exchange.workflows.api import params\n\t\n\t# workflowOptions is list of dicts {workflow_name, ...}\n\t# Store options \n\tresult \u003d workflowsService.listWorkflows()\n\tif result.get(\"ok\"):\n\t\tself.props.options \u003d result.get(\"options\", None)\n\telse:\n\t\tself.props.options \u003d None"
+            }
+          ],
+          "extensionFunctions": null,
+          "messageHandlers": []
+        },
+        "type": "ia.input.dropdown"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "type": "ia.container.flex"
+  }
+}

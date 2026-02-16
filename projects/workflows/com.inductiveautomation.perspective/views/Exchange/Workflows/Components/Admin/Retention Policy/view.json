@@ -1,0 +1,386 @@
+{
+  "custom": {
+    "retention": {
+      "db": {
+        "global_timeout_hours": 6666,
+        "id": 1,
+        "rows_threshold": 1000000,
+        "time_threshold_hours": 7777,
+        "updated_at_epoch_ms": 1770199582809
+      }
+    },
+    "staging": {}
+  },
+  "events": {
+    "system": {
+      "onStartup": {
+        "config": {
+          "script": "\tself.getChild(\"root\").getRetention()"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {},
+  "propConfig": {
+    "custom.retention": {
+      "persistent": true
+    },
+    "custom.staging": {
+      "persistent": true
+    },
+    "custom.staging.global_timeout_hours": {
+      "binding": {
+        "config": {
+          "path": "/root/Global Timeout.props.value"
+        },
+        "type": "property"
+      }
+    },
+    "custom.staging.rows_threshold": {
+      "binding": {
+        "config": {
+          "path": "/root/Rows Threshold.props.value"
+        },
+        "type": "property"
+      }
+    },
+    "custom.staging.time_threshold_hours": {
+      "binding": {
+        "config": {
+          "path": "/root/Time Threshold.props.value"
+        },
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 492,
+      "width": 611
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "Header"
+        },
+        "props": {
+          "style": {
+            "classes": "text-h1"
+          },
+          "text": "Retention Policy Settings"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "Sub Header"
+        },
+        "props": {
+          "style": {
+            "classes": "text-body1"
+          },
+          "text": "Configure workflow retention and timeout policies"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "Time Threshold Header"
+        },
+        "props": {
+          "style": {
+            "classes": "text-h2",
+            "marginTop": 15
+          },
+          "text": "Time Threshold"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "Time Threshold Sub"
+        },
+        "props": {
+          "style": {
+            "classes": "text-body2"
+          },
+          "text": "If a time threshold is set, workflow history is only retained for X hours. History of completed workflows that started more than X hours ago is automatically deleted. Time-based retention is disabled by default."
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "Time Threshold"
+        },
+        "position": {
+          "basis": "32px"
+        },
+        "props": {
+          "align": "left",
+          "format": "0,0",
+          "inputBounds": {
+            "maximum": 99999,
+            "minimum": 0
+          },
+          "placeholder": "hours",
+          "spinner": {
+            "enabled": false
+          },
+          "style": {
+            "classes": "input"
+          }
+        },
+        "type": "ia.input.numeric-entry-field"
+      },
+      {
+        "meta": {
+          "name": "Rows Threshold Header"
+        },
+        "props": {
+          "style": {
+            "classes": "text-h2",
+            "marginTop": 15
+          },
+          "text": "Rows Threshold"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "Rows Threshold Sub"
+        },
+        "props": {
+          "style": {
+            "classes": "text-body2"
+          },
+          "text": "If the rows threshold is set, history is only retained for the last X completed workflows. History of additional completed workflows is automatically deleted. By default, the rows threshold is set to 1M rows. You can set both a rows threshold and a time threshold."
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "Rows Threshold"
+        },
+        "position": {
+          "basis": "32px"
+        },
+        "props": {
+          "align": "left",
+          "inputBounds": {
+            "maximum": 10000000000,
+            "minimum": 0
+          },
+          "placeholder": "workflows",
+          "spinner": {
+            "enabled": false
+          },
+          "style": {
+            "classes": "input"
+          },
+          "value": 1000000
+        },
+        "type": "ia.input.numeric-entry-field"
+      },
+      {
+        "meta": {
+          "name": "Global Timeout Header"
+        },
+        "props": {
+          "style": {
+            "classes": "text-h2",
+            "marginTop": 15
+          },
+          "text": "Global Timeout"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "Global Timeout Sub"
+        },
+        "props": {
+          "style": {
+            "classes": "text-body2"
+          },
+          "text": "If a global timeout is set, any workflow that has not completed X hours after it was created (started or enqueued) is automatically cancelled. By default, the global timeout is disabled."
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "Global Timeout"
+        },
+        "position": {
+          "basis": "32px"
+        },
+        "props": {
+          "align": "left",
+          "inputBounds": {
+            "maximum": 9999999,
+            "minimum": 0
+          },
+          "placeholder": "hours",
+          "spinner": {
+            "enabled": false
+          },
+          "style": {
+            "classes": "input"
+          }
+        },
+        "type": "ia.input.numeric-entry-field"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tself.view.getChild(\"root\").getRetention()\n\tself.props.value \u003d 0"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "Cancel"
+            },
+            "position": {
+              "basis": "200px"
+            },
+            "props": {
+              "primary": false,
+              "readyState": {
+                "icon": {
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Cancel"
+              },
+              "style": {
+                "classes": "btn btn--secondaryOutline"
+              },
+              "writingState": {
+                "icon": {
+                  "path": "material/hourglass_empty",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Writing..."
+              }
+            },
+            "type": "ia.input.oneshotbutton"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": [
+                  {
+                    "config": {
+                      "script": "\tself.view.getChild(\"root\").setRetention()"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  },
+                  {
+                    "config": {
+                      "script": "\tself.props.value \u003d 0"
+                    },
+                    "scope": "G",
+                    "type": "script"
+                  }
+                ]
+              }
+            },
+            "meta": {
+              "name": "Update Policies"
+            },
+            "position": {
+              "basis": "200px"
+            },
+            "props": {
+              "confirm": {
+                "enabled": true
+              },
+              "primary": false,
+              "readyState": {
+                "icon": {
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Update"
+              },
+              "style": {
+                "classes": "btn btn--default",
+                "marginLeft": 5
+              },
+              "writingState": {
+                "icon": {
+                  "path": "material/hourglass_empty",
+                  "style": {
+                    "height": "24px",
+                    "width": "2rem"
+                  }
+                },
+                "text": "Writing..."
+              }
+            },
+            "type": "ia.input.oneshotbutton"
+          }
+        ],
+        "meta": {
+          "name": "FlexContainer"
+        },
+        "position": {
+          "basis": "36px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "marginTop": 15,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "flex-start",
+      "direction": "column",
+      "style": {
+        "padding": 15
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "getRetention",
+          "params": [],
+          "script": "\tpath \u003d \"Exchange/Workflows/Schemas/Retention/Get\"\n\tdata \u003d system.db.execQuery(path)\n\tself.view.custom.retention \u003d { \n\t\t \"db\" : dict(zip(data.columnNames,list(row))) \n\t\t     for i,row in enumerate(data)\n\t\t}\n\n\ttimeThreshold \u003d self.getChild(\"Time Threshold\")\n\trowsThreshold \u003d self.getChild(\"Rows Threshold\")\n\tglobalTimeout \u003d self.getChild(\"Global Timeout\")\n\n\ttry:\n\t\ttimeThreshold.props.value \u003d self.view.custom.retention.db.time_threshold_hours\n\t\trowsThreshold.props.value \u003d self.view.custom.retention.db.rows_threshold\n\t\tglobalTimeout.props.value \u003d self.view.custom.retention.db.global_timeout_hours\n\texcept:\n\t\ttimeThreshold.props.value \u003d 0\n\t\trowsThreshold.props.value \u003d 1000000\n\t\tglobalTimeout.props.value \u003d 0\n\t"
+        },
+        {
+          "name": "setRetention",
+          "params": [],
+          "script": "\ttimeThresholdHours \u003d self.view.custom.staging.time_threshold_hours\n\trowsThreshold \u003d self.view.custom.staging.rows_threshold\n\tglobalTimeoutHours \u003d self.view.custom.staging.global_timeout_hours\n\tnow \u003d system.date.toMillis(system.date.now())\n\tparameters \u003d {\"timeThresholdHours\":timeThresholdHours, \"rowsThreshold\":rowsThreshold,\"globalTimeoutHours\":globalTimeoutHours, \"updatedAtEpochMs\":now}\n\tpath \u003d \"Exchange/Workflows/Schemas/Retention/Set\"\n\tsystem.db.execUpdate(path, parameters)"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,308 @@
+{
+  "custom": {
+    "key": "",
+    "uppercase": [
+      "hvac",
+      "crac"
+    ]
+  },
+  "params": {
+    "divider": true,
+    "icon": "material/person",
+    "index": 0,
+    "isLink": true,
+    "label": "Link 1",
+    "parentIndex": 0,
+    "showArrow": false,
+    "showIcon": false,
+    "target": ""
+  },
+  "propConfig": {
+    "custom.key": {
+      "binding": {
+        "config": {
+          "expression": "{page.props.path}"
+        },
+        "transforms": [
+          {
+            "code": "\tif value \u003d\u003d self.view.params.target:\n\t\treturn \"selected \"\n\telif value.split(\"/\")[1] \u003d\u003d self.view.params.label.lower().replace(\" \",\"-\"):\n\t\treturn \"selected \"\n\telse:\n\t\treturn \"\"",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.uppercase": {
+      "persistent": true
+    },
+    "params.divider": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.icon": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.index": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.isLink": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.label": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.parentIndex": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.showArrow": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.showIcon": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.target": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 40,
+      "width": 250
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "Icon"
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.showIcon"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.icon"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "width": "20px"
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "meta": {
+              "name": "Arrow"
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.params.showArrow}"
+                  },
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "path": "material/arrow_right"
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "meta": {
+              "name": "Divider"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.divider"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "overflow": "hidden",
+                "paddingLeft": 10,
+                "paddingRight": 10,
+                "width": "auto"
+              },
+              "text": "/",
+              "textStyle": {
+                "whiteSpace": "pre-wrap"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\tif self.view.params.isLink and self.page.props.path !\u003d self.view.params.target:\n\t\ttarget \u003d self.view.params.target\n\t\tsystem.perspective.navigate(page\u003dtarget)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                },
+                "onMouseOut": {
+                  "config": {
+                    "script": "\tself.props.textStyle.textDecoration \u003d \"\""
+                  },
+                  "scope": "G",
+                  "type": "script"
+                },
+                "onMouseOver": {
+                  "config": {
+                    "script": "\tself.props.textStyle.textDecoration \u003d \"underline\""
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "Label",
+              "tooltip": {
+                "delay": 1000,
+                "enabled": true
+              }
+            },
+            "position": {
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.target"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.style.cursor": {
+                "binding": {
+                  "config": {
+                    "expression": "if({view.params.isLink}, \u0027pointer\u0027, \u0027default\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "expression": "replace({view.params.label}, \"crac\", \"CRAC\")"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.textStyle.fontWeight": {
+                "binding": {
+                  "config": {
+                    "expression": "if({page.props.path} \u003d {view.params.target},\"bold\",\"\")"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.textStyle.textTransform": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.params.label}"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tif value in self.view.custom.uppercase:\n\t\treturn \"uppercase\"\n\telse:\n\t\treturn \"capitalize\"",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "overflow": "hidden",
+                "width": "auto"
+              },
+              "textStyle": {
+                "whiteSpace": "pre-wrap"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "FlexContainer"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "overflow": "hidden",
+            "textOverflow": "ellipsis",
+            "whiteSpace": "nowrap",
+            "wordWrap": "break-word"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.classes": {
+        "binding": {
+          "config": {
+            "expression": "concat(\"nav-link \",\r\n{view.custom.key}\r\n)"
+          },
+          "enabled": false,
+          "type": "expr"
+        }
+      }
+    },
+    "props": {
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}
