@@ -17,7 +17,7 @@ gw-build/*.jar
 gw-build/*.gwbk
 
 # Private docs
-docs/private/*
+site/
 
 # Build outputs
 dist/
