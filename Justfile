@@ -3,6 +3,7 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 themes_dir := "/usr/local/bin/ignition/data/modules/com.inductiveautomation.perspective/themes"
 import_line := "@import \"./custom/index.css\";"
 conv_commit_regex := "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(\\([a-zA-Z0-9._/-]+\\))?(!)?: .+"
+zensical_image := "zensical/zensical:latest"
 
 default:
 	@just --list
@@ -76,3 +77,29 @@ rebuild:
 	just remove-images
 	just build-nocache
 	just up
+
+# Documentation (Zensical via Docker https://zensical.org)
+
+# Scaffold a Zensical site into a target path 
+docs-new target=".":
+	docker run --rm -it \
+		-u "$(id -u):$(id -g)" \
+		-v "$PWD:/work" \
+		-w /work \
+		{{zensical_image}} \
+		new "{{target}}"
+
+# Serve docs locally at http://localhost:8000 
+docs-serve port="8000":
+	docker run --rm -it \
+		-p "{{port}}:8000" \
+		-v "$PWD:/docs" \
+		{{zensical_image}}
+
+# Build static docs into ./site
+docs-build:
+	docker run --rm -it \
+		-u "$(id -u):$(id -g)" \
+		-v "$PWD:/docs" \
+		{{zensical_image}} \
+		build --clean
