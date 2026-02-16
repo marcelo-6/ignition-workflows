@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Publish Release
+    runs-on: ubuntu-latest
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+
+      - name: Resolve next release version
+        id: version
+        run: |
+          set -euo pipefail
+
+          if git describe --tags --exact-match >/dev/null 2>&1; then
+            echo "Current commit is already tagged; skipping release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          version="$(git cliff --config cliff.toml --bumped-version --unreleased | tr -d '\r\n')"
+          if [ -z "$version" ]; then
+            echo "Failed to resolve next version with git-cliff."
+            exit 1
+          fi
+
+          tag="v${version}"
+          if git rev-parse "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists; skipping release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "archive_name=ignition-workflows-${version}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes
+        if: steps.version.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          git cliff \
+            --config cliff.toml \
+            --unreleased \
+            --tag "${{ steps.version.outputs.tag }}" \
+            --strip header \
+            > dist/release-notes.md
+
+      - name: Build release artifact
+        if: steps.version.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          (
+            cd projects/workflows
+            zip -r "../../dist/${{ steps.version.outputs.archive_name }}" .
+          )
+
+      - name: Create and push tag
+        if: steps.version.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Publish GitHub release
+        if: steps.version.outputs.skip != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body_path: dist/release-notes.md
+          files: dist/${{ steps.version.outputs.archive_name }}
