@@ -8,9 +8,9 @@ Module: `exchange.workflows.api.service`
 
 Use this from timer scripts, Perspective actions, and gateway scripts.
 
-## Response envelope
+## Response format
 
-All service calls return a consistent envelope:
+All service calls return a consistent format:
 
 ```python
 {
@@ -35,9 +35,7 @@ resp = exchange.workflows.api.service.dispatch(
 )
 ```
 
-Use this in timer scripts. Your project already does that in:
-
-- `projects/workflows/ignition/timer/tick/handleTimerEvent.py`
+Use this in timer scripts
 
 ## `start(...)`
 
@@ -95,7 +93,7 @@ opts = exchange.workflows.api.service.listWorkflows()
 print opts
 ```
 
-## Dispatch call stack
+## Dispatch call
 
 ```mermaid
 sequenceDiagram

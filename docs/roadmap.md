@@ -4,34 +4,29 @@ icon: lucide/map
 
 # Roadmap
 
-Current status: early public release, with core durable execution and operator control already implemented.
+* [x] Workflow execution with Postgres persistence.
+* [x] Workflow requests queued by Postgres.
+* [x] Step execution within workflow (sync) with Postgres persistence.
+* [x] Step retry on failure
+* [x] Procedure to making code changes in production to avoid [intepreter issues](concepts/architecture/#ignitionjython-interpreter-reload-issue){ data-preview }.
+* [x] Template + enum parameter for operator forms (recipe parameters for a given workflow).
+* [ ] Refactor `exchange.workflows.db` to conform with Exchange code standard
+* [ ] True async step execution (workflow execution is already async)
+* [ ] Child-workflow orchestration relationships
+* [ ] Debounce workflows
+* [ ] Scheduled workflow
+* [ ] Confirm external executors are functional
+* [ ] Publish to Ignition Exchange
 
-## Implemented
+### Documentation
+* [x] Zensical project documentation
+* [ ] More examples of usage
+* [ ] More detailed API usage
+* [ ] Add perspective pages screenshots
 
-- Durable-ish workflow execution with Postgres persistence.
-- Cooperative command handling (`HOLD`, `RESUME`, `STOP`, `RESET`).
-- Step replay cache via `operation_outputs`.
-- Events/streams for monitoring.
-- Runtime maintenance mode and generation swap.
-- Template + enum parameter model for operator forms.
+### Code Examples
+* [x] Command handling (`HOLD`, `RESUME`, `STOP`, `RESET`).
+* [ ] How to use templates
+  
 
-## Next up (high priority)
-
-1. True async step execution.
-2. Scheduled workflow.
-3. Debounce workflows.
-4. Child-workflow orchestration relationships.
-
-## Planned improvements
-
-- Stronger programmatic APIs for parameter sets.
-- More packaged examples around production process patterns.
-- Optional external executors and expanded interop patterns.
-
-## Explicit non-goals (current)
-
-- Multi-version workflow registry with arbitrary old-code replay.
-- Hard thread preemption of running steps.
-- Full DB migration framework in core runtime.
-- Heavy control-plane orchestration service.
 

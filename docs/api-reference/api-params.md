@@ -10,20 +10,12 @@ This API gives you versioned parameter templates and enums so operators can run 
 
 ## Current scope
 
-Implemented now:
-
 - Template versioning
 - Enum versioning
 - Template expansion for UI (enum options injected)
 - Input resolution + start helper (`startWithTemplate`)
 
-Planned/partial:
-
-- Full script-level parameter-set CRUD APIs
-
-The DB already includes `workflows.param_sets`, and there are related named queries.
-
-## Template storage model
+## Template storage
 
 Template rows store `schema_json` like:
 
@@ -51,7 +43,7 @@ At runtime, `expandTemplateForUi(...)` resolves DB enum values into widget optio
 ## Typical flow
 
 ```mermaid
-flowchart LR
+flowchart TB
   A[Designer Form props] --> B[createTemplateVersion]
   B --> C[(param_templates)]
   D[createEnumVersion] --> E[(param_enums)]
@@ -64,7 +56,7 @@ flowchart LR
   J --> K[startWithTemplate]
 ```
 
-## Key APIs
+## APIs
 
 ### Create template version
 

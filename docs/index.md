@@ -102,6 +102,4 @@ This library complements Ignition's functionality in a few lines of code. For ex
 
 ## Limitations
 
-This project is intentionally practical and evolving. It is not trying to completly implement DBOS 1:1.
-
-It is focused on making life easier for engineers building long-running process workflows in Ignition.
+This project is not trying to completly implement DBOS 1:1 and not trying to replace the SFC module.
