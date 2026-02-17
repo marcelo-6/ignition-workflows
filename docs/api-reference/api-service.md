@@ -105,7 +105,7 @@ sequenceDiagram
     Timer->>API: dispatch()
     API->>RT: dispatch(...)
     RT->>RT: flushInMemoryQueue()
-    RT->>DB: claim_enqueued(queue, limit)
+    RT->>DB: claimEnqueued(queue, limit)
     RT->>RT: execute claimed rows in worker pool
     RT->>DB: update status/results/events/streams
 ```

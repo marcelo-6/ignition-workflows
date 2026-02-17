@@ -2,14 +2,13 @@
 """
 Database adapter and SQL helpers for workflows runtime.
 
-Use this module for engine-internal SQL access only. Perspective/UI code should
-continue using named queries where appropriate.
+Use this module for engine-internal SQL access only. Perspective code should
+use named queries where appropriate.
 
 Logging goals:
 - Make DB behavior observable in Ignition Gateway logs
 - Record execution time + rowcounts
-- Capture enough context to debug failures (SQL + args preview), without dumping huge payloads
-- Keep compatibility with Jython 2.7
+- Capture enough context to debug failures (SQL + args preview)
 
 Timestamp semantics:
 - created_at_epoch_ms: enqueue time
@@ -20,14 +19,29 @@ Timestamp semantics:
 
 import json
 import traceback
+import time
 from java.util import UUID
-from java.lang import System as JSystem
 
 from exchange.workflows import settings
+from exchange.workflows.util.date import nowMs
 
 log = system.util.getLogger(settings.getLoggerName("engine.db"))
 
 _WORKFLOW_TERMINAL = tuple(settings.WORKFLOW_TERMINAL_STATUSES)
+_WORKFLOW_TERMINAL_FOR_DELETE = (
+    settings.STATUS_SUCCESS,
+    settings.STATUS_ERROR,
+    settings.STATUS_CANCELLED,
+)
+_DELETE_WORKFLOW_CHILD_SQL = (
+    "DELETE FROM workflows.operation_outputs WHERE workflow_id = ?::uuid",
+    "DELETE FROM workflows.workflow_events WHERE workflow_id = ?::uuid",
+    "DELETE FROM workflows.workflow_events_history WHERE workflow_id = ?::uuid",
+    "DELETE FROM workflows.notifications WHERE destination_uuid = ?::uuid",
+    "DELETE FROM workflows.streams WHERE workflow_id = ?::uuid",
+    "DELETE FROM workflows.stream_heads WHERE workflow_id = ?::uuid",
+    "DELETE FROM workflows.workflow_status WHERE workflow_id = ?::uuid",
+)
 
 # ----------------------------
 # Logging controls (runtime configurable)
@@ -37,61 +51,26 @@ _DEBUG_FLAG_KEY = "exchange.workflows.db.debug"  # bool
 _SLOW_MS_KEY = "exchange.workflows.db.slow_ms"  # int
 _LOG_ARGS_KEY = "exchange.workflows.db.log_args"  # bool
 
-_DEFAULT_SLOW_MS = 250
+_DEFAULT_SLOW_MS = 2000
 _DEFAULT_LOG_ARGS = True
 
 
-def now_ms():
-    """
-    Return current epoch time in milliseconds.
-
-    Args:
-        None.
-
-    Returns:
-        long: Current epoch milliseconds.
-    """
-    return system.date.toMillis(system.date.now())
-
-
 def uuid4():
-    """
-    Generate a UUID string for workflow and message identifiers.
-
-    Args:
-        None.
-
-    Returns:
-        str: Random UUID string.
-    """
+    """Generate a UUID string for workflow and message identifiers."""
     return str(UUID.randomUUID())
 
 
 def _dumps(obj):
-    """
-    Serialize an object to compact JSON for DB persistence.
-
-    Args:
-        obj (object): Value to serialize.
-
-    Returns:
-        str|None: JSON string, or ``None`` when input is ``None``.
-    """
+    """Serialize an object to compact JSON for DB."""
+    # TODO use system.util.jsonDecode instead?
     if obj is None:
         return None
     return json.dumps(obj, separators=(",", ":"))
 
 
 def _loads(s):
-    """
-    Deserialize JSON text from DB columns into Python objects.
-
-    Args:
-        s (str|dict|list|None): Stored JSON text or already-decoded object.
-
-    Returns:
-        object: Decoded object, passthrough dict/list, or ``None`` on parse error.
-    """
+    """Deserialize JSON text from DB columns into Python objects."""
+    # TODO use system.util.jsonEncode instead?
     if s is None:
         return None
     if isinstance(s, (dict, list)):
@@ -102,39 +81,25 @@ def _loads(s):
         return None
 
 
-def _get_store():
-    """
-    Return global settings store used for DB debug flags.
-
-    Args:
-        None.
-
-    Returns:
-        tuple: ``(store, storeType)`` where store is mutable when available.
-    """
+def _getStore():
+    """Return global settings store used for DB debug flags."""
+    # TODO reuse exchange.workflows.engine.instance._getStore?
     try:
         if hasattr(system.util, "globalVarMap"):
-            return system.util.globalVarMap(_DEBUG_FLAG_KEY), "globalVarMap"
+            store = system.util.globalVarMap(_DEBUG_FLAG_KEY)
+            if store is not None:
+                return store
     except:
         pass
     try:
-        return system.util.getGlobals(), "globals"
+        return system.util.getGlobals()
     except:
-        return None, "none"
+        return None
 
 
-def _cfg_bool(key, default=False):
-    """
-    Read a boolean config value from global store.
-
-    Args:
-        key (str): Global config key.
-        default (bool): Fallback when key is missing or invalid.
-
-    Returns:
-        bool: Parsed boolean value.
-    """
-    store, _t = _get_store()
+def _getCfgBool(key, default=False):
+    """Read a boolean config value from global store."""
+    store = _getStore()
     if store is None:
         return default
     try:
@@ -156,18 +121,9 @@ def _cfg_bool(key, default=False):
         return default
 
 
-def _cfg_int(key, default=0):
-    """
-    Read an integer config value from global store.
-
-    Args:
-        key (str): Global config key.
-        default (int): Fallback when key is missing or invalid.
-
-    Returns:
-        int: Parsed integer value.
-    """
-    store, _t = _get_store()
+def _getCfgInt(key, default=0):
+    """Read an integer config value from global store."""
+    store = _getStore()
     if store is None:
         return default
     try:
@@ -180,56 +136,23 @@ def _cfg_int(key, default=0):
         return default
 
 
-def _is_debug():
-    """
-    Return whether verbose DB debug logging is enabled.
-
-    Args:
-        None.
-
-    Returns:
-        bool: Debug logging flag.
-    """
-    return False  # _cfg_bool(_DEBUG_FLAG_KEY, default=False)
+def _isDebug():
+    """Return whether verbose DB debug logging is enabled."""
+    return True  # _getCfgBool(_DEBUG_FLAG_KEY, default=False)
 
 
-def _slow_ms():
-    """
-    Return slow-query threshold used for warning logs.
-
-    Args:
-        None.
-
-    Returns:
-        int: Slow query threshold in milliseconds.
-    """
-    return 2000  # _cfg_int(_SLOW_MS_KEY, default=_DEFAULT_SLOW_MS)
+def _slowMs():
+    """Return slow-query threshold used for warning logs."""
+    return _getCfgInt(_SLOW_MS_KEY, default=_DEFAULT_SLOW_MS)
 
 
-def _log_args_enabled():
-    """
-    Return whether SQL argument previews should be logged.
-
-    Args:
-        None.
-
-    Returns:
-        bool: Argument logging flag.
-    """
-    return True  # _cfg_bool(_LOG_ARGS_KEY, default=_DEFAULT_LOG_ARGS)
+def _isLogArgsEnabled():
+    """Return whether SQL argument previews should be logged."""
+    return True  # _getCfgBool(_LOG_ARGS_KEY, default=_DEFAULT_LOG_ARGS)
 
 
 def _truncate(s, max_len=300):
-    """
-    Truncate large values for safer logs.
-
-    Args:
-        s (object): Value to render.
-        max_len (int): Maximum output string length.
-
-    Returns:
-        str|None: Truncated string representation.
-    """
+    """Truncate large values for logs."""
     try:
         if s is None:
             return None
@@ -241,9 +164,9 @@ def _truncate(s, max_len=300):
         return "<unprintable>"
 
 
-def _safe_arg(v):
+def _getSafeArg(v):
     """
-    Prevent logs from exploding:
+    Prevent logs from being too long:
     - truncate long strings/json
     - summarize dict/list
     """
@@ -252,7 +175,6 @@ def _safe_arg(v):
             return None
         if isinstance(v, (int, long, float, bool)):
             return v
-        # Ignition often hands java objects; stringify carefully
         if isinstance(v, (dict, list)):
             try:
                 # compact summary
@@ -264,40 +186,23 @@ def _safe_arg(v):
         return "<arg:unprintable>"
 
 
-def _args_preview(args):
-    """
-    Build a compact argument preview string for query/update logs.
-
-    Args:
-        args (list|tuple|None): Prepared-statement argument list.
-
-    Returns:
-        str: Human-readable argument preview.
-    """
-    if not _log_args_enabled():
+def _argsPreview(args):
+    """Build a compact argument preview string for query/update logs."""
+    if not _isLogArgsEnabled():
         return "args=<suppressed>"
     try:
         if args is None:
             return "args=[]"
         out = []
         for a in list(args):
-            out.append(_safe_arg(a))
+            out.append(_getSafeArg(a))
         return "args=%s" % _truncate(out, 500)
     except:
         return "args=<error>"
 
 
-def _sql_preview(sql):
-    """
-    Normalize SQL text for compact single-line logging.
-
-    Args:
-        sql (str): SQL statement text.
-
-    Returns:
-        str: Normalized SQL preview string.
-    """
-    # Normalize whitespace for easier grep
+def _sqlPreview(sql):
+    """Normalize SQL text for compact single-line logging."""
     try:
         s = " ".join(str(sql).split())
         return _truncate(s, 600)
@@ -305,16 +210,8 @@ def _sql_preview(sql):
         return "<sql:unprintable>"
 
 
-def _tx_id(tx):
-    """
-    Build a safe transaction identifier for logs.
-
-    Args:
-        tx (object): Ignition transaction handle/id.
-
-    Returns:
-        str: String transaction id or placeholder.
-    """
+def _txId(tx):
+    """Build a transaction identifier for logs."""
     try:
         if tx is None:
             return "-"
@@ -324,18 +221,10 @@ def _tx_id(tx):
         return "<tx>"
 
 
-def _elapsed_ms(t0_ms):
-    """
-    Compute elapsed milliseconds since a start timestamp.
-
-    Args:
-        t0_ms (int|long): Start timestamp in epoch milliseconds.
-
-    Returns:
-        long: Elapsed milliseconds, or ``-1`` on conversion error.
-    """
+def _elapsedMs(t0_ms):
+    """Compute elapsed milliseconds since a start timestamp."""
     try:
-        return long(now_ms() - long(t0_ms))
+        return long(nowMs() - long(t0_ms))
     except:
         return -1
 
@@ -347,48 +236,37 @@ def _elapsed_ms(t0_ms):
 
 class DB(object):
     """
-    Lightweight DB adapter around system.db.* for Postgres.
+    DB adapter around system.db.* for Postgres.
 
     Args:
-        db_name (str): Ignition DB connection name.
+        dbName (str): database connection name.
     """
 
-    def __init__(self, db_name):
-        """
-        Build a DB adapter bound to one Ignition database connection.
-
-        Args:
-            db_name (str): Ignition DB connection name.
-
-        Returns:
-            None: Stores DB connection name on `self`.
-        """
-        self.db_name = db_name
+    def __init__(self, dbName):
+        self.dbName = dbName
 
     # ---------- transaction helpers ----------
+
+    def _logException(self, event, message):
+        log.error("evt=%s %s" % (event, message))
+        log.error("evt=%s.trace trace=%s" % (event, traceback.format_exc()))
 
     def begin(self):
         """
         Start a database transaction.
 
-        Args:
-            None.
-
         Returns:
-            object: Ignition transaction handle/id.
+            id (str): transaction id.
         """
-        t0 = now_ms()
+        t0 = nowMs()
         try:
-            tx = system.db.beginTransaction(self.db_name)
-            dt = _elapsed_ms(t0)
-            #            log.info("evt=db.tx.begin db=%s tx=%s ms=%d" % (self.db_name, _tx_id(tx), dt))
+            tx = system.db.beginTransaction(self.dbName)
             return tx
         except Exception as e:
-            dt = _elapsed_ms(t0)
-            log.error(
-                "evt=db.tx.begin.error db=%s ms=%d err=%s" % (self.db_name, dt, e)
+            self._logException(
+                "db.tx.begin.error",
+                "db=%s ms=%d err=%s" % (self.dbName, _elapsedMs(t0), e),
             )
-            log.error("evt=db.tx.begin.trace trace=%s" % traceback.format_exc())
             raise
 
     def commit(self, tx):
@@ -396,23 +274,20 @@ class DB(object):
         Commit a database transaction.
 
         Args:
-            tx (object): Ignition transaction handle/id.
+            tx (str): transaction id.
 
         Returns:
             None: Commits the transaction in place.
         """
-        t0 = now_ms()
+        t0 = nowMs()
         try:
             system.db.commitTransaction(tx)
-            dt = _elapsed_ms(t0)
-        #            log.info("evt=db.tx.commit db=%s tx=%s ms=%d" % (self.db_name, _tx_id(tx), dt))
         except Exception as e:
-            dt = _elapsed_ms(t0)
-            log.error(
-                "evt=db.tx.commit.error db=%s tx=%s ms=%d err=%s"
-                % (self.db_name, _tx_id(tx), dt, e)
+            self._logException(
+                "db.tx.commit.error",
+                "db=%s tx=%s ms=%d err=%s"
+                % (self.dbName, _txId(tx), _elapsedMs(t0), e),
             )
-            log.error("evt=db.tx.commit.trace trace=%s" % traceback.format_exc())
             raise
 
     def rollback(self, tx):
@@ -420,179 +295,180 @@ class DB(object):
         Roll back a database transaction.
 
         Args:
-            tx (object): Ignition transaction handle/id.
+            tx (str): transaction id.
 
         Returns:
             None: Rolls back the transaction in place.
         """
-        t0 = now_ms()
+        t0 = nowMs()
         try:
             system.db.rollbackTransaction(tx)
-            dt = _elapsed_ms(t0)
+            dt = _elapsedMs(t0)
             log.warn(
-                "evt=db.tx.rollback db=%s tx=%s ms=%d" % (self.db_name, _tx_id(tx), dt)
+                "evt=db.tx.rollback db=%s tx=%s ms=%d" % (self.dbName, _txId(tx), dt)
             )
         except Exception as e:
-            dt = _elapsed_ms(t0)
-            log.error(
-                "evt=db.tx.rollback.error db=%s tx=%s ms=%d err=%s"
-                % (self.db_name, _tx_id(tx), dt, e)
+            self._logException(
+                "db.tx.rollback.error",
+                "db=%s tx=%s ms=%d err=%s"
+                % (self.dbName, _txId(tx), _elapsedMs(t0), e),
             )
-            log.error("evt=db.tx.rollback.trace trace=%s" % traceback.format_exc())
             # don't raise rollback errors by default
 
     def close(self, tx):
         """
-        Close a database transaction handle.
+        Close a database transaction.
 
         Args:
-            tx (object): Ignition transaction handle/id.
+            tx (str): transaction id.
 
         Returns:
             None: Closes transaction resources.
         """
-        t0 = now_ms()
+        t0 = nowMs()
         try:
             system.db.closeTransaction(tx)
-            dt = _elapsed_ms(t0)
-            if _is_debug():
+            dt = _elapsedMs(t0)
+            if _isDebug():
                 log.debug(
-                    "evt=db.tx.close db=%s tx=%s ms=%d" % (self.db_name, _tx_id(tx), dt)
+                    "evt=db.tx.close db=%s tx=%s ms=%d" % (self.dbName, _txId(tx), dt)
                 )
         except:
-            # ignore
-            pass
+            if _isDebug():
+                self._logException(
+                    "db.tx.close.error",
+                    "db=%s tx=%s ms=%d" % (self.dbName, _txId(tx), _elapsedMs(t0)),
+                )
 
     # ---------- core query/update wrappers with logging ----------
 
-    def q(self, sql, args=None, tx=None):
+    def query(self, sql, args=None, tx=None):
         """
         Execute a prepared query with timing and context logging.
 
         Args:
             sql (str): SQL statement text.
             args (list|tuple|None): Prepared-statement parameters.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             PyDataSet: Query result dataset.
         """
         args = args or []
-        t0 = now_ms()
+        t0 = nowMs()
         try:
             if tx is None:
-                ds = system.db.runPrepQuery(sql, args, self.db_name)
+                ds = system.db.runPrepQuery(sql, args, self.dbName)
             else:
-                ds = system.db.runPrepQuery(sql, args, self.db_name, tx)
+                ds = system.db.runPrepQuery(sql, args, self.dbName, tx)
 
-            dt = _elapsed_ms(t0)
+            dt = _elapsedMs(t0)
             rows = -1
             try:
                 rows = ds.getRowCount() if ds is not None else 0
             except:
                 rows = -1
 
-            if dt >= _slow_ms():
+            if dt >= _slowMs():
                 log.warn(
                     "evt=db.q.slow db=%s tx=%s ms=%d rows=%s sql=%s %s"
                     % (
-                        self.db_name,
-                        _tx_id(tx),
+                        self.dbName,
+                        _txId(tx),
                         dt,
                         rows,
-                        _sql_preview(sql),
-                        _args_preview(args),
+                        _sqlPreview(sql),
+                        _argsPreview(args),
                     )
                 )
-            elif _is_debug():
+            elif _isDebug():
                 log.debug(
                     "evt=db.q db=%s tx=%s ms=%d rows=%s sql=%s %s"
                     % (
-                        self.db_name,
-                        _tx_id(tx),
+                        self.dbName,
+                        _txId(tx),
                         dt,
                         rows,
-                        _sql_preview(sql),
-                        _args_preview(args),
+                        _sqlPreview(sql),
+                        _argsPreview(args),
                     )
                 )
             return ds
         except Exception as e:
-            dt = _elapsed_ms(t0)
-            log.error(
-                "evt=db.q.error db=%s tx=%s ms=%d err=%s sql=%s %s"
+            self._logException(
+                "db.q.error",
+                "db=%s tx=%s ms=%d err=%s sql=%s %s"
                 % (
-                    self.db_name,
-                    _tx_id(tx),
-                    dt,
+                    self.dbName,
+                    _txId(tx),
+                    _elapsedMs(t0),
                     e,
-                    _sql_preview(sql),
-                    _args_preview(args),
-                )
+                    _sqlPreview(sql),
+                    _argsPreview(args),
+                ),
             )
-            log.error("evt=db.q.trace trace=%s" % traceback.format_exc())
             raise
 
-    def u(self, sql, args=None, tx=None):
+    def update(self, sql, args=None, tx=None):
         """
         Execute a prepared update with timing and context logging.
 
         Args:
             sql (str): SQL statement text.
             args (list|tuple|None): Prepared-statement parameters.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction handle.
 
         Returns:
             int: Number of affected rows.
         """
         args = args or []
-        t0 = now_ms()
+        t0 = nowMs()
+
         try:
             if tx is None:
-                n = system.db.runPrepUpdate(sql, args, self.db_name)
+                n = system.db.runPrepUpdate(sql, args, self.dbName)
             else:
-                n = system.db.runPrepUpdate(sql, args, self.db_name, tx)
+                n = system.db.runPrepUpdate(sql, args, self.dbName, tx)
 
-            dt = _elapsed_ms(t0)
-            if dt >= _slow_ms():
+            dt = _elapsedMs(t0)
+            if dt >= _slowMs():
                 log.warn(
                     "evt=db.u.slow db=%s tx=%s ms=%d n=%s sql=%s %s"
                     % (
-                        self.db_name,
-                        _tx_id(tx),
+                        self.dbName,
+                        _txId(tx),
                         dt,
                         n,
-                        _sql_preview(sql),
-                        _args_preview(args),
+                        _sqlPreview(sql),
+                        _argsPreview(args),
                     )
                 )
-            elif _is_debug():
+            elif _isDebug():
                 log.debug(
                     "evt=db.u db=%s tx=%s ms=%d n=%s sql=%s %s"
                     % (
-                        self.db_name,
-                        _tx_id(tx),
+                        self.dbName,
+                        _txId(tx),
                         dt,
                         n,
-                        _sql_preview(sql),
-                        _args_preview(args),
+                        _sqlPreview(sql),
+                        _argsPreview(args),
                     )
                 )
             return n
         except Exception as e:
-            dt = _elapsed_ms(t0)
-            log.error(
-                "evt=db.u.error db=%s tx=%s ms=%d err=%s sql=%s %s"
+            self._logException(
+                "db.u.error",
+                "db=%s tx=%s ms=%d err=%s sql=%s %s"
                 % (
-                    self.db_name,
-                    _tx_id(tx),
-                    dt,
+                    self.dbName,
+                    _txId(tx),
+                    _elapsedMs(t0),
                     e,
-                    _sql_preview(sql),
-                    _args_preview(args),
-                )
+                    _sqlPreview(sql),
+                    _argsPreview(args),
+                ),
             )
-            log.error("evt=db.u.trace trace=%s" % traceback.format_exc())
             raise
 
     def scalar(self, sql, args=None, tx=None, default=None):
@@ -602,77 +478,77 @@ class DB(object):
         Args:
             sql (str): SQL statement text.
             args (list|tuple|None): Prepared-statement parameters.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction handle.
             default (object): Value returned when the result set is empty.
 
         Returns:
             object: Scalar query result or `default`.
         """
-        t0 = now_ms()
+        t0 = nowMs()
         try:
-            ds = self.q(sql, args=args, tx=tx)
+            ds = self.query(sql, args=args, tx=tx)
             if ds is None or ds.getRowCount() == 0:
-                if _is_debug():
+                if _isDebug():
                     log.debug(
                         "evt=db.scalar.miss db=%s tx=%s ms=%d sql=%s %s"
                         % (
-                            self.db_name,
-                            _tx_id(tx),
-                            _elapsed_ms(t0),
-                            _sql_preview(sql),
-                            _args_preview(args),
+                            self.dbName,
+                            _txId(tx),
+                            _elapsedMs(t0),
+                            _sqlPreview(sql),
+                            _argsPreview(args),
                         )
                     )
                 return default
             v = ds.getValueAt(0, 0)
-            if _is_debug():
+            if _isDebug():
                 log.debug(
                     "evt=db.scalar.hit db=%s tx=%s ms=%d val=%s sql=%s %s"
                     % (
-                        self.db_name,
-                        _tx_id(tx),
-                        _elapsed_ms(t0),
+                        self.dbName,
+                        _txId(tx),
+                        _elapsedMs(t0),
                         _truncate(v, 200),
-                        _sql_preview(sql),
-                        _args_preview(args),
+                        _sqlPreview(sql),
+                        _argsPreview(args),
                     )
                 )
             return v
         except:
-            # q() already logs errors
+            # query() already logs errors
             raise
 
     # ---------- workflow status ----------
 
-    def insert_workflow(
+    def insertWorkflow(
         self,
-        workflow_id,
-        workflow_name,
-        queue_name,
-        partition_key,
+        workflowId,
+        workflowName,
+        queueName,
+        partitionKey,
         priority,
-        deduplication_id,
-        application_version,
-        inputs_obj,
-        created_ms,
-        deadline_ms=None,
+        deduplicationId,
+        applicationVersion,
+        inputsObj,
+        createdMs,
+        deadlineMs=None,
         tx=None,
     ):
         """
         Insert one ENQUEUED workflow row.
 
         Args:
-            workflow_id (str): Workflow UUID.
-            workflow_name (str): Registered workflow name.
-            queue_name (str): Queue routing name.
-            partition_key (str|None): Optional partition arbitration key.
+            workflowId (str): Workflow UUID.
+            workflowName (str): Registered workflow name.
+            queueName (str): Queue routing name.
+            partitionKey (str|None): Optional partition arbitration key.
             priority (int): Queue priority.
-            deduplication_id (str|None): Optional dedupe key.
-            application_version (str|None): Optional app/version stamp.
-            inputs_obj (dict|None): Serialized workflow inputs.
-            created_ms (int|long): Created timestamp in epoch ms.
-            deadline_ms (int|long|None): Optional deadline timestamp.
-            tx (object|None): Optional transaction handle.
+            deduplicationId (str|None): Optional dedupe key.
+            applicationVersion (str|None): Optional app/version stamp.
+            inputsObj (dict|None): Serialized workflow inputs.
+            createdMs (int|long): Created timestamp in epoch ms.
+            deadlineMs (int|long|None): Optional deadline timestamp.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of inserted rows.
@@ -685,38 +561,38 @@ class DB(object):
         )
         VALUES (?::uuid, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-        n = self.u(
+        n = self.update(
             sql,
             [
-                workflow_id,
-                workflow_name,
+                workflowId,
+                workflowName,
                 settings.STATUS_ENQUEUED,
-                queue_name,
-                partition_key,
+                queueName,
+                partitionKey,
                 int(priority),
-                deduplication_id,
-                application_version,
-                _dumps(inputs_obj),
-                long(created_ms),
-                long(created_ms),
-                long(deadline_ms) if deadline_ms is not None else None,
+                deduplicationId,
+                applicationVersion,
+                _dumps(inputsObj),
+                createdMs,
+                createdMs,
+                deadlineMs if deadlineMs is not None else None,
             ],
             tx=tx,
         )
-        if _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.workflow.insert wid=%s wf=%s n=%s"
-                % (workflow_id, workflow_name, n)
+                % (workflowId, workflowName, n)
             )
         return n
 
-    def insert_workflows_batch(self, rows, tx=None):
+    def insertWorkflowsBatch(self, rows, tx=None):
         """
-        Insert multiple workflow rows in a single transaction context.
+        Insert multiple workflow rows in a single transaction.
 
         Args:
-            rows (list[dict]): Row payloads matching `insert_workflow` arguments.
-            tx (object|None): Optional transaction handle.
+            rows (list[dict]): Row payloads matching `insertWorkflow` arguments.
+            tx (str|None): Optional transaction handle.
 
         Returns:
             int: Number of rows inserted.
@@ -725,118 +601,120 @@ class DB(object):
             return 0
         inserted = 0
         for row in rows:
-            self.insert_workflow(
-                workflow_id=row.get("workflow_id"),
-                workflow_name=row.get("workflow_name"),
-                queue_name=row.get("queue_name"),
-                partition_key=row.get("partition_key"),
+            self.insertWorkflow(
+                workflowId=row.get("workflow_id"),
+                workflowName=row.get("workflow_name"),
+                queueName=row.get("queue_name"),
+                partitionKey=row.get("partition_key"),
                 priority=int(row.get("priority") or 0),
-                deduplication_id=row.get("deduplication_id"),
-                application_version=row.get("application_version"),
-                inputs_obj=row.get("inputs_obj"),
-                created_ms=long(row.get("created_ms") or now_ms()),
-                deadline_ms=row.get("deadline_ms"),
+                deduplicationId=row.get("deduplication_id"),
+                applicationVersion=row.get("application_version"),
+                inputsObj=row.get("inputs_obj"),
+                createdMs=long(row.get("created_ms") or nowMs()),
+                deadlineMs=row.get("deadline_ms"),
                 tx=tx,
             )
             inserted += 1
         return inserted
 
-    def get_workflow(self, workflow_id, tx=None):
+    def getWorkflow(self, workflowId, tx=None):
         """
         Fetch one workflow_status row by workflow id.
 
         Args:
-            workflow_id (str): Workflow UUID.
-            tx (object|None): Optional transaction handle.
+            workflowId (str): Workflow UUID.
+            tx (str|None): Optional transaction id.
 
         Returns:
             dict|None: Workflow row dict, or `None` when not found.
         """
         sql = "SELECT * FROM workflows.workflow_status WHERE workflow_id = ?::uuid"
-        ds = self.q(sql, [workflow_id], tx=tx)
+        ds = self.query(sql, [workflowId], tx=tx)
         if ds is None or ds.getRowCount() == 0:
-            if _is_debug():
-                log.debug("evt=db.workflow.get.miss wid=%s" % workflow_id)
+            if _isDebug():
+                log.debug("evt=db.workflow.get.miss wid=%s" % workflowId)
             return None
-        row = self._row_to_dict(ds, 0)
-        if _is_debug():
+        row = self._rowToDict(ds, 0)
+        if _isDebug():
             log.debug(
                 "evt=db.workflow.get.hit wid=%s status=%s"
-                % (workflow_id, row.get("status"))
+                % (workflowId, row.get("status"))
             )
         return row
 
-    def update_status(self, workflow_id, status, fields=None, tx=None):
+    def updateWorkflowStatus(self, workflowId, status, fields=None, tx=None):
         """
         Update workflow status plus optional additional columns.
 
         Args:
-            workflow_id (str): Workflow UUID.
+            workflowId (str): Workflow UUID.
             status (str): New workflow status value.
             fields (dict|None): Additional columns to update.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of updated rows.
         """
         fields = fields or {}
         sets = ["status = ?", "updated_at_epoch_ms = ?"]
-        args = [status, now_ms()]
+        args = [status, nowMs()]
         for k, v in fields.items():
             sets.append("%s = ?" % k)
             args.append(v)
-        args.append(workflow_id)
+        args.append(workflowId)
         sql = "UPDATE workflows.workflow_status SET %s WHERE workflow_id = ?::uuid" % (
             ", ".join(sets)
         )
-        n = self.u(sql, args, tx=tx)
-        if _is_debug():
+        n = self.update(sql, args, tx=tx)
+        if _isDebug():
             log.debug(
-                "evt=db.workflow.update_status wid=%s status=%s n=%s fields=%s"
-                % (workflow_id, status, n, _truncate(fields, 400))
+                "evt=db.workflow.updateWorkflowStatus wid=%s status=%s n=%s fields=%s"
+                % (workflowId, status, n, _truncate(fields, 400))
             )
         return n
 
-    def update_status_if_not_terminal(self, workflow_id, status, fields=None, tx=None):
+    def updateWorkflowStatusIfNotTerminal(
+        self, workflowId, status, fields=None, tx=None
+    ):
         """
         Update workflow status only when current status is not terminal.
 
         Args:
-            workflow_id (str): Workflow UUID.
+            workflowId (str): Workflow UUID.
             status (str): New workflow status value.
             fields (dict|None): Additional columns to update.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of updated rows (0 when already terminal).
         """
         fields = fields or {}
         sets = ["status = ?", "updated_at_epoch_ms = ?"]
-        args = [status, now_ms()]
+        args = [status, nowMs()]
         for k, v in fields.items():
             sets.append("%s = ?" % k)
             args.append(v)
-        args.append(workflow_id)
+        args.append(workflowId)
         args.extend(list(_WORKFLOW_TERMINAL))
         sql = (
             "UPDATE workflows.workflow_status SET %s "
             "WHERE workflow_id = ?::uuid "
             "AND status NOT IN (?, ?, ?)"
         ) % (", ".join(sets))
-        n = self.u(sql, args, tx=tx)
-        if _is_debug():
+        n = self.update(sql, args, tx=tx)
+        if _isDebug():
             log.debug(
-                "evt=db.workflow.update_status_if_not_terminal wid=%s status=%s n=%s fields=%s"
-                % (workflow_id, status, n, _truncate(fields, 400))
+                "evt=db.workflow.updateWorkflowStatusIfNotTerminal wid=%s status=%s n=%s fields=%s"
+                % (workflowId, status, n, _truncate(fields, 400))
             )
         return n
 
-    def mark_running_if_claimed(
+    def markRunningIfClaimed(
         self,
-        workflow_id,
-        executor_id,
-        started_ms=None,
-        timeout_ms=None,
+        workflowId,
+        executorId,
+        startedMs=None,
+        timeoutMs=None,
         fields=None,
         tx=None,
     ):
@@ -848,58 +726,58 @@ class DB(object):
         - deadline_epoch_ms = COALESCE(deadline_epoch_ms, started_ms + timeout_ms)
 
         Args:
-            workflow_id (str): Workflow UUID.
-            executor_id (str): Executor id expected in `claimed_by`.
-            started_ms (int|long|None): Execution start timestamp; defaults to `now_ms()`.
-            timeout_ms (int|long|None): Timeout duration in ms to derive deadline at start.
+            workflowId (str): Workflow UUID.
+            executorId (str): Executor id expected in `claimed_by`.
+            startedMs (int|long|None): Execution start timestamp; defaults to `now_ms()`.
+            timeoutMs (int|long|None): Timeout duration in ms to derive deadline at start.
             fields (dict|None): Additional fields to update on success.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of updated rows.
         """
         fields = fields or {}
-        if started_ms is None:
-            started_ms = now_ms()
+        if startedMs is None:
+            startedMs = nowMs()
         else:
-            started_ms = long(started_ms)
+            startedMs = startedMs
         sets = [
             "status = ?",
             "updated_at_epoch_ms = ?",
             "started_at_epoch_ms = COALESCE(started_at_epoch_ms, ?)",
             "heartbeat_at_epoch_ms = ?",
         ]
-        args = [settings.STATUS_RUNNING, started_ms, started_ms, started_ms]
-        if timeout_ms is not None:
-            timeout_ms = long(timeout_ms)
-            if timeout_ms > 0:
+        args = [settings.STATUS_RUNNING, startedMs, startedMs, startedMs]
+        if timeoutMs is not None:
+            timeoutMs = long(timeoutMs)
+            if timeoutMs > 0:
                 sets.append("deadline_epoch_ms = COALESCE(deadline_epoch_ms, ?)")
-                args.append(long(started_ms + timeout_ms))
+                args.append(long(startedMs + timeoutMs))
         for k, v in fields.items():
             sets.append("%s = ?" % k)
             args.append(v)
-        args.extend([workflow_id, settings.STATUS_PENDING, executor_id])
+        args.extend([workflowId, settings.STATUS_PENDING, executorId])
         sql = (
             "UPDATE workflows.workflow_status SET %s "
             "WHERE workflow_id = ?::uuid "
             "AND status = ? "
             "AND claimed_by = ?"
         ) % (", ".join(sets))
-        n = self.u(sql, args, tx=tx)
-        if _is_debug():
+        n = self.update(sql, args, tx=tx)
+        if _isDebug():
             log.debug(
-                "evt=db.workflow.mark_running_if_claimed wid=%s exec=%s n=%s"
-                % (workflow_id, executor_id, n)
+                "evt=db.workflow.markRunningIfClaimed wid=%s exec=%s n=%s"
+                % (workflowId, executorId, n)
             )
         return n
 
-    def release_claim(self, workflow_id, tx=None):
+    def releaseClaim(self, workflowId, tx=None):
         """
         Release a PENDING claim back to ENQUEUED.
 
         Args:
-            workflow_id (str): Workflow UUID.
-            tx (object|None): Optional transaction handle.
+            workflowId (str): Workflow UUID.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of updated rows.
@@ -915,42 +793,42 @@ class DB(object):
         WHERE workflow_id = ?::uuid
           AND status = ?
         """
-        ms = now_ms()
-        n = self.u(
+        ms = nowMs()
+        n = self.update(
             sql,
-            [settings.STATUS_ENQUEUED, ms, workflow_id, settings.STATUS_PENDING],
+            [settings.STATUS_ENQUEUED, ms, workflowId, settings.STATUS_PENDING],
             tx=tx,
         )
-        if _is_debug():
-            log.debug("evt=db.workflow.release_claim wid=%s n=%s" % (workflow_id, n))
+        if _isDebug():
+            log.debug("evt=db.workflow.releaseClaim wid=%s n=%s" % (workflowId, n))
         return n
 
-    def cancel_expired(self, tx=None):
+    def cancelExpired(self, tx=None):
         """
         Cancel workflows whose deadline has expired.
 
         Args:
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of cancelled rows.
         """
-        return self._cancel_where(
+        return self._cancelWhere(
             "deadline_epoch_ms IS NOT NULL AND deadline_epoch_ms < ?",
-            [now_ms()],
+            [nowMs()],
             "Timeout exceeded",
-            cancel_type="timeout",
+            cancelType="timeout",
             tx=tx,
         )
 
-    def cancel_workflow(self, workflow_id, reason, tx=None):
+    def cancelWorkflow(self, workflowId, reason, tx=None):
         """
         Cooperatively cancel one workflow (workflow code should poll/check).
 
         Args:
-            workflow_id (str): Workflow UUID.
+            workflowId (str): Workflow UUID.
             reason (str): Human-readable cancellation reason.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of rows updated.
@@ -965,46 +843,46 @@ class DB(object):
         WHERE workflow_id = ?::uuid
           AND status IN (?, ?, ?)
         """
-        ms = now_ms()
-        n = self.u(
+        ms = nowMs()
+        n = self.update(
             sql,
             [
                 settings.STATUS_CANCELLED,
                 err,
                 ms,
                 ms,
-                workflow_id,
+                workflowId,
                 settings.STATUS_ENQUEUED,
                 settings.STATUS_PENDING,
                 settings.STATUS_RUNNING,
             ],
             tx=tx,
         )
-        if _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.workflow.cancel wid=%s n=%s reason=%s"
-                % (workflow_id, n, _truncate(reason, 200))
+                % (workflowId, n, _truncate(reason, 200))
             )
         return n
 
-    def _cancel_where(
-        self, where_sql, where_args, reason, cancel_type="cancelled", tx=None
+    def _cancelWhere(
+        self, whereSql, whereArgs, reason, cancelType="cancelled", tx=None
     ):
         """
         Cancel workflows matching a WHERE clause.
 
         Args:
-            where_sql (str): SQL predicate fragment without `WHERE`.
-            where_args (list): Prepared-statement values for the predicate.
+            whereSql (str): SQL predicate fragment without `WHERE`.
+            whereArgs (list): Prepared-statement values for the predicate.
             reason (str): Human-readable cancellation reason.
-            cancel_type (str): Error payload cancellation type.
-            tx (object|None): Optional transaction handle.
+            cancelType (str): Error payload cancellation type.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of rows updated.
         """
-        err = _dumps({"type": cancel_type, "reason": reason})
-        ms = now_ms()
+        err = _dumps({"type": cancelType, "reason": reason})
+        ms = nowMs()
         sql = (
             """
         UPDATE workflows.workflow_status
@@ -1013,76 +891,71 @@ class DB(object):
             updated_at_epoch_ms = ?,
             completed_at_epoch_ms = COALESCE(completed_at_epoch_ms, ?)
         WHERE %s
-          AND status IN (?, ?, ?)
         """
-            % where_sql
+            % whereSql
         )
-        args = [settings.STATUS_CANCELLED, err, ms, ms] + list(where_args) + [
-            settings.STATUS_ENQUEUED,
-            settings.STATUS_PENDING,
-            settings.STATUS_RUNNING,
-        ]
-        n = self.u(sql, args, tx=tx)
-        if _is_debug():
+        args = [settings.STATUS_CANCELLED, err, ms, ms] + list(whereArgs)
+        n = self.update(sql, args, tx=tx)
+        if _isDebug():
             log.debug(
-                "evt=db.workflow.cancel_where n=%s type=%s reason=%s where=%s"
-                % (n, cancel_type, _truncate(reason, 200), _truncate(where_sql, 200))
+                "evt=db.workflow._cancelWhere n=%s type=%s reason=%s where=%s"
+                % (n, cancelType, _truncate(reason, 200), _truncate(whereSql, 200))
             )
         return n
 
-    def cancel_enqueued_pending(self, queue_name=None, reason="", tx=None):
+    def cancelEnqueuedPending(self, queueName=None, reason="", tx=None):
         """
         Cancel ENQUEUED and PENDING workflows, optionally scoped to one queue.
 
         Args:
-            queue_name (str|None): Queue filter.
+            queueName (str|None): Queue filter.
             reason (str): Human-readable cancellation reason.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of rows updated.
         """
-        where_sql = "status IN (?, ?)"
-        where_args = [settings.STATUS_ENQUEUED, settings.STATUS_PENDING]
-        if queue_name is not None:
-            where_sql += " AND queue_name = ?"
-            where_args.append(queue_name)
-        return self._cancel_where(
-            where_sql,
-            where_args,
+        whereSql = "status IN (?, ?)"
+        whereArgs = [settings.STATUS_ENQUEUED, settings.STATUS_PENDING]
+        if queueName is not None:
+            whereSql += " AND queue_name = ?"
+            whereArgs.append(queueName)
+        return self._cancelWhere(
+            whereSql,
+            whereArgs,
             reason or "maintenance_cancel",
-            cancel_type="maintenance_cancel",
+            cancelType="maintenance_cancel",
             tx=tx,
         )
 
-    def cancel_running(self, queue_name=None, reason="", tx=None):
+    def cancelRunning(self, queueName=None, reason="", tx=None):
         """
         Cancel RUNNING workflows, optionally scoped to one queue.
 
         Args:
-            queue_name (str|None): Queue filter.
+            queueName (str|None): Queue filter.
             reason (str): Human-readable cancellation reason.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of rows updated.
         """
-        where_sql = "status = ?"
-        where_args = [settings.STATUS_RUNNING]
-        if queue_name is not None:
-            where_sql += " AND queue_name = ?"
-            where_args.append(queue_name)
-        return self._cancel_where(
-            where_sql,
-            where_args,
+        whereSql = "status = ?"
+        whereArgs = [settings.STATUS_RUNNING]
+        if queueName is not None:
+            whereSql += " AND queue_name = ?"
+            whereArgs.append(queueName)
+        return self._cancelWhere(
+            whereSql,
+            whereArgs,
             reason or "maintenance_cancel",
-            cancel_type="maintenance_cancel",
+            cancelType="maintenance_cancel",
             tx=tx,
         )
 
     # ---------- claiming (queue tick) ----------
 
-    def claim_enqueued(self, queue_name, max_to_claim, executor_id, tx):
+    def claimEnqueued(self, queueName, maxToClaim, executorId, tx):
         """
         Claim up to N ENQUEUED items for the given queue, using row locks.
 
@@ -1091,10 +964,10 @@ class DB(object):
         - claim transition only sets PENDING + claim metadata (not started_at/deadline)
 
         Args:
-            queue_name (str): Queue to claim from.
-            max_to_claim (int): Max number of rows to claim.
-            executor_id (str): Executor identifier persisted in claim metadata.
-            tx (object): Transaction handle (required).
+            queueName (str): Queue to claim from.
+            maxToClaim (int): Max number of rows to claim.
+            executorId (str): Executor identifier persisted in claim metadata.
+            tx (str): Transaction id (required).
 
         Returns:
             list[dict]: Claimed workflow rows.
@@ -1116,14 +989,14 @@ class DB(object):
         FOR UPDATE SKIP LOCKED
         LIMIT ?
         """
-        ids_ds = self.q(
+        ids_ds = self.query(
             sql,
             [
-                queue_name,
+                queueName,
                 settings.STATUS_ENQUEUED,
                 settings.STATUS_PENDING,
                 settings.STATUS_RUNNING,
-                int(max_to_claim),
+                int(maxToClaim),
             ],
             tx=tx,
         )
@@ -1131,14 +1004,14 @@ class DB(object):
         for r in range(ids_ds.getRowCount()):
             ids.append(str(ids_ds.getValueAt(r, 0)))
 
-        if _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.claim.ids queue=%s want=%s got=%s exec=%s"
-                % (queue_name, int(max_to_claim), len(ids), executor_id)
+                % (queueName, int(maxToClaim), len(ids), executorId)
             )
 
         claimed = []
-        ms = now_ms()
+        ms = nowMs()
         for wid in ids:
             upd = """
             UPDATE workflows.workflow_status
@@ -1150,11 +1023,11 @@ class DB(object):
             WHERE workflow_id = ?::uuid
               AND status = ?
             """
-            n = self.u(
+            n = self.update(
                 upd,
                 [
                     settings.STATUS_PENDING,
-                    executor_id,
+                    executorId,
                     ms,
                     ms,
                     ms,
@@ -1164,36 +1037,36 @@ class DB(object):
                 tx=tx,
             )
             if n == 1:
-                row = self.get_workflow(wid, tx=tx)
+                row = self.getWorkflow(wid, tx=tx)
                 if row:
                     claimed.append(row)
 
-        if _is_debug():
+        if _isDebug():
             log.debug(
-                "evt=db.claim.done queue=%s claimed=%s" % (queue_name, len(claimed))
+                "evt=db.claim.done queue=%s claimed=%s" % (queueName, len(claimed))
             )
         return claimed
 
     # ---------- step outputs (durable replay) ----------
 
-    def get_step_output(self, workflow_id, call_seq, tx=None):
+    def getStepOutput(self, workflowId, callSeq, tx=None):
         """
-        Read cached step output/error row for deterministic replay.
+        Read step output/error row.
 
         Args:
-            workflow_id (str): Workflow UUID.
-            call_seq (int): Deterministic step call sequence.
-            tx (object|None): Optional transaction handle.
+            workflowId (str): Workflow UUID.
+            callSeq (int): Deterministic step call sequence.
+            tx (str|None): Optional transaction id.
 
         Returns:
-            dict|None: Step cache record, or `None` when not found.
+            dict|None: Step record, or `None` when not found.
         """
         sql = """
         SELECT status, output_json, error_json, attempts
         FROM workflows.operation_outputs
         WHERE workflow_id = ?::uuid AND call_seq = ?
         """
-        ds = self.q(sql, [workflow_id, int(call_seq)], tx=tx)
+        ds = self.query(sql, [workflowId, int(callSeq)], tx=tx)
         if ds is None or ds.getRowCount() == 0:
             return None
         return {
@@ -1203,18 +1076,16 @@ class DB(object):
             "attempts": int(ds.getValueAt(0, 3)),
         }
 
-    def insert_step_attempt(
-        self, workflow_id, call_seq, step_name, started_ms, tx=None
-    ):
+    def insertStepAttempt(self, workflowId, callSeq, stepName, startedMs, tx=None):
         """
         Insert initial step attempt row when it does not already exist.
 
         Args:
-            workflow_id (str): Workflow UUID.
-            call_seq (int): Deterministic step call sequence.
-            step_name (str): Step registry name.
-            started_ms (int|long): Step start timestamp.
-            tx (object|None): Optional transaction handle.
+            workflowId (str): Workflow UUID.
+            callSeq (int): Deterministic step call sequence.
+            stepName (str): Step registry name.
+            startedMs (int|long): Step start timestamp.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of inserted rows.
@@ -1227,37 +1098,37 @@ class DB(object):
         VALUES (?::uuid, ?, ?, ?, ?, 1)
         ON CONFLICT (workflow_id, call_seq) DO NOTHING
         """
-        n = self.u(
+        n = self.update(
             sql,
             [
-                workflow_id,
-                int(call_seq),
-                step_name,
+                workflowId,
+                int(callSeq),
+                stepName,
                 settings.STEP_STATUS_STARTED,
-                long(started_ms),
+                long(startedMs),
             ],
             tx=tx,
         )
-        if _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.step.insert_attempt wid=%s call_seq=%s step=%s n=%s"
-                % (workflow_id, int(call_seq), step_name, n)
+                % (workflowId, int(callSeq), stepName, n)
             )
         return n
 
-    def update_step_success(
-        self, workflow_id, call_seq, output_obj, completed_ms, attempts, tx=None
+    def updateStepSuccess(
+        self, workflowId, callSeq, outputObj, completedMs, attempts, tx=None
     ):
         """
         Mark a step attempt as SUCCESS and persist output JSON.
 
         Args:
-            workflow_id (str): Workflow UUID.
-            call_seq (int): Deterministic step call sequence.
-            output_obj (object): Step return payload.
-            completed_ms (int|long): Completion timestamp.
+            workflowId (str): Workflow UUID.
+            callSeq (int): Deterministic step call sequence.
+            outputObj (object): Step return payload.
+            completedMs (int|long): Completion timestamp.
             attempts (int): Attempt count used for this success.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of updated rows.
@@ -1271,36 +1142,36 @@ class DB(object):
             attempts = ?
         WHERE workflow_id = ?::uuid AND call_seq = ?
         """
-        n = self.u(
+        n = self.update(
             sql,
             [
                 settings.STATUS_SUCCESS,
-                _dumps(output_obj),
-                long(completed_ms),
+                _dumps(outputObj),
+                long(completedMs),
                 int(attempts),
-                workflow_id,
-                int(call_seq),
+                workflowId,
+                int(callSeq),
             ],
             tx=tx,
         )
-        if _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.step.success wid=%s call_seq=%s attempts=%s n=%s"
-                % (workflow_id, int(call_seq), int(attempts), n)
+                % (workflowId, int(callSeq), int(attempts), n)
             )
         return n
 
-    def update_step_error(
-        self, workflow_id, call_seq, error_obj, completed_ms, attempts, tx=None
+    def updateStepError(
+        self, workflowId, callSeq, errorObj, completedMs, attempts, tx=None
     ):
         """
         Mark a step attempt as ERROR and persist error JSON.
 
         Args:
-            workflow_id (str): Workflow UUID.
-            call_seq (int): Deterministic step call sequence.
-            error_obj (dict): Error payload (message/traceback/attempt info).
-            completed_ms (int|long): Completion timestamp.
+            workflowId (str): Workflow UUID.
+            callSeq (int): Deterministic step call sequence.
+            errorObj (dict): Error payload (message/traceback/attempt info).
+            completedMs (int|long): Completion timestamp.
             attempts (int): Attempt count reached.
             tx (object|None): Optional transaction handle.
 
@@ -1315,46 +1186,46 @@ class DB(object):
             attempts = ?
         WHERE workflow_id = ?::uuid AND call_seq = ?
         """
-        n = self.u(
+        n = self.update(
             sql,
             [
                 settings.STATUS_ERROR,
-                _dumps(error_obj),
-                long(completed_ms),
+                _dumps(errorObj),
+                long(completedMs),
                 int(attempts),
-                workflow_id,
-                int(call_seq),
+                workflowId,
+                int(callSeq),
             ],
             tx=tx,
         )
-        if _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.step.error wid=%s call_seq=%s attempts=%s n=%s err=%s"
                 % (
-                    workflow_id,
-                    int(call_seq),
+                    workflowId,
+                    int(callSeq),
                     int(attempts),
                     n,
-                    _truncate(error_obj, 300),
+                    _truncate(errorObj, 300),
                 )
             )
         return n
 
     # ---------- notifications (mailbox) ----------
 
-    def send_notification(
-        self, destination_uuid, topic, message_obj, message_uuid, created_ms, tx=None
+    def sendNotification(
+        self, destinationUUID, topic, messageObj, messageUUID, createdMs, tx=None
     ):
         """
         Insert one mailbox notification row.
 
         Args:
-            destination_uuid (str): Destination workflow UUID.
+            destinationUUID (str): Destination workflow UUID.
             topic (str): Mailbox topic.
-            message_obj (dict): Message payload.
-            message_uuid (str|None): Optional idempotency UUID.
-            created_ms (int|long): Created timestamp.
-            tx (object|None): Optional transaction handle.
+            messageObj (dict): Message payload.
+            messageUUID (str|None): Optional idempotency UUID.
+            createdMs (int|long): Created timestamp.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of inserted rows.
@@ -1363,58 +1234,62 @@ class DB(object):
         INSERT INTO workflows.notifications(destination_uuid, topic, message_json, message_uuid, created_at_epoch_ms)
         VALUES (?::uuid, ?, ?, ?::uuid, ?)
         """
-        n = self.u(
+        n = self.update(
             sql,
             [
-                destination_uuid,
+                destinationUUID,
                 topic,
-                _dumps(message_obj),
-                message_uuid,
-                long(created_ms),
+                _dumps(messageObj),
+                messageUUID,
+                long(createdMs),
             ],
             tx=tx,
         )
-        if _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.mail.send dst=%s topic=%s mid=%s n=%s"
-                % (destination_uuid, topic, message_uuid, n)
+                % (destinationUUID, topic, messageUUID, n)
             )
         return n
 
-    def recv_notification(self, destination_uuid, topic, timeout_ms, tx=None):
+    def recvNotification(self, destinationUUID, topic, timeoutMs, tx=None):
         """
         Non-blocking receive:
-        - If timeout_ms == 0: fetch one oldest row and delete it atomically.
-        - If timeout_ms > 0: loops with sleep (kept simple).
+        - If timeoutMs == 0: fetch one oldest row and delete it atomically.
+        - If timeoutMs > 0: loops with sleep (not good).
+        NOTE IT WILL BLOCK if timeout > 0
 
         Args:
-            destination_uuid (str): Destination workflow UUID.
+            destinationUUID (str): Destination workflow UUID.
             topic (str): Mailbox topic.
-            timeout_ms (int|long): Poll timeout in milliseconds.
-            tx (object|None): Optional transaction handle.
+            timeoutMs (int|long): Poll timeout in milliseconds.
+            tx (str|None): Optional transaction id.
 
         Returns:
             dict|None: Decoded message payload, or `None` on timeout/no message.
         """
-        import time as _time
 
-        deadline = now_ms() + long(timeout_ms)
+        deadline = nowMs() + long(timeoutMs)
         while True:
-            row = self._pop_notification_once(destination_uuid, topic, tx=tx)
+            row = self._popNotificationOnce(destinationUUID, topic, tx=tx)
             if row is not None:
                 return row
-            if timeout_ms <= 0 or now_ms() >= deadline:
+            if timeoutMs <= 0 or nowMs() >= deadline:
                 return None
-            _time.sleep(0.1)
+            # TODO, is there a better way? this is it for now
+            time.sleep(0.1)
 
-    def _pop_notification_once(self, destination_uuid, topic, tx=None):
+    def _popNotificationOnce(self, destinationUUID, topic, tx=None):
         """
         Pop one mailbox message atomically using row lock + delete.
+        Acknowledges the notification
+        TODO this is what DBOS does, do we need this? we can keep all
+         notifications as an audit instead
 
         Args:
-            destination_uuid (str): Destination workflow UUID.
+            destinationUUID (str): Destination workflow UUID.
             topic (str): Mailbox topic.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             dict|None: Decoded message payload, or `None` when empty/error.
@@ -1435,7 +1310,7 @@ class DB(object):
             FOR UPDATE SKIP LOCKED
             LIMIT 1
             """
-            ds = self.q(sel, [destination_uuid, topic], tx=tx_use)
+            ds = self.query(sel, [destinationUUID, topic], tx=tx_use)
             if ds is None or ds.getRowCount() == 0:
                 if local_tx is not None:
                     self.commit(local_tx)
@@ -1445,7 +1320,7 @@ class DB(object):
             msg = ds.getValueAt(0, 1)
 
             dele = "DELETE FROM workflows.notifications WHERE notification_id = ?"
-            self.u(dele, [nid], tx=tx_use)
+            self.update(dele, [nid], tx=tx_use)
 
             if local_tx is not None:
                 self.commit(local_tx)
@@ -1456,12 +1331,13 @@ class DB(object):
                 try:
                     self.rollback(local_tx)
                 except:
-                    pass
-            if _is_debug():
-                log.error(
-                    "evt=db.mail.pop.error dst=%s topic=%s trace=%s"
-                    % (destination_uuid, topic, traceback.format_exc())
-                )
+                    self._logException(
+                        "db.mail.pop.rollback.error",
+                        "dst=%s topic=%s" % (destinationUUID, topic),
+                    )
+            self._logException(
+                "db.mail.pop.error", "dst=%s topic=%s" % (destinationUUID, topic)
+            )
             return None
         finally:
             if local_tx is not None:
@@ -1469,16 +1345,16 @@ class DB(object):
 
     # ---------- events ----------
 
-    def set_event(self, workflow_id, key, value_obj, ms, tx=None):
+    def upsertEvent(self, workflowId, key, valueObj, ms, tx=None):
         """
         Upsert current event value and append event history row.
 
         Args:
-            workflow_id (str): Workflow UUID.
+            workflowId (str): Workflow UUID.
             key (str): Event key.
-            value_obj (object): Event payload.
+            valueObj (object): Event payload.
             ms (int|long): Event timestamp.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             None: Persists event rows in DB.
@@ -1489,32 +1365,32 @@ class DB(object):
         ON CONFLICT (workflow_id, key)
         DO UPDATE SET value_json = EXCLUDED.value_json, updated_at_epoch_ms = EXCLUDED.updated_at_epoch_ms
         """
-        self.u(sql, [workflow_id, key, _dumps(value_obj), long(ms)], tx=tx)
+        self.update(sql, [workflowId, key, _dumps(valueObj), long(ms)], tx=tx)
 
         hist = """
         INSERT INTO workflows.workflow_events_history(workflow_id, key, value_json, created_at_epoch_ms)
         VALUES (?::uuid, ?, ?, ?)
         """
-        self.u(hist, [workflow_id, key, _dumps(value_obj), long(ms)], tx=tx)
+        self.update(hist, [workflowId, key, _dumps(valueObj), long(ms)], tx=tx)
 
-        if _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.event.set wid=%s key=%s ms=%s val=%s"
-                % (workflow_id, key, long(ms), _truncate(value_obj, 300))
+                % (workflowId, key, long(ms), _truncate(valueObj, 300))
             )
 
     # ---------- streams ----------
 
-    def append_stream(self, workflow_id, key, value_obj, ms, tx=None):
+    def appendStream(self, workflowId, key, valueObj, ms, tx=None):
         """
         Append to stream with atomic offset allocation via stream_heads.
 
         Args:
-            workflow_id (str): Workflow UUID.
+            workflowId (str): Workflow UUID.
             key (str): Stream key.
             value_obj (object): Stream payload.
             ms (int|long): Event timestamp.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             long: Appended stream offset.
@@ -1524,7 +1400,7 @@ class DB(object):
         VALUES (?::uuid, ?, 0)
         ON CONFLICT (workflow_id, key) DO NOTHING
         """
-        self.u(init, [workflow_id, key], tx=tx)
+        self.update(init, [workflowId, key], tx=tx)
 
         alloc = """
         UPDATE workflows.stream_heads
@@ -1532,7 +1408,7 @@ class DB(object):
         WHERE workflow_id = ?::uuid AND key = ?
         RETURNING next_offset
         """
-        ds = self.q(alloc, [workflow_id, key], tx=tx)
+        ds = self.query(alloc, [workflowId, key], tx=tx)
         next_off = long(ds.getValueAt(0, 0))
         off = next_off - 1
 
@@ -1540,99 +1416,50 @@ class DB(object):
         INSERT INTO workflows.streams(workflow_id, key, "offset", value_json, created_at_epoch_ms)
         VALUES (?::uuid, ?, ?, ?, ?)
         """
-        if True or _is_debug():
-            log.debug(
-                "evt=db.stream.append wid=%s TRYING TO APPEND this =%s"
-                % (workflow_id, ins)
-            )
-        if True or _is_debug():
-            log.debug(
-                "evt=db.stream.append wid=%s TRYING TO APPEND values =%s"
-                % (
-                    workflow_id,
-                    [workflow_id, key, long(off), _dumps(value_obj), long(ms)],
-                )
-            )
-        self.u(ins, [workflow_id, key, long(off), _dumps(value_obj), long(ms)], tx=tx)
+        payload_json = _dumps(valueObj)
+        self.update(ins, [workflowId, key, long(off), payload_json, long(ms)], tx=tx)
 
-        if True or _is_debug():
+        if _isDebug():
             log.debug(
                 "evt=db.stream.append wid=%s key=%s off=%s ms=%s val=%s"
-                % (workflow_id, key, long(off), long(ms), _truncate(value_obj, 300))
+                % (workflowId, key, long(off), long(ms), _truncate(valueObj, 300))
             )
         return off
 
-    # ---------- parameter templates/sets ----------
-
-    def get_latest_template(self, workflow_name, template_name, tx=None):
-        """
-        Fetch the latest active parameter template for a workflow/template name.
-
-        Args:
-            workflow_name (str): Workflow name.
-            template_name (str): Template name.
-            tx (object|None): Optional transaction handle.
-
-        Returns:
-            dict|None: Template version + schema payload, or `None`.
-        """
-        sql = """
-        SELECT template_version, schema_json
-        FROM workflows.param_templates
-        WHERE workflow_name = ? AND template_name = ? AND status = 'active'
-        ORDER BY template_version DESC
-        LIMIT 1
-        """
-        ds = self.q(sql, [workflow_name, template_name], tx=tx)
-        if ds is None or ds.getRowCount() == 0:
-            return None
-        return {
-            "template_version": int(ds.getValueAt(0, 0)),
-            "schema": _loads(ds.getValueAt(0, 1)),
-        }
-
-    def get_latest_set(self, workflow_name, template_name, set_name, tx=None):
-        """
-        Fetch the latest active parameter set for a workflow/template/set key.
-
-        Args:
-            workflow_name (str): Workflow name.
-            template_name (str): Template name.
-            set_name (str): Set name.
-            tx (object|None): Optional transaction handle.
-
-        Returns:
-            dict|None: Set version + values payload, or `None`.
-        """
-        sql = """
-        SELECT set_version, values_json
-        FROM workflows.param_sets
-        WHERE workflow_name = ? AND template_name = ? AND set_name = ? AND status = 'active'
-        ORDER BY set_version DESC
-        LIMIT 1
-        """
-        ds = self.q(sql, [workflow_name, template_name, set_name], tx=tx)
-        if ds is None or ds.getRowCount() == 0:
-            return None
-        return {
-            "set_version": int(ds.getValueAt(0, 0)),
-            "values": _loads(ds.getValueAt(0, 1)),
-        }
-
     # ---------- retention ----------
 
-    def get_retention_config(self, tx=None):
+    def _datasetFirstColAsStrList(self, ds):
+        out = []
+        if ds is None:
+            return out
+        for row_idx in range(ds.getRowCount()):
+            out.append(str(ds.getValueAt(row_idx, 0)))
+        return out
+
+    def _deleteWorkflowTree(self, workflow_id, tx=None):
+        deleted = 0
+        for delete_sql in _DELETE_WORKFLOW_CHILD_SQL:
+            deleted += self.update(delete_sql, [workflow_id], tx=tx)
+        return deleted
+
+    def _deleteWorkflowTrees(self, workflow_ids, tx=None):
+        deleted = 0
+        for workflow_id in workflow_ids:
+            deleted += self._deleteWorkflowTree(workflow_id, tx=tx)
+        return deleted
+
+    def getRetentionConfig(self, tx=None):
         """
         Read retention configuration from `workflows.retention_config`.
 
         Args:
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             dict: Retention settings with fallback defaults when row is missing.
         """
         sql = "SELECT time_threshold_hours, rows_threshold, global_timeout_hours FROM workflows.retention_config WHERE id = 1"
-        ds = self.q(sql, [], tx=tx)
+        ds = self.query(sql, [], tx=tx)
         if ds is None or ds.getRowCount() == 0:
             return {
                 "time_threshold_hours": None,
@@ -1645,20 +1472,20 @@ class DB(object):
             "global_timeout_hours": ds.getValueAt(0, 2),
         }
 
-    def enforce_global_timeout(self, hours, tx=None):
+    def enforceGlobalTimeout(self, hours, tx=None):
         """
         Cancel active workflows older than `hours`.
 
         Args:
             hours (float|int|None): Age threshold in hours.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of rows updated.
         """
         if hours is None or hours == 0:
             return 0
-        cutoff = now_ms() - long(float(hours) * 3600.0 * 1000.0)
+        cutoff = nowMs() - long(float(hours) * 3600.0 * 1000.0)
         err = _dumps({"type": "timeout", "reason": "global_timeout_hours exceeded"})
         sql = """
         UPDATE workflows.workflow_status
@@ -1669,8 +1496,8 @@ class DB(object):
         WHERE status IN (?, ?, ?)
           AND created_at_epoch_ms < ?
         """
-        ms = now_ms()
-        n = self.u(
+        ms = nowMs()
+        n = self.update(
             sql,
             [
                 settings.STATUS_CANCELLED,
@@ -1685,25 +1512,25 @@ class DB(object):
             tx=tx,
         )
         log.info(
-            "evt=db.retention.global_timeout hours=%s cutoff=%s n=%s"
+            "evt=db.retention.enforceGlobalTimeout hours=%s cutoff=%s n=%s"
             % (hours, cutoff, n)
         )
         return n
 
-    def delete_old_terminal(self, hours, tx=None):
+    def deleteOldTerminal(self, hours, tx=None):
         """
         Delete terminal workflows older than configured age, including child rows.
 
         Args:
             hours (float|int|None): Age threshold in hours.
-            tx (object|None): Optional transaction handle.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of rows deleted across all affected tables.
         """
         if hours is None or hours == 0:
             return 0
-        cutoff = now_ms() - long(float(hours) * 3600.0 * 1000.0)
+        cutoff = nowMs() - long(float(hours) * 3600.0 * 1000.0)
 
         sel = """
         SELECT workflow_id
@@ -1711,87 +1538,44 @@ class DB(object):
         WHERE status IN (?, ?, ?)
           AND COALESCE(completed_at_epoch_ms, updated_at_epoch_ms) < ?
         """
-        ds = self.q(
+        ds = self.query(
             sel,
-            [
-                settings.STATUS_SUCCESS,
-                settings.STATUS_ERROR,
-                settings.STATUS_CANCELLED,
-                cutoff,
-            ],
+            list(_WORKFLOW_TERMINAL_FOR_DELETE) + [cutoff],
             tx=tx,
         )
-        ids = []
-        for r in range(ds.getRowCount()):
-            ids.append(str(ds.getValueAt(r, 0)))
+        ids = self._datasetFirstColAsStrList(ds)
         if not ids:
             return 0
 
-        deleted = 0
-        for wid in ids:
-            deleted += self.u(
-                "DELETE FROM workflows.operation_outputs WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.workflow_events WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.workflow_events_history WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.notifications WHERE destination_uuid = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.streams WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.stream_heads WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.workflow_status WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
+        deleted = self._deleteWorkflowTrees(ids, tx=tx)
 
         log.info(
-            "evt=db.retention.delete_old_terminal hours=%s cutoff=%s workflows=%s deleted_rows=%s"
+            "evt=db.retention.deleteOldTerminal hours=%s cutoff=%s workflows=%s deleted_rows=%s"
             % (hours, cutoff, len(ids), deleted)
         )
         return deleted
 
-    def enforce_rows_threshold(self, rows_threshold, tx=None):
+    def enforceRowsThreshold(self, rowsThreshold, tx=None):
         """
         If workflow_status row count exceeds threshold, delete oldest terminal workflows.
 
         Args:
-            rows_threshold (int|long|None): Maximum allowed workflow_status rows.
-            tx (object|None): Optional transaction handle.
+            rowsThreshold (int|long|None): Maximum allowed workflow_status rows.
+            tx (str|None): Optional transaction id.
 
         Returns:
             int: Number of rows deleted across all affected tables.
         """
-        if rows_threshold is None or rows_threshold == 0:
+        if rowsThreshold is None or rowsThreshold == 0:
             return 0
         total = self.scalar(
             "SELECT COUNT(*) FROM workflows.workflow_status", [], tx=tx, default=0
         )
         total = long(total)
-        if total <= long(rows_threshold):
+        if total <= long(rowsThreshold):
             return 0
 
-        to_remove = total - long(rows_threshold)
+        to_remove = total - long(rowsThreshold)
         if to_remove <= 0:
             return 0
 
@@ -1802,79 +1586,26 @@ class DB(object):
         ORDER BY COALESCE(completed_at_epoch_ms, updated_at_epoch_ms) ASC
         LIMIT ?
         """
-        ds = self.q(
+        ds = self.query(
             sel,
-            [
-                settings.STATUS_SUCCESS,
-                settings.STATUS_ERROR,
-                settings.STATUS_CANCELLED,
-                long(to_remove),
-            ],
+            list(_WORKFLOW_TERMINAL_FOR_DELETE) + [long(to_remove)],
             tx=tx,
         )
-        ids = []
-        for r in range(ds.getRowCount()):
-            ids.append(str(ds.getValueAt(r, 0)))
+        ids = self._datasetFirstColAsStrList(ds)
         if not ids:
             return 0
 
-        deleted = 0
-        for wid in ids:
-            deleted += self.u(
-                "DELETE FROM workflows.operation_outputs WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.workflow_events WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.workflow_events_history WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.notifications WHERE destination_uuid = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.streams WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.stream_heads WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
-            deleted += self.u(
-                "DELETE FROM workflows.workflow_status WHERE workflow_id = ?::uuid",
-                [wid],
-                tx=tx,
-            )
+        deleted = self._deleteWorkflowTrees(ids, tx=tx)
 
         log.info(
-            "evt=db.retention.enforce_rows_threshold threshold=%s total=%s removed=%s deleted_rows=%s"
-            % (rows_threshold, total, len(ids), deleted)
+            "evt=db.retention.enforceRowsThreshold threshold=%s total=%s removed=%s deleted_rows=%s"
+            % (rowsThreshold, total, len(ids), deleted)
         )
         return deleted
 
     # ---------- row utils ----------
 
-    def _row_to_dict(self, ds, row_idx):
-        """
-        Convert one PyDataSet row into a plain dict keyed by column name.
-
-        Args:
-            ds (PyDataSet): Result dataset.
-            row_idx (int): Row index.
-
-        Returns:
-            dict: Row dictionary.
-        """
+    def _rowToDict(self, ds, row_idx):
         col_names = ds.getColumnNames()
         out = {}
         for c in range(len(col_names)):

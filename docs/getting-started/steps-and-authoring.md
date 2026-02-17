@@ -54,8 +54,8 @@ def demo_small(duration_s=10):
 
 ### DB (application DB, not engine internals)
 
-- `db.query(db_name, sql, args=None)`
-- `db.update(db_name, sql, args=None)`
+- `db.query(dbName, sql, args=None)`
+- `db.update(dbName, sql, args=None)`
 
 ### Wait/sleep
 

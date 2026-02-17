@@ -1,6 +1,6 @@
 {
   "custom": {
-    "stats": "{\"inMemoryQueue\":{\"maxDepth\":50000,\"overflowCount\":2,\"depth\":0,\"flushDuringMaintenance\":false,\"acceptDuringMaintenance\":false,\"lastOverflowAtMs\":1771167262515,\"type\":\"java.util.concurrent.ConcurrentLinkedQueue\",\"overflowMode\":\"reject\"},\"identity\":{\"generation\":4,\"executorId\":\"ign-devops:353ffbbc-ff2f-4f55-b16b-c2da29052cd8\",\"dbName\":\"WorkflowsDB\",\"projectName\":\"workflows\",\"threadName\":\"perspective-worker-156\",\"timestampMs\":1771167303283},\"workload\":{\"activeWorkflowsCount\":0,\"activePartitionsCount\":0,\"inFlightWorkflows\":0},\"executors\":{\"workflows\":{\"activeCount\":0,\"queueSize\":0,\"largestPoolSize\":4,\"isTerminated\":false,\"poolSize\":4,\"className\":\"java.util.concurrent.ThreadPoolExecutor\",\"queueClassName\":\"java.util.concurrent.LinkedBlockingQueue\",\"isTerminating\":false,\"taskCount\":20,\"queueRemainingCapacity\":2147483647,\"corePoolSize\":4,\"completedTaskCount\":20,\"maxPoolSize\":4,\"isShutdown\":false},\"steps\":{\"activeCount\":0,\"queueSize\":0,\"largestPoolSize\":0,\"isTerminated\":false,\"poolSize\":0,\"className\":\"java.util.concurrent.ThreadPoolExecutor\",\"queueClassName\":\"java.util.concurrent.LinkedBlockingQueue\",\"isTerminating\":false,\"taskCount\":0,\"queueRemainingCapacity\":2147483647,\"corePoolSize\":8,\"completedTaskCount\":0,\"maxPoolSize\":8,\"isShutdown\":false}},\"maintenance\":{\"mode\":\"drain\",\"reason\":\"\",\"lastSwapAtMs\":1771167260273,\"enabled\":false},\"capacity\":{\"workflowAvailableSlots\":4,\"workflowWorkersConfigured\":4,\"workflowQueueSize\":0,\"workflowActiveCount\":0}}"
+    "stats": null
   },
   "params": {},
   "propConfig": {
@@ -128,13 +128,22 @@
                       {
                         "events": {
                           "component": {
-                            "onActionPerformed": {
-                              "config": {
-                                "script": "\t# from exchange.workflows.tests import harness\n\t# report \u003d harness.run_all(db_name\u003d\"WorkflowsDB\")\n\t# self.parent.parent.parent.getChild(\"Tests\").getChild(\"Results\").props.source \u003d harness.format_report_md(report)\n\t# self.props.value \u003d 0\n\tfrom exchange.workflows.tests import runner\n\treport \u003d runner.run_all_md(dbName\u003d\"WorkflowsDB\")\n\tself.parent.parent.parent.parent.getChild(\"Tests\").getChild(\"Results\").props.source \u003d report[\"markdown\"]\n\tself.props.value \u003d 0"
+                            "onActionPerformed": [
+                              {
+                                "config": {
+                                  "script": "\ttry:\n\t\tfrom exchange.workflows.tests import runner\n\t\treport \u003d runner.run_all_md(dbName\u003d\"WorkflowsDB\")\n\t\tself.parent.parent.parent.parent.getChild(\"Tests\").getChild(\"Results\").props.source \u003d report[\"markdown\"]\n\t\texchange.workflows.toast.show(message\u003d\"running\", type\u003d\"success\")\n\texcept Exception as e:\n\t\texchange.workflows.toast.show(message\u003dstr(e), type\u003d\"error\")"
+                                },
+                                "scope": "G",
+                                "type": "script"
                               },
-                              "scope": "G",
-                              "type": "script"
-                            }
+                              {
+                                "config": {
+                                  "script": "\tself.props.value \u003d 0"
+                                },
+                                "scope": "G",
+                                "type": "script"
+                              }
+                            ]
                           }
                         },
                         "meta": {
