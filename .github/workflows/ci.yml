@@ -1,3 +1,4 @@
+---
 name: Continuous Integration
 
 on:
@@ -28,7 +29,7 @@ jobs:
       - name: Run dotenv-linter
         uses: dotenv-linter/action-dotenv-linter@v3
         with:
-          reporter: github-pr-review # Default is github-pr-check
+          reporter: github-pr-review
           dotenv_linter_flags: --ignore-checks UnorderedKey
 
       # Ignition linter
@@ -36,7 +37,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.14"
-          
+
       - name: Install ignition-lint
         run: pip install ignition-lint
 

@@ -33,7 +33,7 @@ services:
     <<: *ignition-opts
     hostname: ignition
     ports:
-      - "${GATEWAY_PORT:-8088}:8088" 
+      - "${GATEWAY_PORT:-8088}:8088"
       - "${GATEWAY_HTTPS_PORT:-8043}:8043"
     command: >
       -n ign-workflows
@@ -46,7 +46,7 @@ services:
       GATEWAY_ADMIN_PASSWORD_FILE: /run/secrets/gateway-admin-password
     volumes:
       - gw-data:/usr/local/bin/ignition/data
-      - ./projects:/usr/local/bin/ignition/data/projects/ # expose Projects to version control 
+      - ./projects:/usr/local/bin/ignition/data/projects/
     healthcheck:
       test: /usr/bin/curl -sS http://localhost:8088/StatusPing | grep -c RUNNING > /dev/null
       interval: 10s
@@ -71,7 +71,12 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U \"$$(cat /run/secrets/postgres-user)\" -d \"${POSTGRES_DB:-base}\""]
+      test:
+        - CMD-SHELL
+        - >
+          pg_isready -h localhost -p 5432
+          -U "$$(cat /run/secrets/postgres-user)"
+          -d "$${POSTGRES_DB:-base}"
       interval: 10s
       timeout: 5s
       retries: 10
@@ -86,7 +91,7 @@ secrets:
     file: secrets/POSTGRES_USER
   postgres-password:
     file: secrets/POSTGRES_PASSWORD
- 
+
 volumes:
   gw-data:
   pgdata:
