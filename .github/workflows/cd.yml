@@ -1,3 +1,4 @@
+---
 name: Continuous Deployment
 
 on:
@@ -83,4 +84,3 @@ jobs:
           name: "${{ steps.ver.outputs.tag }}"
           body_path: RELEASE_NOTES.md
           files: "projects/workflows/workflows-${{ steps.ver.outputs.tag }}.zip"
-

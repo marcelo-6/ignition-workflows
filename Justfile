@@ -16,6 +16,7 @@ doctor:
 	@command -v docker compose >/dev/null && echo "  docker compose: ok" || echo "  docker compose: missing"
 	@command -v cargo >/dev/null && echo "  cargo: ok" || echo "  cargo: missing"
 	@command -v git-cliff >/dev/null && echo "  git-cliff: ok" || echo "  git-cliff: missing (run: just install-git-cliff)"
+	@command -v yamllint -v >/dev/null && echo "  yamllint: ok" || echo "  yamllint: missing"
 
 install-git-cliff:
 	@if command -v git-cliff >/dev/null 2>&1; then \
@@ -103,3 +104,6 @@ docs-build:
 		-v "$PWD:/docs" \
 		{{zensical_image}} \
 		build --clean
+
+lint:
+	yamllint .
