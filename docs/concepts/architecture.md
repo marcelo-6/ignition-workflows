@@ -17,21 +17,20 @@ The project also deals with script interpreter reloads (read more here).
 
 ## Workflow and steps
 
-* **Workflows** are functions that describe a long-running process.
-* **Steps** are the units of work inside workflows that the library makes durable.
-* When a workflow calls a step, library persists the step result so it can:
-
-  * **replay** the result on retry/restart
-  * avoid re-running the step if it already succeeded
-  * apply retry/backoff rules in a consistent way
+- **Workflows** are functions that describe a long-running process.
+- **Steps** are the units of work inside workflows that the library makes durable.
+- When a workflow calls a step, library persists the step result so it can:
+- **replay** the result on retry/restart
+- avoid re-running the step if it already succeeded
+- apply retry/backoff rules in a consistent way
 
 ## System database
 
-* workflow rows (status, inputs, timestamps, ownership)
-* step outputs / attempts (call sequence, output/error, timing)
-* events + streams (for observability)
-* notifications/mailbox (send/recv for async coordination)
-* deduplication metadata (idempotent enqueue)
+- workflow rows (status, inputs, timestamps, ownership)
+- step outputs / attempts (call sequence, output/error, timing)
+- events + streams (for observability)
+- notifications/mailbox (send/recv for async coordination)
+- deduplication metadata (idempotent enqueue)
 
 The DB is what makes it durable. Executors can crash, processes can restart. Recovery is just “read DB, resume from durable checkpoints.”
 
@@ -47,7 +46,8 @@ Library executors repeatedly:
 
 ## Workflow Runtime
 
-### Enqueue 
+### Enqueue
+
 (e.i. create durable work)
 
 A workflow request becomes a row in Postgres with status `ENQUEUED`.
@@ -60,7 +60,6 @@ Use when you can afford a DB write right now.
 
 - API: `exchange.workflows.api.service.start(...)`
 - Behavior: inserts a workflow as a `ENQUEUED` row into the database immediately.
-
 
 ```mermaid
 flowchart TB
@@ -145,32 +144,32 @@ flowchart TB
   e6@{ animation: slow }
 ```
 
-### Start execution 
+### Start execution
 
 (e.i. transition to RUNNING when code actually begins)
 
 When a worker thread picks up a claimed row:
 
-* it transitions `PENDING -> RUNNING`
-* it sets `started_at_epoch_ms` at that moment
-* it computes `deadline_epoch_ms = started_at + timeout`
+- it transitions `PENDING -> RUNNING`
+- it sets `started_at_epoch_ms` at that moment
+- it computes `deadline_epoch_ms = started_at + timeout`
 
 ### Step execution
 
 Inside the workflow:
 
-* each step call increments a deterministic `call_seq`
+- each step call increments a deterministic `call_seq`
 
-  * if ERROR: retry a configurable amount of times
-  * else: execute and persist output/error
+  - if ERROR: retry a configurable amount of times
+  - else: execute and persist output/error
 
 ### Terminal states
 
 When workflow finishes, it writes one terminal status:
 
-* SUCCESS
-* ERROR
-* CANCELLED
+- SUCCESS
+- ERROR
+- CANCELLED
 
 ---
 
@@ -180,9 +179,8 @@ When workflow finishes, it writes one terminal status:
 
 one workflow at a time per instrument/resource.
 
-* DB: don’t claim if another workflow in that partition is already pending/running
-* runtime: keep a local active partition set to avoid double-dispatch in-process
-
+- DB: don’t claim if another workflow in that partition is already pending/running
+- runtime: keep a local active partition set to avoid double-dispatch in-process
 
 ### Ignition/Jython interpreter reload issue
 
@@ -213,7 +211,6 @@ This project is basically built around that reality:
 - Make workflows durable by storing state in Postgres, not in memory.
 - Keep tag/event scripts fast (single-digit ms ideally).
 - Provide a clean “upgrade / cutover” during production enviroments using maintenance mode.
-
 
 #### How we mitigate mixed-version execution
 
@@ -256,16 +253,16 @@ This does not magically preempt running step code (that is a non-goal). It gives
 These posts explain the lifecycle/thread behavior this design is built around:
 
 - [When are gateway scripts reloaded?](https://forum.inductiveautomation.com/t/when-are-gateway-scripts-reloaded/14735)
-    - project save creates new interpreter; running scripts/threads keep old environment.
+  - project save creates new interpreter; running scripts/threads keep old environment.
 - [Request persistence of an object instance after scripting save](https://forum.inductiveautomation.com/t/request-persistence-of-an-object-instance-after-scripting-save/23641)
-    - old Jython objects can persist; `invokeAsynchronous` threads can be a major hazard.
+  - old Jython objects can persist; `invokeAsynchronous` threads can be a major hazard.
 - [Gateway Script Error: super(type, obj) ...](https://forum.inductiveautomation.com/t/gateway-script-error-super-type-obj-obj-must-be-an-instance-or-subtype-of-type/51042)
-    - clear explanation that save does not kill running threads.
+  - clear explanation that save does not kill running threads.
 - [Garbage collection for scripts](https://forum.inductiveautomation.com/t/garbage-collection-for-scripts/36627)
-    - guidance on long-lived thread shutdown signaling.
+  - guidance on long-lived thread shutdown signaling.
 - [Tag value change event](https://forum.inductiveautomation.com/t/tag-value-change-event/74998)
-    - why tag event scripts should be single-digit milliseconds.
+  - why tag event scripts should be single-digit milliseconds.
 - [Script execution time](https://forum.inductiveautomation.com/t/script-execution-time/98211)
-    - deeper details on tag event thread pools and missed events.
+  - deeper details on tag event thread pools and missed events.
 - [Managing multiple asynchronous threads](https://forum.inductiveautomation.com/t/managing-multiple-asynchronous-threads/37185)
-    - practical discussions around multi-thread script management in Ignition.
+  - practical discussions around multi-thread script management in Ignition.

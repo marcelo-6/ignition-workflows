@@ -18,15 +18,15 @@ icon: lucide/map
 * [ ] Confirm external executors are functional
 * [ ] Publish to Ignition Exchange
 
-### Documentation
+## Documentation
+
 * [x] Zensical project documentation
 * [ ] More examples of usage
 * [ ] More detailed API usage
 * [ ] Add perspective pages screenshots
 
-### Code Examples
+## Code Examples
+
 * [x] Command handling (`HOLD`, `RESUME`, `STOP`, `RESET`).
 * [ ] How to use templates
   
-
-
