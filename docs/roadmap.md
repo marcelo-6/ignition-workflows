@@ -10,7 +10,7 @@ icon: lucide/map
 * [x] Step retry on failure
 * [x] Procedure to making code changes in production to avoid [intepreter issues](concepts/architecture/#ignitionjython-interpreter-reload-issue){ data-preview }.
 * [x] Template + enum parameter for operator forms (recipe parameters for a given workflow).
-* [ ] Refactor `exchange.workflows.db` to conform with Exchange code standard
+* [x] Refactor `exchange.workflows.db` to conform with Exchange code standard
 * [ ] True async step execution (workflow execution is already async)
 * [ ] Child-workflow orchestration relationships
 * [ ] Debounce workflows
