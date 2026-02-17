@@ -14,4 +14,4 @@ icon: lucide/library
 
 - [Inductive Automation](https://inductiveautomation.com/)
 - [PostgreSQL](https://www.postgresql.org/)
-- ISA-88 and MTP alignment material (see private reference above)
+- ISA-88 and MTP material
