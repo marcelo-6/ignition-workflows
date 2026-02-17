@@ -8,11 +8,15 @@ A simple workflow orchestration library for [Ignition](http://ia.io).
 
 ??? info "Why?"
 
-    I've used SFCs in other projects in the past and it can be hard to manage the code and troubleshoot. I read about [DBOS](https://docs.dbos.dev/) and found it gave a good framework for async long running tasks. I thought that porting over some of their design into Ignition (without using SFC module or creating a third-party module) would be a fun personal project to get me a little more familiar with async multi-threaded Ignition scripting. Ignition is event driven and there are [some things](https://forum.inductiveautomation.com/t/managing-multiple-asynchronous-threads/37185) to keep in mind when trying to create/manage finite state machines and this library tries to handle some of that for you. 
+    I've used SFCs in other projects in the past and it can be hard to manage the code and troubleshoot. 
+    
+    I read about [DBOS](https://docs.dbos.dev/) and found it gave a good framework for async long running tasks. I thought that porting over some of their design into Ignition (without using SFC module or creating a third-party module) would be a fun personal project to get me a little more familiar with async multi-threaded Ignition scripting. 
+    
+    Ignition is event driven and there are [some things](https://forum.inductiveautomation.com/t/managing-multiple-asynchronous-threads/37185) to keep in mind when trying to create/manage finite state machines and this library tries to handle some of that for you. 
 
 Think of workflows as tasks that can have subtasks. This library just gives you a structured way to start/queue those tasks and gives you some reliability (retry on failure etc) and also creates threads as needed and attemps to manage the lifecycle of those tasks/threads.
 
-#### Basic functionality that this library enables:
+## Basic functionality that this library enables
 
 - Concurrent execution with retry behavior and operator control (HOLD/RESUME/STOP).
 - Workflow and and their steps outputs are stored in Postgres.
@@ -80,7 +84,6 @@ This library complements Ignition's functionality in a few lines of code. For ex
     ```
 
     1.  The workflow decorator lets use your existing functions as tasks to be executed later. You can queue them to be executed. See [Example](getting-started.md)
-
 
 === "Event streams"
 

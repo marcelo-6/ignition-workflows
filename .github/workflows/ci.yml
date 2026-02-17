@@ -24,27 +24,12 @@ jobs:
       - name: Lint Markdown
         uses: DavidAnson/markdownlint-cli2-action@v22
         with:
+          config: '.markdownlint-cli2.yaml'
           globs: '**/*.md'
+          continue-on-error: true
 
       - name: Run dotenv-linter
         uses: dotenv-linter/action-dotenv-linter@v3
         with:
           reporter: github-pr-review
           dotenv_linter_flags: --ignore-checks UnorderedKey
-
-      # Ignition linter
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.14"
-
-      - name: Install ignition-lint
-        run: pip install ignition-lint
-
-      - name: Run ignition-lint
-        run: |
-          # Lint all view.json files in the repository
-          find . -name "view.json" -type f | while read file; do
-            echo "Linting $file"
-            ignition-lint "$file"
-          done

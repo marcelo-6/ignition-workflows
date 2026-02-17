@@ -15,11 +15,11 @@ This is the fastest path to get workflows running.
 
 ## Create schema
 
-#### Use named query:
+### Use named query
 
 - `Exchange/Workflows/Schemas/Create`
 
-#### Or use the admin screen:
+### Or use the admin screen
 
 - location
 

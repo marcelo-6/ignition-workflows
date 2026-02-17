@@ -34,7 +34,7 @@ Priority is fixed:
 ## Allowed command policy
 
 | Command | Allowed states |
-|---|---|
+| --- | --- |
 | `STOP` | all states |
 | `HOLD` | `STARTING`, `RUNNING`, `RESUMING` |
 | `RESUME` | `HELD` |
@@ -97,4 +97,3 @@ def commands_60s():
 
         sleep_chunked(total_ms=500, chunk_ms=250)
 ```
-
