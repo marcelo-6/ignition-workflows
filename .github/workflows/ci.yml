@@ -1,53 +1,49 @@
-name: CI
+name: Continuous Integration
 
 on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, ci/sandbox]
 
 permissions:
   contents: read
 
 jobs:
-  sanity:
-    name: Basic Checks
+  lint:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Validate key files
-        run: |
-          set -euo pipefail
-          test -f Justfile
-          test -f cliff.toml
-          test -f README.md
-          test -f LICENSE
+      - name: Lint YAML
+        uses: ibiqlik/action-yamllint@v3
 
-      - name: Check for merge conflict markers
-        run: |
-          set -euo pipefail
-          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- .; then
-            echo "Merge conflict markers found"
-            exit 1
-          fi
+      - name: Lint Markdown
+        uses: DavidAnson/markdownlint-cli2-action@v22
+        with:
+          globs: '**/*.md'
 
-      - name: Prepare .env for CI compose validation
-        run: |
-          set -euo pipefail
-          if [ ! -f .env ]; then
-            cp .env.example .env
-          fi
+      - name: Run dotenv-linter
+        uses: dotenv-linter/action-dotenv-linter@v3
+        with:
+          reporter: github-pr-review # Default is github-pr-check
+          dotenv_linter_flags: --ignore-checks UnorderedKey
 
-      - name: Validate Docker Compose syntax
-        run: |
-          set -euo pipefail
-          docker compose config >/dev/null
+      # Ignition linter
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          
+      - name: Install ignition-lint
+        run: pip install ignition-lint
 
-      - name: Warn if .env is still tracked
+      - name: Run ignition-lint
         run: |
-          set -euo pipefail
-          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
-            echo "::warning::.env is tracked in git. Consider: git rm --cached .env"
-          fi
+          # Lint all view.json files in the repository
+          find . -name "view.json" -type f | while read file; do
+            echo "Linting $file"
+            ignition-lint "$file"
+          done

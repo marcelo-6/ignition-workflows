@@ -1,0 +1,86 @@
+name: Continuous Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "If true, do not push commit/tag or create a GitHub Release"
+        required: true
+        default: "true"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history + tags)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@git-cliff
+
+      - name: Compute next version (from Conventional Commits)
+        id: ver
+        run: |
+          v="$(git cliff --bumped-version)"
+          if [[ "$v" != v* ]]; then v="v$v"; fi
+          echo "tag=$v" >> "$GITHUB_OUTPUT"
+          echo "Tag: $v"
+
+      - name: Generate release notes (this release only)
+        run: |
+          git cliff --verbose --unreleased --tag "${{ steps.ver.outputs.tag }}" > RELEASE_NOTES.md
+
+      - name: Update CHANGELOG.md (prepend this release)
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            git cliff --verbose --unreleased --tag "${{ steps.ver.outputs.tag }}" --prepend CHANGELOG.md
+          else
+            git cliff --verbose --unreleased --tag "${{ steps.ver.outputs.tag }}" > CHANGELOG.md
+          fi
+
+      - name: Build release bundle (zip)
+        uses: TheDoctor0/zip-release@0.7.6
+        with:
+          type: "zip"
+          directory: "projects/workflows"
+          filename: "ignition-workflows-${{ steps.ver.outputs.tag }}.zip"
+
+      - name: Upload artifacts (dry run)
+        if: ${{ inputs.dry_run == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-dry-run-${{ steps.ver.outputs.tag }}"
+          path: |
+            CHANGELOG.md
+            RELEASE_NOTES.md
+            projects/workflows/workflows-${{ steps.ver.outputs.tag }}.zip
+
+      - name: Commit CHANGELOG + tag
+        if: ${{ inputs.dry_run != 'true' }}
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "chore(release): ${{ steps.ver.outputs.tag }}"
+          file_pattern: |
+            CHANGELOG.md
+            RELEASE_NOTES.md
+          tag_name: "${{ steps.ver.outputs.tag }}"
+          tagging_message: "${{ steps.ver.outputs.tag }}"
+
+      - name: Create GitHub Release + upload bundle
+        if: ${{ inputs.dry_run != 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "${{ steps.ver.outputs.tag }}"
+          name: "${{ steps.ver.outputs.tag }}"
+          body_path: RELEASE_NOTES.md
+          files: "projects/workflows/workflows-${{ steps.ver.outputs.tag }}.zip"
+
