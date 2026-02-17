@@ -153,7 +153,7 @@ def commands_60s(templateInfo=None, paramOne=None, paramTwo=None, paramThree=Non
             Commands (sent via mailbox topic="cmd"):
               - HOLD: enters HELD loop until RESUME
               - RESUME: exits HELD
-              - CANCEL: not a mailbox cmd; use rt.cancel_workflow from UI (DB status)
+              - CANCEL: not a mailbox cmd; use rt.cancelWorkflow from UI (DB status)
               - RESET: soft reset (clears some events, then continues)
 
     Args:

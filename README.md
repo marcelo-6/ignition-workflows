@@ -19,6 +19,9 @@
     <a href="https://github.com/orhun/git-cliff">
       <img alt="git-cliff" src="https://img.shields.io/badge/Changelog-git--cliff-orange.svg" />
     </a>
+    <a href="https://github.com/marcelo-6/ignition-workflows">
+      <img alt="Lifecycle" src="https://img.shields.io/badge/Lifecycle-Experimental-339999" />
+    </a>
   </p>
 </div>
 
@@ -32,6 +35,8 @@ What is currently implemented:
 - Workflow and and their steps outputs are stored in Postgres.
 - Work can be queued from Ignition events (tag changes, button presses, etc).
 - Architecture is set up to support automated testing and future external executors (CPython, Go, TypeScript, Java). External executors are just applications that use DBOS.
+
+The project is in the very early stages of development. The codebase will be changing frequently.
 
 Current items in my implementation vs DBOS that I am missing (and in order of my next priorities):
 1. Async step execution (main TODO for next release).

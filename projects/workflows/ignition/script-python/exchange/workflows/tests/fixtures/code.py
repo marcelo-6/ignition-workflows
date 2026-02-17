@@ -1,12 +1,11 @@
 # exchange/workflows/tests/fixtures.py
 """
-Test fixtures for the workflows harness.
+Test fixtures for the workflows.
 
 These workflows and steps are intentionally small and explicit so tests can assert
 engine behavior (retry, replay, maintenance, mailbox arbitration, timeout, etc.)
 without guessing at side effects.
 
-Ignition Gateway + Jython 2.7 only.
 """
 
 import time

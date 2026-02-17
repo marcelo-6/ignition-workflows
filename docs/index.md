@@ -1,166 +1,105 @@
 ---
-icon: lucide/rocket
+icon: lucide/book-open
 ---
 
-# Get started
+# Ignition Workflows
 
-For full documentation visit [zensical.org](https://zensical.org/docs/).
+A simple workflow orchestration library for [Ignition](http://ia.io).
 
-## Commands
+??? info "Why?"
 
-* [`zensical new`][new] - Create a new project
-* [`zensical serve`][serve] - Start local web server
-* [`zensical build`][build] - Build your site
+    I've used SFCs in other projects in the past and it can be hard to manage the code and troubleshoot. I read about [DBOS](https://docs.dbos.dev/) and found it gave a good framework for async long running tasks. I thought that porting over some of their design into Ignition (without using SFC module or creating a third-party module) would be a fun personal project to get me a little more familiar with async multi-threaded Ignition scripting. Ignition is event driven and there are [some things](https://forum.inductiveautomation.com/t/managing-multiple-asynchronous-threads/37185) to keep in mind when trying to create/manage finite state machines and this library tries to handle some of that for you. 
 
-  [new]: https://zensical.org/docs/usage/new/
-  [serve]: https://zensical.org/docs/usage/preview/
-  [build]: https://zensical.org/docs/usage/build/
+Think of workflows as tasks that can have subtasks. This library just gives you a structured way to start/queue those tasks and gives you some reliability (retry on failure etc) and also creates threads as needed and attemps to manage the lifecycle of those tasks/threads.
 
-## Examples
+#### Basic functionality that this library enables:
 
-### Admonitions
+- Concurrent execution with retry behavior and operator control (HOLD/RESUME/STOP).
+- Workflow and and their steps outputs are stored in Postgres.
+- Work can be queued from Ignition events (tag changes, button presses, etc).
+- Architecture is set up to support automated testing and future external executors (CPython, Go, TypeScript, Java). External executors are just applications that use DBOS. (see current limitations for details)
 
-> Go to [documentation](https://zensical.org/docs/authoring/admonitions/)
+## Use Cases
 
-!!! note
+This library complements Ignition's functionality in a few lines of code. For example:
 
-    This is a **note** admonition. Use it to provide helpful information.
+=== "Simple Decorated Function"
 
-!!! warning
+    [Detailed Example](getting-started.md)
+    ``` python
+    from exchange.workflows.engine.runtime import workflow
+    from exchange.workflows.engine.runtime import step
+    from exchange.workflows.engine.instance import getWorkflows
 
-    This is a **warning** admonition. Be careful!
+    @step() # (2)!
+    def step_one():
+        print("Step one completed!")
 
-### Details
+    @step()
+    def step_two():
+        print("Step two completed!")
 
-> Go to [documentation](https://zensical.org/docs/authoring/admonitions/#collapsible-blocks)
+    @workflow() # (1)!
+    def ignition_workflow():
+        step_one()
+        step_two()
+    ```
 
-??? info "Click to expand for more info"
+    1.  The workflow decorator lets use your existing functions as tasks to be executed later. You can queue them to be executed. See [Example](getting-started.md)
+
+    2.  The step decorator lets use your existing functions as steps/subtasks. They have retry on failure capabilites. See [Example](getting-started.md)
+
+=== "Tag Event Changes"
+
+    The Ignition tag system has a limited number of threads [available]. For that reason it is imperative to keep any tag event scripts execution to be fast (`<10ms`). If you have long running functions/tasks that need to be executed on a tag change event `Ignition Workflows` makes it easy to accomplish this
+  
+    [Forum discussion about this](https://forum.inductiveautomation.com/t/java-concurrent-queue-for-tag-change-scripts/82044/21)
+
+    [Detailed Example](getting-started.md)
+
+    [available]: https://forum.inductiveautomation.com/t/tag-change-missed-events/37764 "Here is one of many forum posts about it"
     
-    This content is hidden until you click to expand it.
-    Great for FAQs or long explanations.
+    
+    ``` python title="Value Changed Tag Event Script"
+    def valueChanged(tag, tagPath, previousValue, currentValue, initialChange, missedEvents):
+      exchange.workflows.api.service.enqueueInMemory("ignition_workflow") # (1)!
+    ```
 
-## Code Blocks
+     1. [Details](getting-started.md) on what happens after you call `enqueueInMemory`
 
-> Go to [documentation](https://zensical.org/docs/authoring/code-blocks/)
+    
 
-``` python hl_lines="2" title="Code blocks"
-def greet(name):
-    print(f"Hello, {name}!") # (1)!
+=== "Perspective"
 
-greet("Python")
-```
+    [Detailed Example](getting-started/getting-started/#){ data-preview }
 
-1.  > Go to [documentation](https://zensical.org/docs/authoring/code-blocks/#code-annotations)
+    ``` python title="onActionPerformed event script for a button in a view"
 
-    Code annotations allow to attach notes to lines of code.
+    def runAction(self, event):
+        ret = exchange.workflows.api.service.enqueue("ignition_workflow") # (1)!
+    ```
 
-Code can also be highlighted inline: `#!python print("Hello, Python!")`.
+    1.  The workflow decorator lets use your existing functions as tasks to be executed later. You can queue them to be executed. See [Example](getting-started.md)
 
-## Content tabs
 
-> Go to [documentation](https://zensical.org/docs/authoring/content-tabs/)
-
-=== "Python"
+=== "Event streams"
 
     ``` python
-    print("Hello from Python!")
+    TODO add a full example
     ```
 
-=== "Rust"
+=== "Http requests"
 
-    ``` rs
-    println!("Hello from Rust!");
+    ``` python
+    TODO add a full example
     ```
 
-## Diagrams
+=== "All"
 
-> Go to [documentation](https://zensical.org/docs/authoring/diagrams/)
+    ``` python
+    TODO add a full example
+    ```
 
-``` mermaid
-graph LR
-  A[Start] --> B{Error?};
-  B -->|Yes| C[Hmm...];
-  C --> D[Debug];
-  D --> B;
-  B ---->|No| E[Yay!];
-```
+## Limitations
 
-## Footnotes
-
-> Go to [documentation](https://zensical.org/docs/authoring/footnotes/)
-
-Here's a sentence with a footnote.[^1]
-
-Hover it, to see a tooltip.
-
-[^1]: This is the footnote.
-
-
-## Formatting
-
-> Go to [documentation](https://zensical.org/docs/authoring/formatting/)
-
-- ==This was marked (highlight)==
-- ^^This was inserted (underline)^^
-- ~~This was deleted (strikethrough)~~
-- H~2~O
-- A^T^A
-- ++ctrl+alt+del++
-
-## Icons, Emojis
-
-> Go to [documentation](https://zensical.org/docs/authoring/icons-emojis/)
-
-* :sparkles: `:sparkles:`
-* :rocket: `:rocket:`
-* :tada: `:tada:`
-* :memo: `:memo:`
-* :eyes: `:eyes:`
-
-## Maths
-
-> Go to [documentation](https://zensical.org/docs/authoring/math/)
-
-$$
-\cos x=\sum_{k=0}^{\infty}\frac{(-1)^k}{(2k)!}x^{2k}
-$$
-
-!!! warning "Needs configuration"
-    Note that MathJax is included via a `script` tag on this page and is not
-    configured in the generated default configuration to avoid including it
-    in a pages that do not need it. See the documentation for details on how
-    to configure it on all your pages if they are more Maths-heavy than these
-    simple starter pages.
-
-<script id="MathJax-script" async src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
-<script>
-  window.MathJax = {
-    tex: {
-      inlineMath: [["\\(", "\\)"]],
-      displayMath: [["\\[", "\\]"]],
-      processEscapes: true,
-      processEnvironments: true
-    },
-    options: {
-      ignoreHtmlClass: ".*|",
-      processHtmlClass: "arithmatex"
-    }
-  };
-</script>
-
-## Task Lists
-
-> Go to [documentation](https://zensical.org/docs/authoring/lists/#using-task-lists)
-
-* [x] Install Zensical
-* [x] Configure `zensical.toml`
-* [x] Write amazing documentation
-* [ ] Deploy anywhere
-
-## Tooltips
-
-> Go to [documentation](https://zensical.org/docs/authoring/tooltips/)
-
-[Hover me][example]
-
-  [example]: https://example.com "I'm a tooltip!"
+This project is not trying to completly implement DBOS 1:1 and not trying to replace the SFC module.

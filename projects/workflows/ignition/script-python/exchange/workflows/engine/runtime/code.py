@@ -652,15 +652,15 @@ class WorkflowsRuntime(object):
             tx = self.db.begin()
             try:
                 cancelled["queued"] = int(
-                    self.db.cancel_enqueued_pending(
-                        queue_name=queueName,
+                    self.db.cancelEnqueuedPending(
+                        queueName=queueName,
                         reason=reason or "maintenance_cancel",
                         tx=tx,
                     )
                 )
                 cancelled["running"] = int(
-                    self.db.cancel_running(
-                        queue_name=queueName,
+                    self.db.cancelRunning(
+                        queueName=queueName,
                         reason=reason or "maintenance_cancel",
                         tx=tx,
                     )
@@ -788,7 +788,7 @@ class WorkflowsRuntime(object):
         ctx = WorkflowsRuntime.getCurrentContext()
         if ctx is None:
             raise Exception("setEvent() must be called from within a workflow.")
-        self.db.set_event(ctx.workflowId, key, value, nowMs())
+        self.db.upsertEvent(ctx.workflowId, key, value, nowMs())
 
     def writeStream(self, key, value):
         """
@@ -804,7 +804,7 @@ class WorkflowsRuntime(object):
         ctx = WorkflowsRuntime.getCurrentContext()
         if ctx is None:
             raise Exception("writeStream() must be called from within a workflow.")
-        return self.db.append_stream(ctx.workflowId, key, value, nowMs())
+        return self.db.appendStream(ctx.workflowId, key, value, nowMs())
 
     def progress(self, message, extra=None):
         """
@@ -843,7 +843,7 @@ class WorkflowsRuntime(object):
             None: Inserts one notification row.
         """
         mu = messageUUID
-        self.db.send_notification(destinationWorkflowId, topic, message, mu, nowMs())
+        self.db.sendNotification(destinationWorkflowId, topic, message, mu, nowMs())
 
     def recv(self, topic="cmd", timeoutSeconds=0):
         """
@@ -860,7 +860,7 @@ class WorkflowsRuntime(object):
         if ctx is None:
             raise Exception("recv() must be called from within a workflow.")
         timeoutMs = long(float(timeoutSeconds) * 1000.0)
-        return self.db.recv_notification(ctx.workflowId, topic, timeoutMs)
+        return self.db.recvNotification(ctx.workflowId, topic, timeoutMs)
 
     def recvCommand(
         self, currentState=None, topic="cmd", timeoutSeconds=0, maxMessages=5
@@ -908,7 +908,7 @@ class WorkflowsRuntime(object):
         ctx = WorkflowsRuntime.getCurrentContext()
         if ctx is None:
             return False
-        row = self.db.get_workflow(ctx.workflowId)
+        row = self.db.getWorkflow(ctx.workflowId)
         if not row:
             return False
         return str(row.get("status")) == settings.STATUS_CANCELLED
@@ -941,7 +941,7 @@ class WorkflowsRuntime(object):
             return
         deadline_ms = getattr(ctx, "deadline_epoch_ms", None)
         if deadline_ms is None:
-            row = self.db.get_workflow(ctx.workflowId)
+            row = self.db.getWorkflow(ctx.workflowId)
             if row:
                 try:
                     deadline_ms = row.get("deadline_epoch_ms")
@@ -957,7 +957,7 @@ class WorkflowsRuntime(object):
         if nowMs() <= deadline_ms:
             return
         try:
-            self.db.cancel_workflow(ctx.workflowId, "Timeout exceeded")
+            self.db.cancelWorkflow(ctx.workflowId, "Timeout exceeded")
         except:
             pass
         raise Cancelled("Workflow deadline exceeded")
@@ -1012,12 +1012,12 @@ class WorkflowsRuntime(object):
             payload.update(extra)
         return payload
 
-    def _recordWorkflowTerminal(self, workflow_id, status, fields=None):
+    def _recordWorkflowTerminal(self, workflowId, status, fields=None):
         """
-        Persist terminal workflow status with terminal-safe guards.
+        Persist terminal workflow status with terminal status.
 
         Args:
-            workflow_id (str): Workflow UUID.
+            workflowId (str): Workflow UUID.
             status (str): Terminal status (`SUCCESS`, `ERROR`, `CANCELLED`).
             fields (dict|None): Additional fields to persist.
 
@@ -1025,7 +1025,9 @@ class WorkflowsRuntime(object):
             int: Number of updated rows.
         """
         fields = fields or {}
-        return self.db.update_status_if_not_terminal(workflow_id, status, fields=fields)
+        return self.db.updateWorkflowStatusIfNotTerminal(
+            workflowId, status, fields=fields
+        )
 
     def _executeWithRetry(
         self,
@@ -1113,9 +1115,7 @@ class WorkflowsRuntime(object):
                     },
                 )
                 try:
-                    self.db.update_step_error(
-                        wid, callSeq, err_payload, nowMs(), attempt
-                    )
+                    self.db.updateStepError(wid, callSeq, err_payload, nowMs(), attempt)
                 except:
                     pass
                 if not has_next:
@@ -1176,17 +1176,17 @@ class WorkflowsRuntime(object):
 
         tx = self.db.begin()
         try:
-            self.db.insert_workflow(
-                workflow_id=workflowId,
-                workflow_name=workflowName,
-                queue_name=queueName,
-                partition_key=partitionKey,
+            self.db.insertWorkflow(
+                workflowId=workflowId,
+                workflowName=workflowName,
+                queueName=queueName,
+                partitionKey=partitionKey,
                 priority=priority,
-                deduplication_id=deduplicationId,
-                application_version=applicationVersion,
-                inputs_obj=inputsObj,
-                created_ms=created,
-                deadline_ms=deadline_ms,
+                deduplicationId=deduplicationId,
+                applicationVersion=applicationVersion,
+                inputsObj=inputsObj,
+                createdMs=created,
+                deadlineMs=deadline_ms,
                 tx=tx,
             )
             self.db.commit(tx)
@@ -1400,7 +1400,7 @@ class WorkflowsRuntime(object):
         tx = self.db.begin()
         inserted = 0
         try:
-            inserted = int(self.db.insert_workflows_batch(rows, tx=tx))
+            inserted = int(self.db.insertWorkflowsBatch(rows, tx=tx))
             self.db.commit(tx)
         except Exception as e:
             self.db.rollback(tx)
@@ -1514,7 +1514,7 @@ class WorkflowsRuntime(object):
         tx = self.db.begin()
         claimed = []
         try:
-            claimed = self.db.claim_enqueued(queueName, want, self.executor_id, tx=tx)
+            claimed = self.db.claimEnqueued(queueName, want, self.executor_id, tx=tx)
             self.db.commit(tx)
         except Exception as e:
             self.db.rollback(tx)
@@ -1528,17 +1528,17 @@ class WorkflowsRuntime(object):
             for row in claimed:
                 wid = str(row.get("workflow_id"))
                 try:
-                    released += int(self.db.release_claim(wid))
+                    released += int(self.db.releaseClaim(wid))
                 except Exception as e:
                     self._logEvent(
                         "error",
-                        "dispatch.maintenance.release_claim_error",
+                        "dispatch.maintenance.releaseClaim_error",
                         wid=wid,
                         msg=str(e),
                     )
             self._logEvent(
                 "info",
-                "dispatch.maintenance.release_claims",
+                "dispatch.maintenance.releaseClaims",
                 queue=queueName,
                 claimed=len(claimed),
                 released=released,
@@ -1554,7 +1554,7 @@ class WorkflowsRuntime(object):
             if pkey is not None:
                 try:
                     if self._activePartitions.contains(pkey):
-                        released = int(self.db.release_claim(wid))
+                        released = int(self.db.releaseClaim(wid))
                         if released != 1:
                             self._logEvent(
                                 "error",
@@ -1607,18 +1607,18 @@ class WorkflowsRuntime(object):
             except Exception as e:
                 self._logEvent("error", "wf.dispatch.error", wid=wid, msg=str(e))
                 try:
-                    released = int(self.db.release_claim(wid))
+                    released = int(self.db.releaseClaim(wid))
                     if released != 1:
                         self._logEvent(
                             "error",
-                            "wf.dispatch.release_claim_failed",
+                            "wf.dispatch.releaseClaim_failed",
                             wid=wid,
                             released=released,
                         )
                 except Exception as releaseErr:
                     self._logEvent(
                         "error",
-                        "wf.dispatch.release_claim_error",
+                        "wf.dispatch.releaseClaim_error",
                         wid=wid,
                         msg=str(releaseErr),
                     )
@@ -1651,7 +1651,7 @@ class WorkflowsRuntime(object):
         Returns:
             int: Number of workflow rows updated to CANCELLED.
         """
-        return self.db.cancel_workflow(workflowId, reason)
+        return self.db.cancelWorkflow(workflowId, reason)
 
     # ----------------------------
     # retention
@@ -1670,10 +1670,10 @@ class WorkflowsRuntime(object):
         """
         tx = self.db.begin()
         try:
-            cfg = self.db.get_retention_config(tx=tx)
-            self.db.enforce_global_timeout(cfg.get("global_timeout_hours"), tx=tx)
-            self.db.delete_old_terminal(cfg.get("time_threshold_hours"), tx=tx)
-            self.db.enforce_rows_threshold(cfg.get("rows_threshold"), tx=tx)
+            cfg = self.db.getRetentionConfig(tx=tx)
+            self.db.enforceGlobalTimeout(cfg.get("global_timeout_hours"), tx=tx)
+            self.db.deleteOldTerminal(cfg.get("time_threshold_hours"), tx=tx)
+            self.db.enforceRowsThreshold(cfg.get("rows_threshold"), tx=tx)
             self.db.commit(tx)
         except Exception as e:
             self.db.rollback(tx)
@@ -1713,7 +1713,7 @@ class WorkflowsRuntime(object):
         callSequence = ctx.nextCallSeq()
         t0 = nowMs()
 
-        cached = self.db.get_step_output(ctx.workflowId, callSequence)
+        cached = self.db.getStepOutput(ctx.workflowId, callSequence)
         if cached is not None:
             cachedStatus = str(cached.get("status") or "")
             if cachedStatus == settings.STATUS_SUCCESS:
@@ -1760,7 +1760,7 @@ class WorkflowsRuntime(object):
 
         started = nowMs()
         try:
-            self.db.insert_step_attempt(ctx.workflowId, callSequence, stepName, started)
+            self.db.insertStepAttempt(ctx.workflowId, callSequence, stepName, started)
         except:
             pass
 
@@ -1776,7 +1776,7 @@ class WorkflowsRuntime(object):
             args=args,
             kwargs=kwargs,
         )
-        self.db.update_step_success(
+        self.db.updateStepSuccess(
             ctx.workflowId, callSequence, res, nowMs(), int(attemptsUsed)
         )
         self._logEvent(
@@ -1829,11 +1829,11 @@ class WorkflowsRuntime(object):
         if timeout_s is not None:
             timeout_ms = long(float(timeout_s) * 1000.0)
         run_started_ms = nowMs()
-        marked = self.db.mark_running_if_claimed(
+        marked = self.db.markRunningIfClaimed(
             wid,
             self.executor_id,
-            started_ms=run_started_ms,
-            timeout_ms=timeout_ms,
+            startedMs=run_started_ms,
+            timeoutMs=timeout_ms,
         )
         if int(marked or 0) != 1:
             self._logEvent(
@@ -1933,7 +1933,7 @@ class WorkflowsRuntime(object):
         """
         tx = self.db.begin()
         try:
-            self.db.cancel_expired(tx=tx)
+            self.db.cancelExpired(tx=tx)
             self.db.commit(tx)
         except:
             self.db.rollback(tx)
