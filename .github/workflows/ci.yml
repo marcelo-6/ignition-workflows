@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [ci/sandbox]
+    branches: [main, ci/sandbox]
   workflow_dispatch:
 
 permissions:
