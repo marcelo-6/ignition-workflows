@@ -15,6 +15,7 @@ conversion-report.txt
 gw-build/*.modl
 gw-build/*.jar
 gw-build/*.gwbk
+.ignition-lint/
 
 # Private docs
 site/

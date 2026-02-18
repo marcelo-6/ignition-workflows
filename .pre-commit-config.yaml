@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ignition-lint
+        name: Ignition Lint
+        entry: ignition-lint
+        language: python
+        types: [json]
+        files: view\.json$
+        # args: ['--config=rule_config.json', '--files', '--warnings-only']
+        pass_filenames: true
+        additional_dependencies:
+          - 'git+https://github.com/bw-design-group/ignition-lint@v0.4.0'
