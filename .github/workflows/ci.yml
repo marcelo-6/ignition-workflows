@@ -1,5 +1,5 @@
 ---
-name: Continuous Integration
+name: CI
 
 on:
   pull_request:
@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   lint:
+    name: Lint Code Base
     runs-on: ubuntu-latest
 
     steps:
