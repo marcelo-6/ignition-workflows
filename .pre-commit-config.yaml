@@ -1,13 +1,38 @@
+---
 repos:
-  - repo: local
+  # === YAML ===
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
     hooks:
-      - id: ignition-lint
-        name: Ignition Lint
-        entry: ignition-lint
-        language: python
-        types: [json]
-        files: view\.json$
-        # args: ['--config=rule_config.json', '--files', '--warnings-only']
-        pass_filenames: true
-        additional_dependencies:
-          - 'git+https://github.com/bw-design-group/ignition-lint@v0.4.0'
+      - id: yamllint
+        files: \.(yml|yaml)$
+
+  # === Markdown ===
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.20.0
+    hooks:
+      - id: markdownlint-cli2
+        args: ["--config", ".markdownlint-cli2.yaml"]
+        files: \.md$
+
+  # === .env  ===
+  - repo: https://github.com/dotenv-linter/dotenv-linter
+    rev: v4.0.0
+    hooks:
+      - id: dotenv-linter
+        args: [check, "--ignore-checks", "UnorderedKey"]
+        files: (^|/)\.env
+  # === Ignition View.json files ===
+  # - repo: local
+  #   hooks:
+  #     - id: ignition-lint
+  #       name: Ignition Lint
+  #       entry: ignition-lint
+  #       language: python
+  #       types: [json]
+  #       files: view\.json$
+  #       args: ['--config=rule_config.json']
+  #       # , '--files', '--warnings-only']
+  #       pass_filenames: true
+  #       additional_dependencies:
+  #         - 'git+https://github.com/bw-design-group/ignition-lint@v0.4.0'

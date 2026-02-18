@@ -1,7 +1,9 @@
----
 name: Continuous Deployment
 
 on:
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       dry_run:
@@ -16,9 +18,25 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  # workflow_run has no inputs; default to false there.
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+
 jobs:
   release:
+    # Only proceed when:
+    # - manual dispatch, OR
+    # - CI finished successfully (and optionally only on main)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success')
+
     runs-on: ubuntu-latest
+
+    # This makes the job WAIT for manual approval (required reviewers)
+    environment: release
+
     steps:
       - name: Checkout (full history + tags)
         uses: actions/checkout@v6
@@ -37,8 +55,7 @@ jobs:
           echo "Tag: $v"
 
       - name: Generate release notes (this release only)
-        run: |
-          git cliff --verbose --unreleased --tag "${{ steps.ver.outputs.tag }}" > RELEASE_NOTES.md
+        run: git cliff --verbose --unreleased --tag "${{ steps.ver.outputs.tag }}" > RELEASE_NOTES.md
 
       - name: Update CHANGELOG.md (prepend this release)
         run: |
@@ -56,17 +73,17 @@ jobs:
           filename: "ignition-workflows-${{ steps.ver.outputs.tag }}.zip"
 
       - name: Upload artifacts (dry run)
-        if: ${{ inputs.dry_run == 'true' }}
+        if: ${{ env.DRY_RUN == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: "release-dry-run-${{ steps.ver.outputs.tag }}"
           path: |
             CHANGELOG.md
             RELEASE_NOTES.md
-            projects/workflows/workflows-${{ steps.ver.outputs.tag }}.zip
+            projects/workflows/ignition-workflows-${{ steps.ver.outputs.tag }}.zip
 
       - name: Commit CHANGELOG + tag
-        if: ${{ inputs.dry_run != 'true' }}
+        if: ${{ env.DRY_RUN != 'true' }}
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore(release): ${{ steps.ver.outputs.tag }}"
@@ -77,10 +94,10 @@ jobs:
           tagging_message: "${{ steps.ver.outputs.tag }}"
 
       - name: Create GitHub Release + upload bundle
-        if: ${{ inputs.dry_run != 'true' }}
+        if: ${{ env.DRY_RUN != 'true' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "${{ steps.ver.outputs.tag }}"
           name: "${{ steps.ver.outputs.tag }}"
           body_path: RELEASE_NOTES.md
-          files: "projects/workflows/workflows-${{ steps.ver.outputs.tag }}.zip"
+          files: "projects/workflows/ignition-workflows-${{ steps.ver.outputs.tag }}.zip"

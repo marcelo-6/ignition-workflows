@@ -17,6 +17,8 @@ doctor:
 	@command -v cargo >/dev/null && echo "  cargo: ok" || echo "  cargo: missing"
 	@command -v git-cliff >/dev/null && echo "  git-cliff: ok" || echo "  git-cliff: missing (run: just install-git-cliff)"
 	@command -v yamllint -v >/dev/null && echo "  yamllint: ok" || echo "  yamllint: missing"
+	@command -v pre-commit -V >/dev/null && echo "  pre-commit: ok" || echo "  pre-commit: missing"
+	@command -v pre-commit install >/dev/null && echo "    all pre-commits: ok" || echo "  pre-commits: missing"
 
 install-git-cliff:
 	@if command -v git-cliff >/dev/null 2>&1; then \
@@ -106,4 +108,4 @@ docs-build:
 		build --clean
 
 lint:
-	yamllint .
+	pre-commit run --all-files

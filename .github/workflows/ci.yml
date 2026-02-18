@@ -6,6 +6,7 @@ on:
     branches: [main]
   push:
     branches: [main, ci/sandbox]
+  workflow_dispatch:
 
 permissions:
   contents: read
