@@ -4,7 +4,7 @@
 
   <p>
     <img alt="CI" src="https://github.com/marcelo-6/ignition-workflows/actions/workflows/ci.yml/badge.svg" />
-    <img alt="Release" src="https://github.com/marcelo-6/ignition-workflows/actions/workflows/release.yml/badge.svg" />
+    <img alt="CD" src="https://github.com/marcelo-6/ignition-workflows/actions/workflows/cd.yml/badge.svg" />
     <a href="https://github.com/marcelo-6/ignition-workflows/blob/main/LICENSE">
       <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
     </a>
