@@ -27,7 +27,9 @@ jobs:
         uses: DavidAnson/markdownlint-cli2-action@v22
         with:
           config: '.markdownlint-cli2.yaml'
-          globs: '**/*.md'
+          globs: |
+            '**/*.md'
+            !CHANGELOG.md
 
       - name: Run dotenv-linter
         uses: dotenv-linter/action-dotenv-linter@v3
