@@ -2,10 +2,10 @@
   "custom": {
     "lastSaveResult": {
       "ok": true,
-      "templateVersion": 8
+      "templateVersion": 4
     },
     "loadedTemplate": {
-      "version": 8
+      "version": 4
     },
     "selection": {},
     "workflowName": ""
@@ -858,7 +858,7 @@
             },
             "onSubmitActionPerformed": {
               "config": {
-                "script": "\tret \u003d exchange.workflows.api.params.startWithTemplate(\n\t\t\t\t\t\t\t\t\t\tworkflowName\u003dself.view.custom.workflowName,\n\t\t\t\t\t\t\t\t\t\ttemplateName\u003dself.view.custom.selection.template.templateName,\n\t\t\t\t\t\t\t\t\t\toverridesData\u003dself.props.data,\n\t\t\t\t\t\t\t\t\t\ttemplateVersion\u003dself.view.custom.selection.template.templateVersion,\n\t\t\t\t\t\t\t\t\t\tactor\u003dself.session.props.auth.user.userName\n\t\t\t\t\t\t\t\t\t\t)\n\texchange.workflows.toast.show(\n\t\tmessage\u003d\"{} \".format(ret),\n\t\ttype\u003d\"success\",\n\t\tcloseButton\u003dTrue\n\t)"
+                "script": "\ttry:\n\t\tret \u003d exchange.workflows.api.params.startWithTemplate(\n\t\t\t\t\t\t\t\t\t\t\tworkflowName\u003dself.view.custom.workflowName,\n\t\t\t\t\t\t\t\t\t\t\ttemplateName\u003dself.view.custom.selection.template.templateName,\n\t\t\t\t\t\t\t\t\t\t\toverridesData\u003dself.props.data,\n\t\t\t\t\t\t\t\t\t\t\ttemplateVersion\u003dself.view.custom.selection.template.templateVersion,\n\t\t\t\t\t\t\t\t\t\t\tactor\u003dself.session.props.auth.user.userName\n\t\t\t\t\t\t\t\t\t\t\t)\n\t\texchange.workflows.toast.show(\n\t\t\tmessage\u003d\"{} \".format(ret),\n\t\t\ttype\u003d\"success\",\n\t\t\tcloseButton\u003dTrue\n\t\t)\n\texcept Exception as e:\n\t\texchange.workflows.toast.show(\n\t\t\tmessage\u003d\"Failed! form data\u003d {} exception\u003d{}\".format(self.props.data,str(e)),\n\t\t\ttype\u003d\"error\",\n\t\t\tcloseButton\u003dTrue\n\t\t)"
               },
               "scope": "G",
               "type": "script"
@@ -905,34 +905,22 @@
           },
           "columns": {
             "align": "stretch",
-            "items": [
-              {
-                "rows": {
-                  "align": "start",
-                  "items": [],
-                  "justify": "start",
-                  "style": {
-                    "classes": ""
-                  }
-                },
-                "style": {
-                  "classes": ""
-                },
-                "visible": false
-              }
-            ]
+            "items": []
           },
           "data": {
-            "paramOne": "v8",
-            "paramTwo": "5"
+            "paramOne": "1",
+            "paramThree": true,
+            "paramTwo": "MANUAL",
+            "templateInfo": "fds"
           },
-          "name": "demo.commands_60s.My First Template",
+          "name": "demo.one_minute_progress.Template Name goes here",
           "validation": {
-            "isInvalid": true,
+            "isInvalid": false,
             "status": {
               "paramOne": "valid",
-              "paramThree": "valueMissing",
-              "paramTwo": "valid"
+              "paramThree": "valid",
+              "paramTwo": "valid",
+              "templateInfo": "valid"
             }
           }
         },
