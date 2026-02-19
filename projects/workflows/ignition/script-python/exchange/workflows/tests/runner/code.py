@@ -18,6 +18,7 @@ log = system.util.getLogger(settings.getLoggerName("tests.runner"))
 _SUITE_MODULES = [
     ("core", "exchange.workflows.tests.suites.test_core"),
     ("api", "exchange.workflows.tests.suites.test_api"),
+    ("params", "exchange.workflows.tests.suites.test_params"),
     ("commands", "exchange.workflows.tests.suites.test_commands"),
     ("maintenance", "exchange.workflows.tests.suites.test_maintenance"),
     ("in_memory_queue", "exchange.workflows.tests.suites.test_in_memory_queue"),
