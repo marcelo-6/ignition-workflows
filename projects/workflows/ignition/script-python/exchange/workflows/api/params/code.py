@@ -614,7 +614,7 @@ def listTemplates(
             """
 		SELECT DISTINCT ON (template_name)
 			template_name, template_version, status, description, created_by, created_at_epoch_ms
-		FROM woquery(flows.param_templates
+		FROM workflows.param_templates
 		WHERE workflow_name = ?
 		%s
 		ORDER BY template_name, template_version DESC
