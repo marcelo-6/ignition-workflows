@@ -8,7 +8,7 @@
 
 [![Lifecycle](https://img.shields.io/badge/Lifecycle-Experimental-339999)](https://github.com/marcelo-6/ignition-workflows)
 
-[![Downloads](https://img.shields.io/github/downloads/marcelo-6/ignition-workflows/latest/total)](https://github.com/marcelo-6/ignition-workflows/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/marcelo-6/ignition-workflows/total)](https://github.com/marcelo-6/ignition-workflows/releases/latest)
 
 This is a workflow orchestration framework for long-running tasks in Ignition, as a more maintainable alternative to SFC (but with a more limited functionality).
 
