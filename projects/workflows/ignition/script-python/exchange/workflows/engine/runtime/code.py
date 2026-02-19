@@ -29,10 +29,12 @@ import json
 import time
 import traceback
 
-from java.util.concurrent import Executors, TimeUnit
+from java.util.concurrent import ConcurrentLinkedQueue, Executors, TimeUnit
+from java.util.concurrent.atomic import AtomicLong
 from java.lang import Runnable, Thread
 
 from exchange.workflows import settings
+from exchange.workflows.util import exception as exception_util
 from exchange.workflows.util.date import nowMs
 from exchange.workflows.engine.db import DB, uuid4
 from exchange.workflows.is88 import models as isa88
@@ -120,6 +122,7 @@ _STEP_REGISTRY = {}
 _WF_CONTROL_KEY = "__wf_control"
 _WF_TIMEOUT_SECONDS_KEY = "timeout_seconds"
 _DEFAULT_FAST_QUEUE_MAX_DEPTH = int(settings.FAST_QUEUE_MAX_SIZE)
+_IN_MEMORY_FLUSH_RETRY_KEY = "__flush_retry_count"
 
 
 def _coerceTimeoutSeconds(timeout_seconds):
@@ -453,6 +456,11 @@ class WorkflowsRuntime(object):
         self._inMemoryQueueFlushDuringMaintenance = kernel.get(
             "inMemoryQueueFlushDuringMaintenance"
         )
+        self._inMemoryQueueDeadLetterQueue = kernel.get("inMemoryQueueDeadLetterQueue")
+        self._inMemoryQueueDeadLetterCount = kernel.get("inMemoryQueueDeadLetterCount")
+        self._inMemoryQueueFlushFailureCount = kernel.get(
+            "inMemoryQueueFlushFailureCount"
+        )
         self._workflowWorkers = kernel.get("workflowWorkers")
         self._stepWorkers = kernel.get("stepWorkers")
         self._lastSwapAtMs = kernel.get("lastSwapAtMs")
@@ -519,6 +527,82 @@ class WorkflowsRuntime(object):
             self._inMemoryQueueLastOverflowAtMs.set(nowMs())
         except:
             pass
+
+    def _recordInMemoryFlushFailure(self):
+        """Increment flush failure metric."""
+        try:
+            self._inMemoryQueueFlushFailureCount.incrementAndGet()
+        except:
+            pass
+
+    def _pushInMemoryDeadLetter(self, payload):
+        """Push one failed flush payload into bounded dead-letter queue."""
+        if not isinstance(payload, dict):
+            payload = {"value": _safe(payload)}
+        payload["failedAtMs"] = long(nowMs())
+        raw = ""
+        try:
+            raw = json.dumps(payload, separators=(",", ":"))
+        except:
+            raw = _safe(payload)
+
+        maxSize = settings.FAST_DEAD_LETTER_MAX_SIZE
+        try:
+            while self._inMemoryQueueDeadLetterQueue.size() >= maxSize:
+                self._inMemoryQueueDeadLetterQueue.poll()
+            self._inMemoryQueueDeadLetterQueue.offer(raw)
+            self._inMemoryQueueDeadLetterCount.incrementAndGet()
+        except:
+            pass
+
+    def _requeueOrDeadLetterFlushItem(self, item, raw, err):
+        """Requeue failed item with bounded retries, then dead-letter."""
+        item = item if isinstance(item, dict) else {}
+        retryCount = int(item.get(_IN_MEMORY_FLUSH_RETRY_KEY) or 0) + 1
+        maxRetries = settings.FAST_FLUSH_FAILURE_MAX_RETRIES
+        errText = _safe(err)
+
+        if retryCount <= maxRetries:
+            item[_IN_MEMORY_FLUSH_RETRY_KEY] = retryCount
+            try:
+                retryRaw = json.dumps(item, separators=(",", ":"))
+            except:
+                retryRaw = raw
+            if retryRaw:
+                try:
+                    self._inMemoryQueue.offer(retryRaw)
+                except:
+                    pass
+            self._logEvent(
+                "warn",
+                "in_memory.flush.requeue_retry",
+                retry=retryCount,
+                max_retries=maxRetries,
+                wf=item.get("workflow_name"),
+                queue=item.get("queue_name"),
+                dedupe=item.get("deduplication_id"),
+                msg=errText,
+            )
+            return
+
+        self._pushInMemoryDeadLetter(
+            {
+                "reason": "insert_failed",
+                "error": errText,
+                "retries": retryCount - 1,
+                "item": item,
+                "raw": _safe(raw),
+            }
+        )
+        self._logEvent(
+            "error",
+            "in_memory.flush.dead_letter",
+            retries=retryCount - 1,
+            wf=item.get("workflow_name"),
+            queue=item.get("queue_name"),
+            dedupe=item.get("deduplication_id"),
+            msg=errText,
+        )
 
     # ----------------------------
     # lifecycle
@@ -617,6 +701,9 @@ class WorkflowsRuntime(object):
             "inMemoryQueueMaxDepth": self._inMemoryQueueMaxDepth.get(),
             "inMemoryQueueOverflowCount": self._inMemoryQueueOverflowCount.get(),
             "inMemoryQueueLastOverflowAtMs": self._inMemoryQueueLastOverflowAtMs.get(),
+            "inMemoryQueueFlushFailureCount": self._inMemoryQueueFlushFailureCount.get(),
+            "inMemoryQueueDeadLetterCount": self._inMemoryQueueDeadLetterCount.get(),
+            "inMemoryQueueDeadLetterDepth": self._inMemoryQueueDeadLetterQueue.size(),
             "lastSwapAtMs": self._lastSwapAtMs.get(),
         }
 
@@ -1354,65 +1441,162 @@ class WorkflowsRuntime(object):
             return 0
 
         started = nowMs()
-        to_insert = []
-        raw_items = []
-        while len(raw_items) < int(maxItems):
+        entries = []
+        while len(entries) < int(maxItems):
             if (nowMs() - started) >= maxMs:
                 break
             raw = self._inMemoryQueue.poll()
             if raw is None:
                 break
-            raw_items.append(raw)
             try:
                 item = json.loads(raw)
             except:
-                log.warn("inMemoryQueue payload decode failed")
+                self._recordInMemoryFlushFailure()
+                self._pushInMemoryDeadLetter(
+                    {
+                        "reason": "decode_failed",
+                        "error": "json_decode_failed",
+                        "raw": _safe(raw),
+                    }
+                )
+                self._logEvent("warn", "in_memory.flush.decode_failed")
                 continue
             wf_name = item.get("workflow_name")
             if not wf_name:
-                log.warn("inMemoryQueue payload missing workflow_name")
+                self._recordInMemoryFlushFailure()
+                self._pushInMemoryDeadLetter(
+                    {
+                        "reason": "missing_workflow_name",
+                        "error": "workflow_name_required",
+                        "item": item,
+                        "raw": _safe(raw),
+                    }
+                )
+                self._logEvent("warn", "in_memory.flush.missing_workflow_name")
                 continue
-            to_insert.append(item)
+            entries.append({"item": item, "raw": raw})
 
-        if not to_insert:
+        if not entries:
             return 0
 
         created_ms = nowMs()
         rows = []
-        for item in to_insert:
-            timeout_s = _coerceTimeoutSeconds(item.get("timeout_seconds"))
-            inputs_obj = _normalizeInputs(item.get("inputs"), timeout_s)
-            rows.append(
-                {
-                    "workflow_id": uuid4(),
-                    "workflow_name": item.get("workflow_name"),
-                    "queue_name": item.get("queue_name") or settings.QUEUE_DEFAULT,
-                    "partition_key": item.get("partition_key"),
-                    "priority": int(item.get("priority") or 0),
-                    "deduplication_id": item.get("deduplication_id"),
-                    "application_version": item.get("application_version"),
-                    "inputs_obj": inputs_obj,
-                    "created_ms": created_ms,
-                    "deadline_ms": None,
-                }
-            )
+        batchEntries = []
+        for entry in entries:
+            try:
+                rows.append(self._buildInMemoryFlushRow(entry.get("item"), created_ms))
+                batchEntries.append(entry)
+            except exception_util.JavaException as e:
+                self._recordInMemoryFlushFailure()
+                self._requeueOrDeadLetterFlushItem(
+                    item=entry.get("item"),
+                    raw=entry.get("raw"),
+                    err=exception_util.formatCaughtException(e),
+                )
+            except Exception as e:
+                self._recordInMemoryFlushFailure()
+                self._requeueOrDeadLetterFlushItem(
+                    item=entry.get("item"),
+                    raw=entry.get("raw"),
+                    err=exception_util.formatCaughtException(e),
+                )
+
+        if not rows:
+            return 0
 
         tx = self.db.begin()
         inserted = 0
         try:
             inserted = int(self.db.insertWorkflowsBatch(rows, tx=tx))
             self.db.commit(tx)
+        except exception_util.JavaException as e:
+            self.db.rollback(tx)
+            self._recordInMemoryFlushFailure()
+            errText = exception_util.formatCaughtException(e)
+            self._logEvent(
+                "warn",
+                "in_memory.flush.batch_failed",
+                items=len(batchEntries),
+                msg=_safe(errText),
+            )
+            inserted = int(
+                self._flushInMemoryEntriesIndividually(batchEntries, created_ms)
+            )
         except Exception as e:
             self.db.rollback(tx)
-            # best effort requeue on flush failure
-            for raw in raw_items:
-                try:
-                    self._inMemoryQueue.offer(raw)
-                except:
-                    pass
-            log.error("inMemoryQueue flush failed: %s" % e)
+            self._recordInMemoryFlushFailure()
+            errText = exception_util.formatCaughtException(e)
+            self._logEvent(
+                "warn",
+                "in_memory.flush.batch_failed",
+                items=len(batchEntries),
+                msg=_safe(errText),
+            )
+            inserted = int(
+                self._flushInMemoryEntriesIndividually(batchEntries, created_ms)
+            )
         finally:
             self.db.close(tx)
+        return inserted
+
+    def _buildInMemoryFlushRow(self, item, createdMs):
+        """Build one workflow_status row payload from an in-memory queue item."""
+        item = item if isinstance(item, dict) else {}
+        timeout_s = _coerceTimeoutSeconds(item.get("timeout_seconds"))
+        inputs_obj = _normalizeInputs(item.get("inputs"), timeout_s)
+        return {
+            "workflow_id": uuid4(),
+            "workflow_name": item.get("workflow_name"),
+            "queue_name": item.get("queue_name") or settings.QUEUE_DEFAULT,
+            "partition_key": item.get("partition_key"),
+            "priority": int(item.get("priority") or 0),
+            "deduplication_id": item.get("deduplication_id"),
+            "application_version": item.get("application_version"),
+            "inputs_obj": inputs_obj,
+            "created_ms": long(createdMs),
+            "deadline_ms": None,
+        }
+
+    def _flushInMemoryEntriesIndividually(self, entries, createdMs):
+        """Fallback path that isolates failing items so one bad payload does not poison the queue."""
+        inserted = 0
+        for entry in entries:
+            tx = self.db.begin()
+            try:
+                row = self._buildInMemoryFlushRow(entry.get("item"), createdMs)
+                self.db.insertWorkflow(
+                    workflowId=row.get("workflow_id"),
+                    workflowName=row.get("workflow_name"),
+                    queueName=row.get("queue_name"),
+                    partitionKey=row.get("partition_key"),
+                    priority=row.get("priority"),
+                    deduplicationId=row.get("deduplication_id"),
+                    applicationVersion=row.get("application_version"),
+                    inputsObj=row.get("inputs_obj"),
+                    createdMs=row.get("created_ms"),
+                    deadlineMs=row.get("deadline_ms"),
+                    tx=tx,
+                )
+                self.db.commit(tx)
+                inserted += 1
+            except exception_util.JavaException as e:
+                self.db.rollback(tx)
+                self._recordInMemoryFlushFailure()
+                self._requeueOrDeadLetterFlushItem(
+                    item=entry.get("item"),
+                    raw=entry.get("raw"),
+                    err=exception_util.formatCaughtException(e),
+                )
+            except Exception as e:
+                self.db.rollback(tx)
+                self._recordInMemoryFlushFailure()
+                self._requeueOrDeadLetterFlushItem(
+                    item=entry.get("item"),
+                    raw=entry.get("raw"),
+                    err=exception_util.formatCaughtException(e),
+                )
+            finally:
+                self.db.close(tx)
         return inserted
 
     # ----------------------------
@@ -2105,6 +2289,9 @@ class WorkflowsRuntime(object):
                 "overflowMode": self._getInMemoryQueueOverflowMode(),
                 "overflowCount": self._inMemoryQueueOverflowCount.get(),
                 "lastOverflowAtMs": self._inMemoryQueueLastOverflowAtMs.get(),
+                "flushFailureCount": self._inMemoryQueueFlushFailureCount.get(),
+                "deadLetterCount": self._inMemoryQueueDeadLetterCount.get(),
+                "deadLetterDepth": self._inMemoryQueueDeadLetterQueue.size(),
                 "acceptDuringMaintenance": self._inMemoryQueueAcceptDuringMaintenance.get(),
                 "flushDuringMaintenance": self._inMemoryQueueFlushDuringMaintenance.get(),
             },
