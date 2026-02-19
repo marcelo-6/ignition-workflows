@@ -152,24 +152,6 @@ CREATE TABLE IF NOT EXISTS workflows.param_templates (
 CREATE INDEX IF NOT EXISTS idx_templates_latest
 ON workflows.param_templates(workflow_name, template_name, status, template_version DESC);
 
--- Parameter Sets (append-only versions)
-CREATE TABLE IF NOT EXISTS workflows.param_sets (
-  workflow_name TEXT NOT NULL,
-  template_name TEXT NOT NULL,
-  set_name TEXT NOT NULL,
-  set_version INT NOT NULL,
-  values_json TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'active',        -- active|obsolete
-  description TEXT NULL,
-  tags_json TEXT NULL,
-  created_by TEXT NULL,
-  created_at_epoch_ms BIGINT NOT NULL,
-  PRIMARY KEY (workflow_name, template_name, set_name, set_version)
-);
-
-CREATE INDEX IF NOT EXISTS idx_sets_latest
-ON workflows.param_sets(workflow_name, template_name, set_name, status, set_version DESC);
-
 -- Retention policies (single row)
 CREATE TABLE IF NOT EXISTS workflows.retention_config (
   id INT PRIMARY KEY,
