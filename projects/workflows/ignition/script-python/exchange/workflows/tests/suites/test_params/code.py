@@ -1,5 +1,8 @@
 """Params API suite focused on template listing and retrieval behavior."""
 
+from java.util import UUID
+
+from exchange.workflows import settings
 from exchange.workflows.api import params as params_api
 from exchange.workflows.tests.support.base_case import WorkflowTestCase
 from exchange.workflows.tests.support.helpers import profiles
@@ -81,7 +84,8 @@ class TestParamsSuite(WorkflowTestCase):
             self._trackedEnumSet.add(name)
             self._trackedEnums.append(name)
 
-    def _buildFormProps(self, value):
+    def _buildFormProps(self, value, key="line"):
+        key = str(key or "line")
         return {
             "name": "tests.params.form",
             "columns": {
@@ -92,7 +96,7 @@ class TestParamsSuite(WorkflowTestCase):
                                 {
                                     "widgets": [
                                         {
-                                            "id": "line",
+                                            "id": key,
                                             "type": "text",
                                         }
                                     ]
@@ -102,18 +106,24 @@ class TestParamsSuite(WorkflowTestCase):
                     }
                 ]
             },
-            "data": {"line": value},
+            "data": {key: value},
             "validation": {"isValid": True},
         }
 
     def _createTemplateVersion(
-        self, workflowName, templateName, value, activate=True, description=None
+        self,
+        workflowName,
+        templateName,
+        value,
+        activate=True,
+        description=None,
+        key="line",
     ):
         self._trackTemplate(workflowName, templateName)
         resp = params_api.createTemplateVersion(
             workflowName=workflowName,
             templateName=templateName,
-            formProps=self._buildFormProps(value),
+            formProps=self._buildFormProps(value, key=key),
             description=description,
             createdBy="tests.params",
             activate=bool(activate),
@@ -336,3 +346,36 @@ class TestParamsSuite(WorkflowTestCase):
             ),
             "roundtrip-v2",
         )
+
+    @profiles("smoke", "full")
+    def test_params_start_with_template_returns_uuid(self):
+        """startWithTemplate should return a workflowId UUID string on success."""
+        workflowName = "tests.fast_enqueue_target"
+        templateName = self._newTemplateName("start_with_template_uuid")
+        self._createTemplateVersion(
+            workflowName=workflowName,
+            templateName=templateName,
+            value="from-template",
+            activate=True,
+            key="value",
+        )
+
+        ret = params_api.startWithTemplate(
+            workflowName=workflowName,
+            templateName=templateName,
+            overridesData={"value": "from-override"},
+            actor="tests.params",
+            queueName=settings.QUEUE_DEFAULT,
+            priority=3,
+            dbName=self.dbName,
+        )
+        self.assertTrue(ret.get("ok"), "startWithTemplate failed: %r" % ret)
+
+        workflowId = ret.get("workflowId")
+        self.assertTrue(isinstance(workflowId, basestring), "workflowId must be a string")
+        self.assertTrue(str(workflowId).strip(), "workflowId must be non-empty")
+        UUID.fromString(str(workflowId))
+
+        self.trackWorkflow(str(workflowId))
+        st = self.tickUntilTerminal(str(workflowId), timeoutS=10.0)
+        self.assertTrue(st is not None and st.get("status") == settings.STATUS_SUCCESS)
