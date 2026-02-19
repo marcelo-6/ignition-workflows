@@ -985,7 +985,7 @@ class DB(object):
                 AND ws2.status IN (?, ?)
             )
           )
-        ORDER BY ws.priority DESC, ws.created_at_epoch_ms ASC
+        ORDER BY ws.priority ASC, ws.created_at_epoch_ms ASC
         FOR UPDATE SKIP LOCKED
         LIMIT ?
         """
