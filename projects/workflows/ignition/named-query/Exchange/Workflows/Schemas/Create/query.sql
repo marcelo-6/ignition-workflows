@@ -50,10 +50,12 @@ ON workflows.workflow_status(queue_name, status, priority DESC, created_at_epoch
 CREATE INDEX IF NOT EXISTS idx_workflow_partition
 ON workflows.workflow_status(queue_name, partition_key, status);
 
--- Dedup index (only if deduplication_id not null)
+-- Dedup index (active-window only: block duplicates while ENQUEUED/PENDING)
+DROP INDEX IF EXISTS workflows.uq_workflow_dedup;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_workflow_dedup
 ON workflows.workflow_status(queue_name, deduplication_id)
-WHERE deduplication_id IS NOT NULL;
+WHERE deduplication_id IS NOT NULL
+  AND status IN ('ENQUEUED', 'PENDING');
 
 -- Step outputs (durable replay)
 CREATE TABLE IF NOT EXISTS workflows.operation_outputs (
