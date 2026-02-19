@@ -38,7 +38,7 @@
       {
         "meta": {
           "hasDelegate": true,
-          "name": "Spacer_1"
+          "name": "Spacer1"
         },
         "position": {
           "basis": "12px",
@@ -63,7 +63,7 @@
       {
         "meta": {
           "hasDelegate": true,
-          "name": "Spacer_2"
+          "name": "Spacer2"
         },
         "position": {
           "basis": "10px",
@@ -87,7 +87,7 @@
       {
         "meta": {
           "hasDelegate": true,
-          "name": "Spacer_3"
+          "name": "Spacer3"
         },
         "position": {
           "basis": "10px",

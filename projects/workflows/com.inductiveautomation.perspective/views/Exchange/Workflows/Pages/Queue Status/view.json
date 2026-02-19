@@ -6,7 +6,7 @@
     "children": [
       {
         "meta": {
-          "name": "Overall Status Count"
+          "name": "OverallStatusCount"
         },
         "position": {
           "grow": 1

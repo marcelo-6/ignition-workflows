@@ -33,7 +33,7 @@
     "custom.staging.global_timeout_hours": {
       "binding": {
         "config": {
-          "path": "/root/Global Timeout.props.value"
+          "path": "/root/GlobalTimeout.props.value"
         },
         "type": "property"
       }
@@ -41,7 +41,7 @@
     "custom.staging.rows_threshold": {
       "binding": {
         "config": {
-          "path": "/root/Rows Threshold.props.value"
+          "path": "/root/RowsThreshold.props.value"
         },
         "type": "property"
       }
@@ -49,7 +49,7 @@
     "custom.staging.time_threshold_hours": {
       "binding": {
         "config": {
-          "path": "/root/Time Threshold.props.value"
+          "path": "/root/TimeThreshold.props.value"
         },
         "type": "property"
       }
@@ -77,7 +77,7 @@
       },
       {
         "meta": {
-          "name": "Sub Header"
+          "name": "SubHeader"
         },
         "props": {
           "style": {
@@ -89,7 +89,7 @@
       },
       {
         "meta": {
-          "name": "Time Threshold Header"
+          "name": "TimeThresholdHeader"
         },
         "props": {
           "style": {
@@ -102,7 +102,7 @@
       },
       {
         "meta": {
-          "name": "Time Threshold Sub"
+          "name": "TimeThresholdSub"
         },
         "props": {
           "style": {
@@ -114,7 +114,7 @@
       },
       {
         "meta": {
-          "name": "Time Threshold"
+          "name": "TimeThreshold"
         },
         "position": {
           "basis": "32px"
@@ -138,7 +138,7 @@
       },
       {
         "meta": {
-          "name": "Rows Threshold Header"
+          "name": "RowsThresholdHeader"
         },
         "props": {
           "style": {
@@ -151,7 +151,7 @@
       },
       {
         "meta": {
-          "name": "Rows Threshold Sub"
+          "name": "RowsThresholdSub"
         },
         "props": {
           "style": {
@@ -163,7 +163,7 @@
       },
       {
         "meta": {
-          "name": "Rows Threshold"
+          "name": "RowsThreshold"
         },
         "position": {
           "basis": "32px"
@@ -187,7 +187,7 @@
       },
       {
         "meta": {
-          "name": "Global Timeout Header"
+          "name": "GlobalTimeoutHeader"
         },
         "props": {
           "style": {
@@ -200,7 +200,7 @@
       },
       {
         "meta": {
-          "name": "Global Timeout Sub"
+          "name": "GlobalTimeoutSub"
         },
         "props": {
           "style": {
@@ -212,7 +212,7 @@
       },
       {
         "meta": {
-          "name": "Global Timeout"
+          "name": "GlobalTimeout"
         },
         "position": {
           "basis": "32px"
@@ -302,7 +302,7 @@
               }
             },
             "meta": {
-              "name": "Update Policies"
+              "name": "UpdatePolicies"
             },
             "position": {
               "basis": "200px"
@@ -370,7 +370,7 @@
         {
           "name": "getRetention",
           "params": [],
-          "script": "\tpath \u003d \"Exchange/Workflows/Schemas/Retention/Get\"\n\tdata \u003d system.db.execQuery(path)\n\tself.view.custom.retention \u003d { \n\t\t \"db\" : dict(zip(data.columnNames,list(row))) \n\t\t     for i,row in enumerate(data)\n\t\t}\n\n\ttimeThreshold \u003d self.getChild(\"Time Threshold\")\n\trowsThreshold \u003d self.getChild(\"Rows Threshold\")\n\tglobalTimeout \u003d self.getChild(\"Global Timeout\")\n\n\ttry:\n\t\ttimeThreshold.props.value \u003d self.view.custom.retention.db.time_threshold_hours\n\t\trowsThreshold.props.value \u003d self.view.custom.retention.db.rows_threshold\n\t\tglobalTimeout.props.value \u003d self.view.custom.retention.db.global_timeout_hours\n\texcept:\n\t\ttimeThreshold.props.value \u003d 0\n\t\trowsThreshold.props.value \u003d 1000000\n\t\tglobalTimeout.props.value \u003d 0\n\t"
+          "script": "\tpath \u003d \"Exchange/Workflows/Schemas/Retention/Get\"\n\tdata \u003d system.db.execQuery(path)\n\tself.view.custom.retention \u003d { \n\t\t\"db\" : dict(zip(data.columnNames,list(row))) \n\t\t\tfor i,row in enumerate(data)\n\t\t}\n\n\ttimeThreshold \u003d self.getChild(\"TimeThreshold\")\n\trowsThreshold \u003d self.getChild(\"RowsThreshold\")\n\tglobalTimeout \u003d self.getChild(\"GlobalTimeout\")\n\n\ttry:\n\t\ttimeThreshold.props.value \u003d self.view.custom.retention.db.time_threshold_hours\n\t\trowsThreshold.props.value \u003d self.view.custom.retention.db.rows_threshold\n\t\tglobalTimeout.props.value \u003d self.view.custom.retention.db.global_timeout_hours\n\texcept Exception as e:\n\t\t_ \u003d e # ignore for now\n\t\ttimeThreshold.props.value \u003d 0\n\t\trowsThreshold.props.value \u003d 1000000\n\t\tglobalTimeout.props.value \u003d 0\n\t"
         },
         {
           "name": "setRetention",

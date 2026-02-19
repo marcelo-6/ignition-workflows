@@ -104,7 +104,7 @@
           }
         },
         "meta": {
-          "name": "Load Button"
+          "name": "LoadButton"
         },
         "position": {
           "basis": "44px"
@@ -127,7 +127,7 @@
           }
         },
         "meta": {
-          "name": "Unload Button"
+          "name": "UnloadButton"
         },
         "position": {
           "basis": "44px"

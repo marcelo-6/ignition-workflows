@@ -3,11 +3,13 @@
     "filters": {
       "toEpochMs": 0
     },
+    "isWorkflowSelected": false,
     "paging": {
       "limit": 200,
       "offset": 0
     },
-    "selectedWorkflowUUID": "9374b6e6-5150-4a00-bda7-41c12d72c9d9"
+    "selectedWorkflowUUID": "9374b6e6-5150-4a00-bda7-41c12d72c9d9",
+    "totalWorkflowsCount": "38 workflows total"
   },
   "params": {
     "selectedUUID": "9374b6e6-5150-4a00-bda7-41c12d72c9d9"
@@ -23,7 +25,7 @@
         },
         "transforms": [
           {
-            "code": "    # value \u003d number of hours in the past\n    if value is not None and value \u003e 0:\n        past \u003d system.date.addHours(system.date.now(), -value)\n        return system.date.toMillis(past)\n    else:\n        # -1 or anything non‑positive means \"since epoch\"\n        return 0",
+            "code": "\t# value \u003d number of hours in the past\n\tif value is not None and value \u003e 0:\n\t\tpast \u003d system.date.addHours(system.date.now(), -value)\n\t\treturn system.date.toMillis(past)\n\telse:\n\t\t# -1 or anything non‑positive means \"since epoch\"\n\t\treturn 0",
             "type": "script"
           }
         ],
@@ -57,7 +59,7 @@
     "custom.filters.timeRange": {
       "binding": {
         "config": {
-          "path": "/root/Filters/Time Range.props.value"
+          "path": "/root/Filters/TimeRange.props.value"
         },
         "type": "property"
       }
@@ -70,10 +72,28 @@
         "type": "property"
       }
     },
+    "custom.isWorkflowSelected": {
+      "binding": {
+        "config": {
+          "expression": "len({/root/Filters/Dropdown.props.value}) \u003e 0"
+        },
+        "type": "expr"
+      },
+      "persistent": true
+    },
     "custom.paging": {
       "persistent": true
     },
     "custom.selectedWorkflowUUID": {
+      "persistent": true
+    },
+    "custom.totalWorkflowsCount": {
+      "binding": {
+        "config": {
+          "expression": "if(isBadOrError({/root/Table.props.data}),\"\", if(isNull(len({/root/Table.props.data})),\"\",len({/root/Table.props.data}) + \" workflows total\"))"
+        },
+        "type": "expr"
+      },
       "persistent": true
     },
     "params.selectedUUID": {
@@ -94,7 +114,7 @@
         "children": [
           {
             "meta": {
-              "name": "Time Range"
+              "name": "TimeRange"
             },
             "position": {
               "basis": "139px"
@@ -225,7 +245,7 @@
                 "onActionPerformed": [
                   {
                     "config": {
-                      "script": "    ret \u003d exchange.workflows.api.service.start(\n            workflowName\u003dself.getSibling(\"Dropdown\").props.value,\n            timeoutSeconds\u003d120\n    )\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"started!\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed!\"), type\u003d\"error\")"
+                      "script": "\tret \u003d exchange.workflows.api.service.start(\n\t\t\tworkflowName\u003dself.view.custom.selectedWorkflowUUID,\n\t\t\ttimeoutSeconds\u003d120\n\t)\n\tif ret.get(\"ok\"):\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"started!\"), type\u003d\"success\")\n\telse:\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed!\"), type\u003d\"error\")"
                     },
                     "scope": "G",
                     "type": "script"
@@ -241,7 +261,7 @@
               }
             },
             "meta": {
-              "name": "Clear_4"
+              "name": "EnqueueWorkflow"
             },
             "position": {
               "basis": "120px"
@@ -250,9 +270,9 @@
               "props.enabled": {
                 "binding": {
                   "config": {
-                    "expression": "len({../Dropdown.props.value}) \u003e 0"
+                    "path": "view.custom.isWorkflowSelected"
                   },
-                  "type": "expr"
+                  "type": "property"
                 }
               }
             },
@@ -311,9 +331,9 @@
           "props.text": {
             "binding": {
               "config": {
-                "expression": "if(isBadOrError({../Table.props.data}),\"\", if(isNull(len({../Table.props.data})),\"\",len({../Table.props.data}) + \" workflows total\"))"
+                "path": "view.custom.totalWorkflowsCount"
               },
-              "type": "expr"
+              "type": "property"
             }
           }
         },
@@ -347,7 +367,7 @@
             "binding": {
               "config": {
                 "parameters": {
-                  "hours": "{../Filters/Time Range.props.value}",
+                  "hours": "{../Filters/TimeRange.props.value}",
                   "limit": "1000",
                   "queueName": "\"\"",
                   "status": "{../Filters/Status.props.value}",

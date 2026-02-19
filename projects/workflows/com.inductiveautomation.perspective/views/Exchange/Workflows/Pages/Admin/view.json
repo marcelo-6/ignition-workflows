@@ -19,7 +19,7 @@
       },
       {
         "meta": {
-          "name": "Retention Policy"
+          "name": "RetentionPolicy"
         },
         "position": {
           "tabIndex": 1

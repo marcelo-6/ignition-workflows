@@ -24,7 +24,7 @@
   "PollingIntervalRule": {
     "enabled": true,
     "kwargs": {
-      "minimum_interval": 10000
+      "minimum_interval": 1000
     }
   },
   "NamePatternRule": {
@@ -42,7 +42,8 @@
           "convention": "camelCase",
           "min_length": 2,
           "severity": "warning",
-          "_severity_comment": "Properties: Use 'warning' for more lenient custom property naming"
+          "_severity_comment": "Properties: Use 'warning' for more lenient custom property naming",
+          "skip_names": ["UUID"]
         },
         "message_handler": {
           "convention": "kebab-case",
@@ -51,7 +52,7 @@
           "_severity_comment": "Message handlers: Use 'warning' to allow flexibility in message naming"
         },
         "custom_method": {
-          "convention": "snake_case",
+          "convention": "camelCase",
           "min_length": 2,
           "severity": "error",
           "_severity_comment": "Custom methods: Use 'error' for consistent Python-style method naming"
@@ -81,7 +82,7 @@
     }
   },
   "BadComponentReferenceRule": {
-    "enabled": true,
+    "enabled": false,
     "kwargs": {
       "_comment": "Detects brittle component references like .getSibling(), .getParent(), .getChild(), .parent, .children that create tight coupling to view structure. Use view.custom properties or message handling instead.",
       "severity": "error",

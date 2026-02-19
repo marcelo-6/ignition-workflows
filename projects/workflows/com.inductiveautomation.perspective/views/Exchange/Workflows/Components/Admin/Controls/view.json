@@ -1,6 +1,6 @@
 {
   "custom": {
-    "stats": null
+    "stats": "{\"inMemoryQueue\":{\"maxDepth\":50000,\"overflowCount\":1,\"depth\":0,\"flushDuringMaintenance\":false,\"acceptDuringMaintenance\":false,\"lastOverflowAtMs\":1771414484623,\"type\":\"java.util.concurrent.ConcurrentLinkedQueue\",\"overflowMode\":\"reject\"},\"identity\":{\"generation\":2,\"executorId\":\"ign-workflows:4a618fce-60ff-46b3-b2a9-0fe1d7de5639\",\"dbName\":\"WorkflowsDB\",\"projectName\":\"workflows\",\"threadName\":\"perspective-worker-61\",\"timestampMs\":1771418087559},\"workload\":{\"activeWorkflowsCount\":0,\"activePartitionsCount\":0,\"inFlightWorkflows\":0},\"executors\":{\"workflows\":{\"activeCount\":0,\"queueSize\":0,\"largestPoolSize\":4,\"isTerminated\":false,\"poolSize\":4,\"className\":\"java.util.concurrent.ThreadPoolExecutor\",\"queueClassName\":\"java.util.concurrent.LinkedBlockingQueue\",\"isTerminating\":false,\"taskCount\":20,\"queueRemainingCapacity\":2147483647,\"corePoolSize\":4,\"completedTaskCount\":20,\"maxPoolSize\":4,\"isShutdown\":false},\"steps\":{\"activeCount\":0,\"queueSize\":0,\"largestPoolSize\":0,\"isTerminated\":false,\"poolSize\":0,\"className\":\"java.util.concurrent.ThreadPoolExecutor\",\"queueClassName\":\"java.util.concurrent.LinkedBlockingQueue\",\"isTerminating\":false,\"taskCount\":0,\"queueRemainingCapacity\":2147483647,\"corePoolSize\":8,\"completedTaskCount\":0,\"maxPoolSize\":8,\"isShutdown\":false}},\"maintenance\":{\"mode\":\"drain\",\"reason\":\"\",\"lastSwapAtMs\":1771414482444,\"enabled\":false},\"capacity\":{\"workflowAvailableSlots\":4,\"workflowWorkersConfigured\":4,\"workflowQueueSize\":0,\"workflowActiveCount\":0}}"
   },
   "params": {},
   "propConfig": {
@@ -11,7 +11,7 @@
         },
         "transforms": [
           {
-            "code": "\tfrom exchange.workflows.engine.instance import getWorkflows\n\trt \u003d getWorkflows(dbName\u003d\"WorkflowsDB\")\n\tstats \u003d rt.getExecutorDiagnostics()\n\treturn system.util.jsonEncode(stats)",
+            "code": "\trt \u003d exchange.workflows.engine.instance.getWorkflows(dbName\u003d\"WorkflowsDB\")\n\tstats \u003d rt.getExecutorDiagnostics()\n\treturn system.util.jsonEncode(stats)",
             "type": "script"
           }
         ],
@@ -30,7 +30,7 @@
     "children": [
       {
         "meta": {
-          "name": "Maintenance Mode Header"
+          "name": "MaintenanceModeHeader"
         },
         "position": {
           "shrink": 0
@@ -131,7 +131,7 @@
                             "onActionPerformed": [
                               {
                                 "config": {
-                                  "script": "\ttry:\n\t\tfrom exchange.workflows.tests import runner\n\t\treport \u003d runner.run_all_md(dbName\u003d\"WorkflowsDB\")\n\t\tself.parent.parent.parent.parent.getChild(\"Tests\").getChild(\"Results\").props.source \u003d report[\"markdown\"]\n\t\texchange.workflows.toast.show(message\u003d\"running\", type\u003d\"success\")\n\texcept Exception as e:\n\t\texchange.workflows.toast.show(message\u003dstr(e), type\u003d\"error\")"
+                                  "script": "\ttry:\n\t\treport \u003d exchange.workflows.tests.runner.run_all_md(dbName\u003d\"WorkflowsDB\")\n\t\t(\n\t\t\tself.parent.parent.parent.parent\n\t\t\t.getChild(\"Tests\")\n\t\t\t.getChild(\"Results\")\n\t\t\t.props\n\t\t).source \u003d report[\"markdown\"]\n\t\texchange.workflows.toast.show(message\u003d\"running\", type\u003d\"success\")\n\texcept Exception as e:\n\t\texchange.workflows.toast.show(message\u003dstr(e), type\u003d\"error\")"
                                 },
                                 "scope": "G",
                                 "type": "script"
@@ -198,7 +198,7 @@
                           }
                         },
                         "meta": {
-                          "name": "Clear_0"
+                          "name": "InitRuntime"
                         },
                         "position": {
                           "basis": "0px",
@@ -354,7 +354,7 @@
                             "onActionPerformed": [
                               {
                                 "config": {
-                                  "script": "    ret \u003d exchange.workflows.api.admin.enterMaintenance(\n            mode\u003d\"drain\",\n            reason\u003d\"admin requested maintenance drain\",\n            queueName\u003d\"default\"\n    )\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance on\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to enable maintenance\"), type\u003d\"error\")"
+                                  "script": "\tret \u003d exchange.workflows.api.admin.enterMaintenance(\n\t\t\tmode\u003d\"drain\",\n\t\t\treason\u003d\"admin requested maintenance drain\",\n\t\t\tqueueName\u003d\"default\"\n\t)\n\tif ret.get(\"ok\"):\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance on\"), type\u003d\"success\")\n\telse:\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to enable maintenance\"), type\u003d\"error\")"
                                 },
                                 "scope": "G",
                                 "type": "script"
@@ -420,7 +420,7 @@
                             "onActionPerformed": [
                               {
                                 "config": {
-                                  "script": "    ret \u003d exchange.workflows.api.admin.enterMaintenance(\n            mode\u003d\"cancel\",\n            reason\u003d\"admin requested maintenance cancel\",\n            queueName\u003d\"default\"\n    )\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance on\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to enable maintenance\"), type\u003d\"error\")"
+                                  "script": "\tret \u003d exchange.workflows.api.admin.enterMaintenance(\n\t\t\tmode\u003d\"cancel\",\n\t\t\treason\u003d\"admin requested maintenance cancel\",\n\t\t\tqueueName\u003d\"default\"\n\t)\n\tif ret.get(\"ok\"):\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance on\"), type\u003d\"success\")\n\telse:\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to enable maintenance\"), type\u003d\"error\")"
                                 },
                                 "scope": "G",
                                 "type": "script"
@@ -504,7 +504,7 @@
                             "onActionPerformed": [
                               {
                                 "config": {
-                                  "script": "    ret \u003d exchange.workflows.api.admin.swapIfDrained()\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"swap worked\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed swap runtime globals\"), type\u003d\"error\")"
+                                  "script": "\tret \u003d exchange.workflows.api.admin.swapIfDrained()\n\tif ret.get(\"ok\"):\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"swap worked\"), type\u003d\"success\")\n\telse:\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed swap runtime globals\"), type\u003d\"error\")"
                                 },
                                 "scope": "G",
                                 "type": "script"
@@ -570,7 +570,7 @@
                             "onActionPerformed": [
                               {
                                 "config": {
-                                  "script": "    ret \u003d exchange.workflows.api.admin.exitMaintenance()\n    if ret.get(\"ok\"):\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance off\"), type\u003d\"success\")\n    else:\n        exchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to disable maintenance\"), type\u003d\"error\")"
+                                  "script": "\tret \u003d exchange.workflows.api.admin.exitMaintenance()\n\tif ret.get(\"ok\"):\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"maintenance off\"), type\u003d\"success\")\n\telse:\n\t\texchange.workflows.toast.show(message\u003dret.get(\"message\", \"failed to disable maintenance\"), type\u003d\"error\")"
                                 },
                                 "scope": "G",
                                 "type": "script"

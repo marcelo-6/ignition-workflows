@@ -1,10 +1,10 @@
 {
   "custom": {},
   "params": {
-    "uuid": ""
+    "UUID": ""
   },
   "propConfig": {
-    "params.uuid": {
+    "params.UUID": {
       "paramDirection": "input",
       "persistent": true
     }
@@ -24,7 +24,7 @@
           "props.params.selectedWorkflowUUID": {
             "binding": {
               "config": {
-                "path": "view.params.uuid"
+                "path": "view.params.UUID"
               },
               "type": "property"
             }

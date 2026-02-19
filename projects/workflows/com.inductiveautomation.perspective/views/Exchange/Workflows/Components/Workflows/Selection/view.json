@@ -106,7 +106,7 @@
             {
               "name": "refresh",
               "params": [],
-              "script": "\tfrom exchange.workflows.api import service as workflowsService\n\tfrom exchange.workflows.api import params\n\t\n\t# workflowOptions is list of dicts {workflow_name, ...}\n\t# Store options \n\tresult \u003d workflowsService.listWorkflows()\n\tif result.get(\"ok\"):\n\t\tself.props.options \u003d result.get(\"options\", None)\n\telse:\n\t\tself.props.options \u003d None"
+              "script": "\tresult \u003d exchange.workflows.api.service.listWorkflows()\n\tif result.get(\"ok\"):\n\t\tself.props.options \u003d result.get(\"options\", None)\n\telse:\n\t\tself.props.options \u003d None"
             }
           ],
           "extensionFunctions": null,

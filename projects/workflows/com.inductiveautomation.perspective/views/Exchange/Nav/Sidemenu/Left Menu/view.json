@@ -63,7 +63,7 @@
       },
       {
         "meta": {
-          "name": "Section Dashes"
+          "name": "SectionDashes"
         },
         "position": {
           "shrink": 0
@@ -82,7 +82,7 @@
       },
       {
         "meta": {
-          "name": "Link_1"
+          "name": "Link1"
         },
         "position": {
           "shrink": 0
@@ -101,7 +101,7 @@
       },
       {
         "meta": {
-          "name": "Link_2"
+          "name": "Link2"
         },
         "position": {
           "shrink": 0
@@ -120,7 +120,7 @@
       },
       {
         "meta": {
-          "name": "Section_2"
+          "name": "Section2"
         },
         "position": {
           "shrink": 0
@@ -191,7 +191,7 @@
               }
             },
             "meta": {
-              "name": "Section_3"
+              "name": "Section3"
             },
             "position": {
               "shrink": 0

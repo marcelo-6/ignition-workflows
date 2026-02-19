@@ -7,7 +7,7 @@
     "custom.selectedWorkflowUUID": {
       "binding": {
         "config": {
-          "path": "/root/Workflows List.props.params.selectedUUID"
+          "path": "/root/WorkflowsList.props.params.selectedUUID"
         },
         "type": "property"
       },
@@ -19,7 +19,7 @@
     "children": [
       {
         "meta": {
-          "name": "Workflows List"
+          "name": "WorkflowsList"
         },
         "position": {
           "position": "left"

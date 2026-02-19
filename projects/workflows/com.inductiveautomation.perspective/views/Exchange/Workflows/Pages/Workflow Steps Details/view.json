@@ -1,10 +1,10 @@
 {
   "custom": {},
   "params": {
-    "uuid": "value"
+    "UUID": "value"
   },
   "propConfig": {
-    "params.uuid": {
+    "params.UUID": {
       "paramDirection": "input",
       "persistent": true
     }
@@ -16,16 +16,16 @@
         "children": [
           {
             "meta": {
-              "name": "Steps Output Gant"
+              "name": "StepsOutputGant"
             },
             "position": {
               "position": "right"
             },
             "propConfig": {
-              "props.params.workflow_id": {
+              "props.params.workflowId": {
                 "binding": {
                   "config": {
-                    "path": "view.params.uuid"
+                    "path": "view.params.UUID"
                   },
                   "type": "property"
                 }
@@ -38,16 +38,16 @@
           },
           {
             "meta": {
-              "name": "Steps Output Table"
+              "name": "StepsOutputTable"
             },
             "position": {
               "position": "left"
             },
             "propConfig": {
-              "props.params.value.workflow_id": {
+              "props.params.value.workflowId": {
                 "binding": {
                   "config": {
-                    "path": "view.params.uuid"
+                    "path": "view.params.UUID"
                   },
                   "type": "property"
                 }

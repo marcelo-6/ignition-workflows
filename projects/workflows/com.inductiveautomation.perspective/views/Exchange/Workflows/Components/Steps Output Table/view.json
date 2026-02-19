@@ -2,7 +2,7 @@
   "custom": {},
   "params": {
     "value": {
-      "workflow_id": "d67ca840-009d-47fe-9d3b-b1c406086316"
+      "workflowId": "d67ca840-009d-47fe-9d3b-b1c406086316"
     }
   },
   "propConfig": {
@@ -30,7 +30,7 @@
             "binding": {
               "config": {
                 "parameters": {
-                  "workflowId": "{view.params.value.workflow_id}"
+                  "workflowId": "{view.params.value.workflowId}"
                 },
                 "polling": {
                   "enabled": true,
