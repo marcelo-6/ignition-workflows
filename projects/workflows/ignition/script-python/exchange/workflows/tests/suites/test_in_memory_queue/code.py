@@ -3,6 +3,7 @@
 
 from exchange.workflows import settings
 from exchange.workflows.engine.instance import getWorkflows
+from exchange.workflows.engine.db import uuid4
 from exchange.workflows.api import admin as admin_api
 from exchange.workflows.api import service as service_api
 from exchange.workflows.tests.support.base_case import WorkflowTestCase
@@ -168,3 +169,76 @@ class TestInMemoryQueueSuite(WorkflowTestCase):
 		for workflowId in ids:
 			self.trackWorkflow(workflowId)
 		self.assertGreaterEqual(len(ids), 3)
+
+	@profiles("full")
+	def test_in_memory_flush_dedup_failure_does_not_poison_queue(self):
+		"""Persistent dedupe insert failures should not block good payloads from flushing."""
+		rt = getWorkflows(dbName=self.dbName)
+		queueName = "tests.in_memory.poison.%s" % long(helpers.nowMs())
+		blockerDedup = "tests.in_memory.poison.blocker.%s" % long(helpers.nowMs())
+		goodDedup = blockerDedup + ".good"
+
+		blockerWid = uuid4()
+		self.db.insertWorkflow(
+			workflowId=blockerWid,
+			workflowName="tests.fast_enqueue_target",
+			queueName=queueName,
+			partitionKey=None,
+			priority=0,
+			deduplicationId=blockerDedup,
+			applicationVersion=None,
+			inputsObj={"resolved": {"value": "blocker"}},
+			createdMs=long(helpers.nowMs()),
+			deadlineMs=None,
+		)
+		self.trackWorkflow(blockerWid)
+
+		badAck = service_api.enqueueInMemory(
+			workflowName="tests.fast_enqueue_target",
+			inputs={"value": "bad"},
+			queueName=queueName,
+			deduplicationId=blockerDedup,
+			dbName=self.dbName,
+		)
+		self.assertEnvelope(badAck, expectOk=True, expectCode="IN_MEMORY_ENQUEUE_ACCEPTED")
+
+		goodAck = service_api.enqueueInMemory(
+			workflowName="tests.fast_enqueue_target",
+			inputs={"value": "good"},
+			queueName=queueName,
+			deduplicationId=goodDedup,
+			dbName=self.dbName,
+		)
+		self.assertEnvelope(goodAck, expectOk=True, expectCode="IN_MEMORY_ENQUEUE_ACCEPTED")
+
+		inserted = int(rt.flushInMemoryQueue(maxItems=20, maxMs=500))
+		self.assertEqual(
+			inserted,
+			1,
+			"expected good payload to flush even when bad dedupe payload fails",
+		)
+
+		goodRows = helpers.countRows(
+			self.dbName,
+			"SELECT COUNT(*) FROM workflows.workflow_status WHERE queue_name=? AND deduplication_id=?",
+			[queueName, goodDedup],
+		)
+		self.assertEqual(goodRows, 1)
+
+		maxRetries = int(getattr(settings, "FAST_FLUSH_FAILURE_MAX_RETRIES", 3))
+		for _i in range(maxRetries + 1):
+			rt.flushInMemoryQueue(maxItems=20, maxMs=500)
+
+		diag = rt.getExecutorDiagnostics()
+		inMemory = (diag or {}).get("inMemoryQueue", {}) or {}
+		self.assertEqual(int(inMemory.get("depth") or 0), 0)
+		self.assertGreaterEqual(int(inMemory.get("deadLetterCount") or 0), 1)
+		self.assertGreaterEqual(int(inMemory.get("deadLetterDepth") or 0), 1)
+
+		ds = system.db.runPrepQuery(
+			"SELECT workflow_id FROM workflows.workflow_status WHERE queue_name=?",
+			[queueName],
+			self.dbName,
+		)
+		for r in range(ds.getRowCount()):
+			self.trackWorkflow(str(ds.getValueAt(r, 0)))
