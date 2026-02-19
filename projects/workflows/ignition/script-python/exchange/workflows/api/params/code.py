@@ -81,10 +81,10 @@ def _isString(value):
     Return True if value is a string type in this runtime.
 
     Args:
-        value (object): Value payload to persist or publish.
+            value (object): Value payload to persist or publish.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     return isinstance(value, _STRING_TYPES)
 
@@ -93,13 +93,13 @@ def _deepCopy(obj):
     """
     Deep-copy dict/list data safely (Jython-safe).
 
-                    Uses Ignition JSON encode/decode so Java/PyDictionary objects round-trip cleanly.
+                                    Uses Ignition JSON encode/decode so Java/PyDictionary objects round-trip cleanly.
 
     Args:
-        obj (object): Input value for this call.
+            obj (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     try:
         return system.util.jsonDecode(system.util.jsonEncode(obj))
@@ -112,10 +112,10 @@ def _asDict(obj):
     Normalize input into a Python dict.
 
     Args:
-        obj (object): Input value for this call.
+            obj (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     if obj is None:
         return {}
@@ -139,11 +139,11 @@ def _formatEpochMs(epochMs, fmt="dd-MMM-yy HH:mm:ss (z)"):
     Format epoch ms into a readable timestamp string (Gateway locale/timezone).
 
     Args:
-        epochMs (object): Input value for this call.
-        fmt (object): Input value for this call.
+            epochMs (object): Input value for this call.
+            fmt (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     try:
         return system.date.format(system.date.fromMillis(epochMs), fmt)
@@ -155,16 +155,16 @@ def _normalizeStatus(statusValue):
     """
     Normalize external status strings to DB status values.
 
-                    Accepts:
-                    - active
-                    - obsolete
-                    - inactive (alias -> obsolete)
+                                    Accepts:
+                                    - active
+                                    - obsolete
+                                    - inactive (alias -> obsolete)
 
     Args:
-        statusValue (object): Input value for this call.
+            statusValue (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     s = str(statusValue or "").strip().lower()
     if s == "inactive":
@@ -180,11 +180,11 @@ def _requireNonEmpty(value, fieldName):
     Raise ValueError if value is falsy/empty.
 
     Args:
-        value (object): Value payload to persist or publish.
-        fieldName (object): Input value for this call.
+            value (object): Value payload to persist or publish.
+            fieldName (object): Input value for this call.
 
     Returns:
-        None: No explicit value is returned.
+            None: No explicit value is returned.
     """
     if value is None:
         raise ValueError("%s_required" % fieldName)
@@ -196,16 +196,16 @@ def _nextVersionTx(db, tx, sqlLatest, args):
     """
     Compute next version by locking the latest row (if exists), else return 1.
 
-                    Best-effort concurrency safety for "append-only versions" patterns.
+                                    Best-effort concurrency safety for "append-only versions" patterns.
 
     Args:
-        db (object): Input value for this call.
-        tx (object): Input value for this call.
-        sqlLatest (object): Input value for this call.
-        args (str): Input value for this call.
+            db (object): Input value for this call.
+            tx (object): Input value for this call.
+            sqlLatest (object): Input value for this call.
+            args (str): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     ds = db.query(sqlLatest, args, tx=tx)
     if ds is None or ds.getRowCount() == 0:
@@ -247,17 +247,17 @@ def _iterWidgets(formProps):
     """
     Yield widget dicts found under columns.items[].rows.items[].widgets[].
 
-                    Expected Perspective Form layout:
-                    columns.items[*].rows.items[*].widgets[*] = widgetObject
+                                    Expected Perspective Form layout:
+                                    columns.items[*].rows.items[*].widgets[*] = widgetObject
 
-                    Yields:
-                            dict: widget object
+                                    Yields:
+                                                    dict: widget object
 
     Args:
-        formProps (object): Input value for this call.
+            formProps (object): Input value for this call.
 
     Returns:
-        None: No explicit value is returned.
+            None: No explicit value is returned.
     """
     try:
         columns = (formProps or {}).get("columns", {}) or {}
@@ -278,14 +278,14 @@ def _ensureDataKeysForAllWidgets(formProps):
     """
     Ensure Form.props.data has a key for every widget id.
 
-                    This makes template defaults deterministic and makes downstream merging simple.
-                    Any missing key is added with value None.
+                                    This makes template defaults deterministic and makes downstream merging simple.
+                                    Any missing key is added with value None.
 
     Args:
-        formProps (object): Input value for this call.
+            formProps (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     props = formProps or {}
     data = props.get("data", None)
@@ -305,15 +305,15 @@ def _sanitizeFormProps(formProps, forcedName=None):
     """
     Sanitize Perspective Form props before storing as a template.
 
-                    We intentionally keep the props "almost as-is" so Designer-authored configuration
-                    is preserved. We remove ONLY runtime-only root validation state.
+                                    We intentionally keep the props "almost as-is" so Designer-authored configuration
+                                    is preserved. We remove ONLY runtime-only root validation state.
 
     Args:
-        formProps (object): Input value for this call.
-        forcedName (object): Input value for this call.
+            formProps (object): Input value for this call.
+            forcedName (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     props = _asDict(formProps) or {}
 
@@ -347,16 +347,16 @@ def _extractEnumRefFromWidget(widget):
     """
     Detect @enum placeholders in widget options.
 
-                    Convention:
-                    - widget.<type>.options includes a placeholder option:
-                      label/text: "@enum:EnumName" or "@enum:EnumName:3"
-                      value: "__enum__" (recommended)
+                                    Convention:
+                                    - widget.<type>.options includes a placeholder option:
+                                      label/text: "@enum:EnumName" or "@enum:EnumName:3"
+                                      value: "__enum__" (recommended)
 
     Args:
-        widget (object): Input value for this call.
+            widget (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     try:
         wType = str(widget.get("type", "") or "").strip()
@@ -414,17 +414,17 @@ def _extractMetaFromFormProps(formProps):
     """
     Extract meta from sanitized Form props.
 
-                    Meta fields:
-                    - paramKeys: ordered widget ids
-                    - widgetTypes: widget type by id
-                    - defaultData: Form.props.data (deep-copied)
-                    - enumRefs: widgetId -> {"enumName","enumVersion"}
+                                    Meta fields:
+                                    - paramKeys: ordered widget ids
+                                    - widgetTypes: widget type by id
+                                    - defaultData: Form.props.data (deep-copied)
+                                    - enumRefs: widgetId -> {"enumName","enumVersion"}
 
     Args:
-        formProps (object): Input value for this call.
+            formProps (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     paramKeys = []
     widgetTypes = {}
@@ -464,21 +464,21 @@ def _enumOptionsToWidgetOptions(enumOptions, widgetType):
     """
     Convert canonical enum options to widget-specific option objects.
 
-                    Canonical enum option:
-                    {"label": "...", "value": "...", "isDisabled": false}
+                                    Canonical enum option:
+                                    {"label": "...", "value": "...", "isDisabled": false}
 
-                    Widget mappings:
-                    - dropdown: {"label","value","isDisabled"}
-                    - radio: {"text","value"}
-                    - toggle: {"text","value"}
-                    - checkbox: {"text","value","triState": false}
+                                    Widget mappings:
+                                    - dropdown: {"label","value","isDisabled"}
+                                    - radio: {"text","value"}
+                                    - toggle: {"text","value"}
+                                    - checkbox: {"text","value","triState": false}
 
     Args:
-        enumOptions (object): Input value for this call.
-        widgetType (object): Input value for this call.
+            enumOptions (object): Input value for this call.
+            widgetType (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     out = []
     enumOptions = enumOptions or []
@@ -507,11 +507,11 @@ def expandTemplateForUi(templateObj, dbName=DEFAULT_DB_NAME):
     Expand enum refs into widget options for UI rendering.
 
     Args:
-        templateObj (object): Input value for this call.
-        dbName (object): Input value for this call.
+            templateObj (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     if not templateObj:
         return None
@@ -592,13 +592,13 @@ def listTemplates(
     List templates for a workflow.
 
     Args:
-        workflowName (object): Input value for this call.
-        status (object): Input value for this call.
-        latestOnly (object): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            status (object): Input value for this call.
+            latestOnly (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     _requireNonEmpty(workflowName, "workflowName")
     db = DB(dbName)
@@ -663,14 +663,14 @@ def getTemplate(
     Get a single template version.
 
     Args:
-        workflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        templateVersion (object): Input value for this call.
-        dbName (object): Input value for this call.
-        activeOnly (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            templateVersion (object): Input value for this call.
+            dbName (object): Input value for this call.
+            activeOnly (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     _requireNonEmpty(workflowName, "workflowName")
     _requireNonEmpty(templateName, "templateName")
@@ -731,28 +731,28 @@ def createTemplateVersion(
     """
     Create a new template version from Perspective Form props.
 
-                    Stored schema_json format:
-                    {
-                            "formProps": <sanitized form props>,
-                            "meta": {
-                                    "paramKeys": [...],
-                                    "widgetTypes": {...},
-                                    "defaultData": {...},
-                                    "enumRefs": {...}
-                            }
-                    }
+                                    Stored schema_json format:
+                                    {
+                                                    "formProps": <sanitized form props>,
+                                                    "meta": {
+                                                                    "paramKeys": [...],
+                                                                    "widgetTypes": {...},
+                                                                    "defaultData": {...},
+                                                                    "enumRefs": {...}
+                                                    }
+                                    }
 
     Args:
-        workflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        formProps (object): Input value for this call.
-        description (object): Input value for this call.
-        createdBy (object): Input value for this call.
-        activate (bool): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            formProps (object): Input value for this call.
+            description (object): Input value for this call.
+            createdBy (object): Input value for this call.
+            activate (bool): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     createdBy = createdBy or "admin"
     _requireNonEmpty(workflowName, "workflowName")
@@ -824,15 +824,15 @@ def setTemplateStatus(
     Set template status for a specific version.
 
     Args:
-        workflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        templateVersion (object): Input value for this call.
-        status (object): Input value for this call.
-        actor (object): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            templateVersion (object): Input value for this call.
+            status (object): Input value for this call.
+            actor (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     actor = actor or "admin"
     _requireNonEmpty(workflowName, "workflowName")
@@ -862,15 +862,15 @@ def setTemplateActive(
     Convenience helper to flip a template version active/obsolete.
 
     Args:
-        workflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        templateVersion (object): Input value for this call.
-        isActive (object): Input value for this call.
-        actor (object): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            templateVersion (object): Input value for this call.
+            isActive (object): Input value for this call.
+            actor (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     status = STATUS_ACTIVE if bool(isActive) else STATUS_OBSOLETE
     return setTemplateStatus(
@@ -884,17 +884,17 @@ def deleteTemplateVersion(
     """
     Hard-delete a specific template version.
 
-                    Use with care: this permanently removes the version row from the DB.
+                                    Use with care: this permanently removes the version row from the DB.
 
     Args:
-        workflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        templateVersion (object): Input value for this call.
-        actor (object): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            templateVersion (object): Input value for this call.
+            actor (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     actor = actor or "admin"
     _requireNonEmpty(workflowName, "workflowName")
@@ -913,16 +913,16 @@ def deleteTemplate(workflowName, templateName, actor=None, dbName=DEFAULT_DB_NAM
     """
     Hard-delete ALL versions of a template for a workflow.
 
-                    Use with care: this permanently removes all versions.
+                                    Use with care: this permanently removes all versions.
 
     Args:
-        workflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        actor (object): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            actor (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     actor = actor or "admin"
     _requireNonEmpty(workflowName, "workflowName")
@@ -943,17 +943,17 @@ def getTemplateDropdownOptions(
     """
     Return a list suitable for Perspective dropdown options.
 
-                    Value is a JSON string containing templateName + templateVersion, so UI can
-                    round-trip without needing multiple bound props.
+                                    Value is a JSON string containing templateName + templateVersion, so UI can
+                                    round-trip without needing multiple bound props.
 
     Args:
-        workflowName (object): Input value for this call.
-        status (object): Input value for this call.
-        latestOnly (object): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            status (object): Input value for this call.
+            latestOnly (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     items = listTemplates(
         workflowName, status=status, latestOnly=latestOnly, dbName=dbName
@@ -980,22 +980,22 @@ def copyTemplateToWorkflow(
     """
     Copy a template (latest active or specific version) to another workflow by creating a new version there.
 
-                    This re-saves the Form props via createTemplateVersion(), ensuring:
-                    - sanitization rules apply
-                    - meta is re-extracted cleanly
-                    - forced name is updated to target workflow/template
+                                    This re-saves the Form props via createTemplateVersion(), ensuring:
+                                    - sanitization rules apply
+                                    - meta is re-extracted cleanly
+                                    - forced name is updated to target workflow/template
 
     Args:
-        sourceWorkflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        targetWorkflowName (object): Input value for this call.
-        newTemplateName (object): Input value for this call.
-        templateVersion (object): Input value for this call.
-        createdBy (object): Input value for this call.
-        dbName (object): Input value for this call.
+            sourceWorkflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            targetWorkflowName (object): Input value for this call.
+            newTemplateName (object): Input value for this call.
+            templateVersion (object): Input value for this call.
+            createdBy (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     createdBy = createdBy or "admin"
     newTemplateName = newTemplateName or templateName
@@ -1039,12 +1039,12 @@ def listEnums(status=STATUS_ACTIVE, latestOnly=True, dbName=DEFAULT_DB_NAME):
     List enums.
 
     Args:
-        status (object): Input value for this call.
-        latestOnly (object): Input value for this call.
-        dbName (object): Input value for this call.
+            status (object): Input value for this call.
+            latestOnly (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     db = DB(dbName)
 
@@ -1100,13 +1100,13 @@ def getEnum(enumName, enumVersion=None, dbName=DEFAULT_DB_NAME, activeOnly=True)
     Get an enum (latest active by default).
 
     Args:
-        enumName (object): Input value for this call.
-        enumVersion (object): Input value for this call.
-        dbName (object): Input value for this call.
-        activeOnly (object): Input value for this call.
+            enumName (object): Input value for this call.
+            enumVersion (object): Input value for this call.
+            dbName (object): Input value for this call.
+            activeOnly (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     _requireNonEmpty(enumName, "enumName")
     db = DB(dbName)
@@ -1164,15 +1164,15 @@ def createEnumVersion(
     Create a new enum version (append-only).
 
     Args:
-        enumName (object): Input value for this call.
-        enumValues (object): Input value for this call.
-        description (object): Input value for this call.
-        createdBy (object): Input value for this call.
-        activate (bool): Input value for this call.
-        dbName (object): Input value for this call.
+            enumName (object): Input value for this call.
+            enumValues (object): Input value for this call.
+            description (object): Input value for this call.
+            createdBy (object): Input value for this call.
+            activate (bool): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     createdBy = createdBy or "admin"
     _requireNonEmpty(enumName, "enumName")
@@ -1225,14 +1225,14 @@ def setEnumStatus(enumName, enumVersion, status, actor=None, dbName=DEFAULT_DB_N
     Set enum status (active/obsolete).
 
     Args:
-        enumName (object): Input value for this call.
-        enumVersion (object): Input value for this call.
-        status (object): Input value for this call.
-        actor (object): Input value for this call.
-        dbName (object): Input value for this call.
+            enumName (object): Input value for this call.
+            enumVersion (object): Input value for this call.
+            status (object): Input value for this call.
+            actor (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     actor = actor or "admin"
     _requireNonEmpty(enumName, "enumName")
@@ -1253,16 +1253,16 @@ def deleteEnumVersion(enumName, enumVersion, actor=None, dbName=DEFAULT_DB_NAME)
     """
     Hard-delete a specific enum version.
 
-                    Use with care: this permanently removes the version row from the DB.
+                                    Use with care: this permanently removes the version row from the DB.
 
     Args:
-        enumName (object): Input value for this call.
-        enumVersion (object): Input value for this call.
-        actor (object): Input value for this call.
-        dbName (object): Input value for this call.
+            enumName (object): Input value for this call.
+            enumVersion (object): Input value for this call.
+            actor (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     actor = actor or "admin"
     _requireNonEmpty(enumName, "enumName")
@@ -1280,15 +1280,15 @@ def deleteEnum(enumName, actor=None, dbName=DEFAULT_DB_NAME):
     """
     Hard-delete ALL versions of an enum.
 
-                    Use with care: this permanently removes all versions for enum_name.
+                                    Use with care: this permanently removes all versions for enum_name.
 
     Args:
-        enumName (object): Input value for this call.
-        actor (object): Input value for this call.
-        dbName (object): Input value for this call.
+            enumName (object): Input value for this call.
+            actor (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     actor = actor or "admin"
     _requireNonEmpty(enumName, "enumName")
@@ -1312,11 +1312,11 @@ def computeOverridesData(baseData, currentData):
     Compute overrides relative to a base dict.
 
     Args:
-        baseData (object): Input value for this call.
-        currentData (object): Input value for this call.
+            baseData (object): Input value for this call.
+            currentData (object): Input value for this call.
 
     Returns:
-        object: Result object returned by this call.
+            object: Result object returned by this call.
     """
     baseData = baseData or {}
     currentData = currentData or {}
@@ -1339,23 +1339,23 @@ def resolveInputs(
     """
     Resolve final workflow inputs (resolved + paramSource), template-only.
 
-                    Behavior:
-                    - If templateName is None: resolved = overridesData or {}
-                    - If templateName provided:
-                            - base = template meta.defaultData
-                            - resolved = base merged with overridesData
-                            - extra override keys not in template are rejected
+                                    Behavior:
+                                    - If templateName is None: resolved = overridesData or {}
+                                    - If templateName provided:
+                                                    - base = template meta.defaultData
+                                                    - resolved = base merged with overridesData
+                                                    - extra override keys not in template are rejected
 
     Args:
-        workflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        overridesData (object): Input value for this call.
-        templateVersion (object): Input value for this call.
-        actor (object): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            overridesData (object): Input value for this call.
+            templateVersion (object): Input value for this call.
+            actor (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     actor = actor or "admin"
     overridesData = overridesData or {}
@@ -1440,21 +1440,21 @@ def startWithTemplate(
     Convenience: resolveInputs() then workflowsService.start(...).
 
     Args:
-        workflowName (object): Input value for this call.
-        templateName (object): Input value for this call.
-        overridesData (object): Input value for this call.
-        templateVersion (object): Input value for this call.
-        actor (object): Input value for this call.
-        queueName (object): Input value for this call.
-        partitionKey (object): Input value for this call.
-        priority (int): Priority value used when ordering queued workflows.
-        deduplicationId (object): Input value for this call.
-        applicationVersion (object): Input value for this call.
-        timeoutSeconds (object): Input value for this call.
-        dbName (object): Input value for this call.
+            workflowName (object): Input value for this call.
+            templateName (object): Input value for this call.
+            overridesData (object): Input value for this call.
+            templateVersion (object): Input value for this call.
+            actor (object): Input value for this call.
+            queueName (object): Input value for this call.
+            partitionKey (object): Input value for this call.
+            priority (int): Priority value used when ordering queued workflows.
+            deduplicationId (object): Input value for this call.
+            applicationVersion (object): Input value for this call.
+            timeoutSeconds (object): Input value for this call.
+            dbName (object): Input value for this call.
 
     Returns:
-        dict: Structured payload with results or status details.
+            dict: Structured payload with results or status details.
     """
     r = resolveInputs(
         workflowName=workflowName,
@@ -1467,7 +1467,7 @@ def startWithTemplate(
     if not r.get("ok"):
         return r
 
-    wid = workflowsService.start(
+    ret = workflowsService.start(
         workflowName=workflowName,
         inputs=r.get("inputs"),
         queueName=queueName,
@@ -1478,4 +1478,18 @@ def startWithTemplate(
         timeoutSeconds=timeoutSeconds,
         dbName=dbName,
     )
-    return {"ok": True, "workflowId": wid, "inputs": r.get("inputs")}
+
+    if not ret.get("ok"):
+        return {
+            "ok": False,
+            "message": ret.get("message"),
+            "workflowId": None,
+            "inputs": r.get("inputs"),
+        }
+    else:
+        return {
+            "ok": True,
+            "message": ret.get("message"),
+            "workflowId": ret.get("data").get("workflowId"),
+            "inputs": r.get("inputs"),
+        }
