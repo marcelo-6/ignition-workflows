@@ -4,8 +4,6 @@ icon: lucide/rocket
 
 # Getting Started
 
-This is the quickest path to get workflows running without guessing where stuff lives.
-
 ## Prerequisites
 
 - Ignition Gateway project imported (`projects/workflows`).
@@ -53,9 +51,9 @@ print exchange.workflows.api.service.sendCommand(workflowId=wid, cmd="STOP", rea
 - `/runs` for list + filtering.
 - `/runs/<uuid>` for details + events + command buttons.
 - `/runs/<uuid>/steps` for step timeline and output details.
-- `/queues` for queue status counts.
+- `/queues` for queue status.
 
-See [UI Walkthrough](../ui/workflows-console.md) for page-by-page screenshots and tips.
+See [UI Walkthrough](../ui/workflows-console.md) for screenshots and tips.
 
 ## Runtime flow (high level)
 
