@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6] - 2026-02-20
+
+### <!-- 1 -->Bug Fixes
+- Fixed issue of workflows being marked as canceled when terminated properly  by @marcelo-6 ([2e3b239](https://github.com/marcelo-6/ignition-workflows/commit/2e3b239edfca13d2b7ab88fc317bcae85bba9670))
+
+
+### <!-- 3 -->Documentation
+- Added screenshots and better documentation  by @marcelo-6 in [#35](https://github.com/marcelo-6/ignition-workflows/pull/35) ([3c1cbb8](https://github.com/marcelo-6/ignition-workflows/commit/3c1cbb8eb4f4ef2881bf50f66427338d12276854))
+
+- Fix remaining internal link targets after validation  by @marcelo-6 ([15bd779](https://github.com/marcelo-6/ignition-workflows/commit/15bd779998d5f49b973e57b952e0ea754f013b06))
+
+- Add tracked UI screenshot placeholders  by @marcelo-6 ([a1a7717](https://github.com/marcelo-6/ignition-workflows/commit/a1a7717a0db91937f873c15ffd2b94d798a8944f))
+
+- Reorganize docs IA and add operator/concurrency/troubleshooting pages  by @marcelo-6 ([73796fe](https://github.com/marcelo-6/ignition-workflows/commit/73796fe7ef509b59c6132707e77c01eff27327b8))
+
+
 ## [0.3.5] - 2026-02-20
 
 ### <!-- 1 -->Bug Fixes
