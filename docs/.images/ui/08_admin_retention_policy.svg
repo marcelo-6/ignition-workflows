@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">Screenshot Placeholder: 08_admin_retention_policy</title>
+  <desc id="desc">Temporary placeholder image. Replace with sanitized real screenshot matching this filename.</desc>
+  <rect width="1440" height="900" fill="#f5f5f5"/>
+  <rect x="40" y="40" width="1360" height="820" rx="16" ry="16" fill="#ffffff" stroke="#d9d9d9" stroke-width="3"/>
+  <text x="720" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#222222">TODO: Replace with real screenshot</text>
+  <text x="720" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#555555">08_admin_retention_policy</text>
+  <text x="720" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#666666">Use sanitized demo data only</text>
+</svg>
