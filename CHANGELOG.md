@@ -6,6 +6,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5] - 2026-02-20
+
+### <!-- 1 -->Bug Fixes
+- Introduce in-memory flush dead-letter handling to stop infinite requeue loops on insert failures  by @marcelo-6 in [#34](https://github.com/marcelo-6/ignition-workflows/pull/34) ([d13eff9](https://github.com/marcelo-6/ignition-workflows/commit/d13eff98d1987c796e8b8bfe772fc2c42aef487a))
+
+- Fixed dedup index to block enqueing of active workflows only  by @marcelo-6 ([2e12d87](https://github.com/marcelo-6/ignition-workflows/commit/2e12d87bcca12052d06c52f2f379f0857b53a1d3))
+
+- Fixed dispatch logic to prioritize lower values (matches DBOS)  by @marcelo-6 ([0e18b7b](https://github.com/marcelo-6/ignition-workflows/commit/0e18b7b24e7e2323f3a2bca7154ef934a07aa274))
+
+- Fixed startWithTemplate return and related views  by @marcelo-6 ([17f9b98](https://github.com/marcelo-6/ignition-workflows/commit/17f9b9879295f5ef3e5b53ecdd91dc5453651758))
+
+- Removed legacy param set from db schema  by @marcelo-6 ([4b37796](https://github.com/marcelo-6/ignition-workflows/commit/4b377968397631897e39ca8f5e74975eff7b2122))
+
+- Fixed listTemplates latest-only malformed query  by @marcelo-6 ([934063c](https://github.com/marcelo-6/ignition-workflows/commit/934063c4fe8a52bc6fedff66331a39a65552baa1))
+
+
+### <!-- 3 -->Documentation
+- Added total downloads badge  by @marcelo-6 ([8d5ca17](https://github.com/marcelo-6/ignition-workflows/commit/8d5ca17ba3c0f2249279cbda5fcd2077aa25a982))
+
+- Removed some badges  by @marcelo-6 ([b4a5da8](https://github.com/marcelo-6/ignition-workflows/commit/b4a5da8150663f9db8c01e4ea8c734e2890ff89f))
+
+
+### <!-- 6 -->Testing
+- Added test for queue priority/dedupe ID  by @marcelo-6 ([c1c1344](https://github.com/marcelo-6/ignition-workflows/commit/c1c13443067f843e6d536129dbdde1744dfcf269))
+
+- Added test for startWithTemplate to confirm return format  by @marcelo-6 ([d29db29](https://github.com/marcelo-6/ignition-workflows/commit/d29db2995a378eaa6dc3aa62b805220e14ccc822))
+
+- Added params test suite  by @marcelo-6 ([3a29954](https://github.com/marcelo-6/ignition-workflows/commit/3a299544150245db450eb59f872cefb83299b328))
+
+
+### <!-- 7 -->Miscellaneous Tasks
+- Removed legacy timer script  by @marcelo-6 ([83aa71f](https://github.com/marcelo-6/ignition-workflows/commit/83aa71f490918c0af267caf566d161cffeb95c4c))
+
+- Added examples of templates and enums to be loaded in db  by @marcelo-6 ([1bc2869](https://github.com/marcelo-6/ignition-workflows/commit/1bc2869201030f7def520cc77377e1abe832664a))
+
+
 ## [0.3.4] - 2026-02-18
 
 ### <!-- 7 -->Miscellaneous Tasks
