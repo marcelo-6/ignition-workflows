@@ -8,7 +8,7 @@ icon: lucide/map
 * [x] Workflow requests queued by Postgres.
 * [x] Step execution within workflow (sync) with Postgres persistence.
 * [x] Step retry on failure
-* [x] Procedure to making code changes in production to avoid [intepreter issues](concepts/architecture/#ignitionjython-interpreter-reload-issue){ data-preview }.
+* [x] Procedure to making code changes in production to avoid [intepreter issues](concepts/architecture.md#ignitionjython-interpreter-reload-issue){ data-preview }.
 * [x] Template + enum parameter for operator forms (recipe parameters for a given workflow).
 * [x] Refactor `exchange.workflows.db` to conform with Exchange code standard
 * [ ] True async step execution (workflow execution is already async)
