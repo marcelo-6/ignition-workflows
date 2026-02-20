@@ -51,9 +51,18 @@ nav = [
     "getting-started/steps-and-authoring.md",
     "getting-started/testing.md",
     ]},
+  { "UI Walkthrough" = [
+    "ui/workflows-console.md",
+    "ui/screenshot-shot-list.md",
+    ]},
   { "Concepts" = [
     "concepts/architecture.md",
+    "concepts/concurrency-lifecycle.md",
     "concepts/state-model.md",
+    "concepts/glossary.md",
+    ]},
+  { "Operations" = [
+    "operations/troubleshooting-observability.md",
     ]},
   { "Examples" = [
     "examples/operations.md",
@@ -62,10 +71,6 @@ nav = [
     "api-reference/api-admin.md",
     "api-reference/api-params.md",
     "api-reference/api-service.md",
-    ]},
-  { "Zensical Examples" = [
-    "zensical/example-1.md",
-    "zensical/example-2.md",
     ]},
   { "Roadmap" = "roadmap.md" },
   { "References" = "references.md" },
@@ -325,4 +330,3 @@ toggle.name = "Switch to light mode"
 #[[project.extra.social]]
 #icon = "fontawesome/brands/github"
 #link = "https://github.com/user/repo"
-

@@ -4,105 +4,77 @@ icon: lucide/book-open
 
 # Ignition Workflows
 
-A simple workflow orchestration library for [Ignition](http://ia.io).
+A lightweight workflow orchestration library for [Ignition](http://ia.io), inspired by DBOS ideas but adapted to real Ignition constraints.
 
-??? info "Why?"
+## Why this exists
 
-    I've used SFCs in other projects in the past and it can be hard to manage the code and troubleshoot. 
-    
-    I read about [DBOS](https://docs.dbos.dev/) and found it gave a good framework for async long running tasks. I thought that porting over some of their design into Ignition (without using SFC module or creating a third-party module) would be a fun personal project to get me a little more familiar with async multi-threaded Ignition scripting. 
-    
-    Ignition is event driven and there are [some things](https://forum.inductiveautomation.com/t/managing-multiple-asynchronous-threads/37185) to keep in mind when trying to create/manage finite state machines and this library tries to handle some of that for you. 
+If you have ever tried to scale long-running logic with regular event scripts, you already know the pain points:
 
-Think of workflows as tasks that can have subtasks. This library just gives you a structured way to start/queue those tasks and gives you some reliability (retry on failure etc) and also creates threads as needed and attemps to manage the lifecycle of those tasks/threads.
+- hard to track state over time
+- hard to retry safely
+- hard to do operator controls cleanly
+- easy to tie up threads if you are not careful
 
-## Basic functionality that this library enables
+This project gives you a cleaner structure:
 
-- Concurrent execution with retry behavior and operator control (HOLD/RESUME/STOP).
-- Workflow and and their steps outputs are stored in Postgres.
-- Work can be queued from Ignition events (tag changes, button presses, etc).
-- Architecture is set up to support automated testing and future external executors (CPython, Go, TypeScript, Java). External executors are just applications that use DBOS. (see current limitations for details)
+- workflows for orchestration
+- steps for side effects
+- durable-ish state in Postgres
+- operator controls (`HOLD`, `RESUME`, `STOP`, cancel)
 
-## Use Cases
+## What you can do with it
 
-This library complements Ignition's functionality in a few lines of code. For example:
+- Queue work from Perspective, gateway scripts, or tag events.
+- Keep status, outputs, events, and streams in Postgres.
+- Run multiple workflows concurrently with queue + partition controls.
+- Use maintenance mode for cleaner deployments and cutovers.
 
-=== "Simple Decorated Function"
+## Quick way in
 
-    [Detailed Example](getting-started.md)
-    ``` python
-    from exchange.workflows.engine.runtime import workflow
-    from exchange.workflows.engine.runtime import step
-    from exchange.workflows.engine.instance import getWorkflows
+- If you want setup first: start at [Getting Started](getting-started/getting-started.md).
+- If you want real operator flows: jump to [Examples / Operations](examples/operations.md).
+- If you want the UI map: use [UI Walkthrough](ui/workflows-console.md).
+- If you want internals: read [Architecture](concepts/architecture.md) and [Concurrency + Lifecycle](concepts/concurrency-lifecycle.md).
 
-    @step() # (2)!
-    def step_one():
-        print("Step one completed!")
+## Quick snippets
 
-    @step()
-    def step_two():
-        print("Step two completed!")
+=== "From a Perspective button"
 
-    @workflow() # (1)!
-    def ignition_workflow():
-        step_one()
-        step_two()
-    ```
-
-    1.  The workflow decorator lets use your existing functions as tasks to be executed later. You can queue them to be executed. See [Example](getting-started.md)
-
-    2.  The step decorator lets use your existing functions as steps/subtasks. They have retry on failure capabilites. See [Example](getting-started.md)
-
-=== "Tag Event Changes"
-
-    The Ignition tag system has a limited number of threads [available]. For that reason it is imperative to keep any tag event scripts execution to be fast (`<10ms`). If you have long running functions/tasks that need to be executed on a tag change event `Ignition Workflows` makes it easy to accomplish this
-  
-    [Forum discussion about this](https://forum.inductiveautomation.com/t/java-concurrent-queue-for-tag-change-scripts/82044/21)
-
-    [Detailed Example](getting-started.md)
-
-    [available]: https://forum.inductiveautomation.com/t/tag-change-missed-events/37764 "Here is one of many forum posts about it"
-    
-    
-    ``` python title="Value Changed Tag Event Script"
-    def valueChanged(tag, tagPath, previousValue, currentValue, initialChange, missedEvents):
-      exchange.workflows.api.service.enqueueInMemory("ignition_workflow") # (1)!
-    ```
-
-     1. [Details](getting-started.md) on what happens after you call `enqueueInMemory`
-
-    
-
-=== "Perspective"
-
-    [Detailed Example](getting-started/getting-started/#){ data-preview }
-
-    ``` python title="onActionPerformed event script for a button in a view"
-
+    ```python title="onActionPerformed"
     def runAction(self, event):
-        ret = exchange.workflows.api.service.enqueue("ignition_workflow") # (1)!
+        ret = exchange.workflows.api.service.start(
+            workflowName="demo.commands_60s",
+            inputs={"resolved": {"paramOne": "hello"}},
+            queueName="default",
+            priority=0,
+        )
+        print ret
     ```
 
-    1.  The workflow decorator lets use your existing functions as tasks to be executed later. You can queue them to be executed. See [Example](getting-started.md)
+=== "From a tag event (fast path)"
 
-=== "Event streams"
-
-    ``` python
-    TODO add a full example
+    ```python title="valueChanged"
+    def valueChanged(tag, tagPath, previousValue, currentValue, initialChange, missedEvents):
+        ack = exchange.workflows.api.service.enqueueInMemory(
+            workflowName="demo.commands_60s",
+            inputs={"resolved": {"paramOne": "from-tag"}},
+            queueName="default",
+        )
+        print ack
     ```
 
-=== "Http requests"
+=== "Control a running workflow"
 
-    ``` python
-    TODO add a full example
-    ```
-
-=== "All"
-
-    ``` python
-    TODO add a full example
+    ```python
+    wid = "<workflow-id>"
+    print exchange.workflows.api.service.sendCommand(workflowId=wid, cmd="HOLD", reason="operator hold")
+    print exchange.workflows.api.service.sendCommand(workflowId=wid, cmd="RESUME")
+    print exchange.workflows.api.service.sendCommand(workflowId=wid, cmd="STOP", reason="operator stop")
+    print exchange.workflows.api.service.cancel(workflowId=wid, reason="manual cancel")
     ```
 
 ## Limitations
 
-This project is not trying to completly implement DBOS 1:1 and not trying to replace the SFC module.
+This project is not trying to replicate DBOS 1:1 and is not trying to replace Ignition SFC.
+
+Current roadmap and caveats are in [Roadmap](roadmap.md).

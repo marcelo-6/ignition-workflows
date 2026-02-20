@@ -4,7 +4,7 @@ icon: lucide/rocket
 
 # Getting Started
 
-This is the fastest path to get workflows running.
+This is the quickest path to get workflows running without guessing where stuff lives.
 
 ## Prerequisites
 
@@ -13,17 +13,19 @@ This is the fastest path to get workflows running.
 - Ignition DB connection named `WorkflowsDB` (default).
 - Gateway timer script enabled at `ignition/timer/tick`.
 
-## Create schema
+## 1) Create schema
 
-### Use named query
+### Option A: Named query
+
+Run:
 
 - `Exchange/Workflows/Schemas/Create`
 
-### Or use the admin screen
+### Option B: Admin UI
 
-- location
+Go to `/admin`, then use **Backend Control / Test** actions.
 
-## Start a workflow
+## 2) Start one workflow
 
 ```python
 resp = exchange.workflows.api.service.start(
@@ -35,9 +37,9 @@ resp = exchange.workflows.api.service.start(
 print resp
 ```
 
-The workflow id is `resp["data"]["workflowId"]`.
+The run id is at `resp["data"]["workflowId"]`.
 
-### Send commands to a run
+## 3) Send command controls
 
 ```python
 wid = resp["data"]["workflowId"]
@@ -46,7 +48,16 @@ print exchange.workflows.api.service.sendCommand(workflowId=wid, cmd="RESUME")
 print exchange.workflows.api.service.sendCommand(workflowId=wid, cmd="STOP", reason="stop requested")
 ```
 
-## Example Sequence Diagram
+## 4) Watch it in UI
+
+- `/runs` for list + filtering.
+- `/runs/<uuid>` for details + events + command buttons.
+- `/runs/<uuid>/steps` for step timeline and output details.
+- `/queues` for queue status counts.
+
+See [UI Walkthrough](../ui/workflows-console.md) for page-by-page screenshots and tips.
+
+## Runtime flow (high level)
 
 ```mermaid
 sequenceDiagram
@@ -67,3 +78,5 @@ sequenceDiagram
       R->>P: persist events/streams/outputs/status
     end
 ```
+
+If you want the deeper threading/claim lifecycle, read [Concurrency + Lifecycle](../concepts/concurrency-lifecycle.md).

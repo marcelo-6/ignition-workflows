@@ -13,6 +13,8 @@ This project implements a DBOS durable workflow engine inside Ignition, using Po
 
 The project also deals with script interpreter reloads (read more here).
 
+If you want the detailed thread/claim/lifecycle model, read [Concurrency + Lifecycle](concurrency-lifecycle.md).
+
 ---
 
 ## Workflow and steps
