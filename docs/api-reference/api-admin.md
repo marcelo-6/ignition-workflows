@@ -30,7 +30,7 @@ flowchart TD
   E --> F[exitMaintenance]
 ```
 
-## Drain-mode deployment runbook
+### Drain-mode
 
 ```python
 import exchange.workflows.api.admin as admin
@@ -45,7 +45,7 @@ print admin.swapIfDrained()
 print admin.exitMaintenance()
 ```
 
-## Cancel-mode emergency runbook
+### Cancel-mode
 
 Use this for emergency stops during incidents.
 

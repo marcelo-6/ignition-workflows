@@ -80,7 +80,7 @@ flowchart TD
 def commands_60s():
     rt = getWorkflows()
 
-    while True:
+    while True: # (1)!
         rt.checkCancelled()
         cmd_info = rt.recvCommand(currentState="RUNNING", topic="cmd", timeoutSeconds=0.2)
 
@@ -97,3 +97,5 @@ def commands_60s():
 
         sleep_chunked(total_ms=500, chunk_ms=250)
 ```
+
+1. You can actually do a while True as much as it is not recommended. The workflow decorator has default timeouts that will timeout the workflow and cancel (IF you have your workflow actually check if a cancel has been issued). A better way might be to have while not rt.checkCancelled() however.

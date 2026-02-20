@@ -433,7 +433,7 @@
                 },
                 "props": {
                   "params": {
-                    "noResults": true,
+                    "noResults": false,
                     "refresh": false,
                     "selected": null,
                     "templateQueryOptions": {}
@@ -904,16 +904,9 @@
             }
           },
           "columns": {
-            "align": "stretch",
             "items": []
           },
-          "data": {
-            "paramOne": "1",
-            "paramThree": true,
-            "paramTwo": "MANUAL",
-            "templateInfo": "fds"
-          },
-          "name": "demo.one_minute_progress.Template Name goes here",
+          "name": "demo.commands_60s.Example",
           "validation": {
             "isInvalid": false,
             "status": {

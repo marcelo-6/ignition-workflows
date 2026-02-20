@@ -4,8 +4,6 @@ icon: lucide/book-marked
 
 # Glossary
 
-Short definitions used across docs and UI.
-
 ## Runtime
 
 The workflow engine facade handling enqueue, dispatch, execution, and observability operations.
@@ -16,7 +14,7 @@ The persistent Java-side shared state used by runtime instances (executors, coun
 
 ## Dispatch
 
-One timer-driven cycle that flushes in-memory queue items, claims DB work, and submits runnable jobs.
+One gateway timer script cycle that flushes in-memory queue items, claims DB work, and submits runnable jobs.
 
 ## Claim
 
@@ -24,7 +22,7 @@ When an `ENQUEUED` row is atomically marked `PENDING` and owned by one executor.
 
 ## Queue
 
-Logical lane used for routing and claiming workflows (`queueName`).
+Queue (the database is used as a queue) used for priority, routing, and claiming workflows.
 
 ## Partition key
 
@@ -36,15 +34,15 @@ Orchestration function that coordinates step calls and control flow.
 
 ## Step
 
-Side-effect unit of work with retry/durability behavior.
+SUnit of work with retry/durability behavior.
 
 ## In-memory enqueue
 
-Fast enqueue path that avoids immediate DB write and flushes on next dispatch cycle.
+Queue in gateway-side memory that avoids immediate DB write and flushes on next dispatch cycle.
 
 ## Maintenance mode
 
-Operational mode used during cutovers/incidents.
+Operational mode used during cutovers as needed.
 
 - `drain`: no new claims, let active work finish
 - `cancel`: drain + cooperative cancellation of queued/running work
@@ -59,8 +57,8 @@ Cancellation model where workflow/step code checks for cancellation and exits sa
 
 ## Events
 
-Latest key/value state snapshots for a run (good for dashboards).
+Latest key/value state snapshots for a run.
 
 ## Streams
 
-Append-only log-style records for a run (good for timelines and troubleshooting context).
+Append-only log-style records for a run.

@@ -7,11 +7,10 @@ icon: lucide/network
 This project implements a DBOS durable workflow engine inside Ignition, using Postgres as the system-of-record and a Gateway timer script dispatcher + worker pools to execute work. The end goal is the same as DBOS:
 
 - You can start long-running workflows from decorated functions
-- Work survives restarts and transient failures
-- Steps are durable and offer replay
+- Work can retry on failures
 - Operators can observe, control, and intervene (hold/resume/stop, prompts, etc.)
 
-The project also deals with script interpreter reloads (read more here).
+:material-information-outline:{ title="Important information" } The project also deals with script interpreter reloads ([more here](#ignitionjython-interpreter-reload-issue){ data-preview }).
 
 If you want the detailed thread/claim/lifecycle model, read [Concurrency + Lifecycle](concurrency-lifecycle.md).
 
@@ -19,10 +18,10 @@ If you want the detailed thread/claim/lifecycle model, read [Concurrency + Lifec
 
 ## Workflow and steps
 
-- **Workflows** are functions that describe a long-running process.
-- **Steps** are the units of work inside workflows that the library makes durable.
+- Workflows are functions that describe a long-running process.
+- Steps are the units of work inside workflows that the library makes durable.
 - When a workflow calls a step, library persists the step result so it can:
-- **replay** the result on retry/restart
+- replay the result on retry/restart
 - avoid re-running the step if it already succeeded
 - apply retry/backoff rules in a consistent way
 
@@ -34,13 +33,11 @@ If you want the detailed thread/claim/lifecycle model, read [Concurrency + Lifec
 - notifications/mailbox (send/recv for async coordination)
 - deduplication metadata (idempotent enqueue)
 
-The DB is what makes it durable. Executors can crash, processes can restart. Recovery is just “read DB, resume from durable checkpoints.”
-
 ## Executors + queues
 
 Library executors repeatedly:
 
-1. **claim** some ENQUEUED workflows from a queue
+1. claim some ENQUEUED workflows from a queue
 2. mark them owned by the executor
 3. execute them
 4. update status + heartbeats
@@ -61,7 +58,7 @@ This library has two ways to enqueue workflows.
 Use when you can afford a DB write right now.
 
 - API: `exchange.workflows.api.service.start(...)`
-- Behavior: inserts a workflow as a `ENQUEUED` row into the database immediately.
+- Behavior: inserts a workflow as a `ENQUEUED` row into the database.
 
 ```mermaid
 flowchart TB
@@ -82,7 +79,7 @@ Use when latency matters (e.g. tag event scripts) waiting on DB I/O.
 
 - API: `exchange.workflows.api.service.enqueueInMemory(...)`
 - Behavior: put request into in-memory queue only and tag change will proceed immediatly and not wait/hog the thread.
-- DB write happens on the next timer dispatch flush.
+- DB write happens on the next gateway timer dispatch.
 - Dispatch will pass through all workflow requests from the memory queue into the DB in a batch insert.
 
 ```mermaid
@@ -106,7 +103,7 @@ flowchart TB
 
 ### Dispatch
 
-On every gateway timer execution tje dispatcher is responsible for a few things:
+On every gateway timer execution the dispatcher is responsible for a few things:
 
 - flush in-memory queue,
 - apply capacity limits,
@@ -152,7 +149,7 @@ flowchart TB
 
 When a worker thread picks up a claimed row:
 
-- it transitions `PENDING -> RUNNING`
+- it transitions to `RUNNING`
 - it sets `started_at_epoch_ms` at that moment
 - it computes `deadline_epoch_ms = started_at + timeout`
 
@@ -160,10 +157,8 @@ When a worker thread picks up a claimed row:
 
 Inside the workflow:
 
-- each step call increments a deterministic `call_seq`
-
-  - if ERROR: retry a configurable amount of times
-  - else: execute and persist output/error
+- if ERROR: retry a configurable amount of times
+- else: execute and persist output/error
 
 ### Terminal states
 
@@ -186,7 +181,7 @@ one workflow at a time per instrument/resource.
 
 ### Ignition/Jython interpreter reload issue
 
-Ignition adds one special operational hazard DBOS doesn’t have. If you save a project script library in Ignition:
+Ignition adds one special operational hazard DBOS doesn’t have. When you save the project script library in Ignition:
 
 1. A new Jython interpreter is created.
 2. Old running threads are not automatically killed.
@@ -239,16 +234,6 @@ sequenceDiagram
 ```
 
 This does not magically preempt running step code (that is a non-goal). It gives you a controlled cutover model.
-
-## Quick glossary
-
-- **Interpreter**: the Jython runtime that holds loaded script code.
-- **Kernel**: persistent Java concurrency state used by this workflow engine. (name might change in future)
-- **Facade**: the lightweight `WorkflowsRuntime` class.
-- **Enqueue**: register a workflow request (either in DB or in memory first).
-- **Dispatch**: claim queued rows and submit execution to worker threads.
-- **Claim**: atomically mark DB rows so one executor instance owns execution.
-- **Generation**: runtime version counter used during maintenance cutovers.
 
 ## References
 

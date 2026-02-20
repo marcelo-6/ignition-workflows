@@ -23,10 +23,9 @@ icon: lucide/map
 * [x] Zensical project documentation
 * [ ] More examples of usage
 * [ ] More detailed API usage
-* [ ] Add perspective pages screenshots
+* [x] Add perspective pages screenshots
 
 ## Code Examples
 
 * [x] Command handling (`HOLD`, `RESUME`, `STOP`, `RESET`).
 * [ ] How to use templates
-  

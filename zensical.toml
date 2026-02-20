@@ -51,9 +51,8 @@ nav = [
     "getting-started/steps-and-authoring.md",
     "getting-started/testing.md",
     ]},
-  { "UI Walkthrough" = [
+  { "Perspective" = [
     "ui/workflows-console.md",
-    "ui/screenshot-shot-list.md",
     ]},
   { "Concepts" = [
     "concepts/architecture.md",
@@ -62,10 +61,8 @@ nav = [
     "concepts/glossary.md",
     ]},
   { "Operations" = [
-    "operations/troubleshooting-observability.md",
     ]},
   { "Examples" = [
-    "examples/operations.md",
     ]},
   { "API Reference" = [
     "api-reference/api-admin.md",
@@ -275,7 +272,7 @@ features = [
     # https://zensical.org/docs/setup/navigation/#navigation-integration
     # "toc.integrate",
 ]
-
+# [project.markdown_extensions.pymdownx.blocks.caption]
 # ----------------------------------------------------------------------------
 # In the "palette" subsection you can configure options for the color scheme.
 # You can configure different color # schemes, e.g., to turn on dark mode,
