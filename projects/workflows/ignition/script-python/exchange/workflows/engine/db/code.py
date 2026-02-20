@@ -806,6 +806,7 @@ class DB(object):
     def cancelExpired(self, tx=None):
         """
         Cancel workflows whose deadline has expired.
+        Only active ones.
 
         Args:
             tx (str|None): Optional transaction id.
@@ -813,9 +814,13 @@ class DB(object):
         Returns:
             int: Number of cancelled rows.
         """
+        whereSql = (
+            "status = ? AND deadline_epoch_ms IS NOT NULL AND deadline_epoch_ms < ?"
+        )
+        whereArgs = [settings.STATUS_RUNNING, nowMs()]
         return self._cancelWhere(
-            "deadline_epoch_ms IS NOT NULL AND deadline_epoch_ms < ?",
-            [nowMs()],
+            whereSql,
+            whereArgs,
             "Timeout exceeded",
             cancelType="timeout",
             tx=tx,
