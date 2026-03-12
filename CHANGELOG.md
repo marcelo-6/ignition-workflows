@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.8] - 2026-03-12
+
+### <!-- 7 -->Miscellaneous Tasks
+- Bump actions/setup-python from 5 to 6  by @dependabot[bot] in [#38](https://github.com/marcelo-6/ignition-workflows/pull/38) ([23fd029](https://github.com/marcelo-6/ignition-workflows/commit/23fd029f89969363de671ff861736d65757b12f0))
+
+
 ## [0.3.7] - 2026-03-12
 
 ### <!-- 7 -->Miscellaneous Tasks
