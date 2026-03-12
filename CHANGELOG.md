@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - 2026-03-12
+
+### <!-- 7 -->Miscellaneous Tasks
+- Bump actions/checkout from 5 to 6  by @dependabot[bot] in [#37](https://github.com/marcelo-6/ignition-workflows/pull/37) ([44117da](https://github.com/marcelo-6/ignition-workflows/commit/44117da8a74aa0c766c8ffd32e093b32668492b6))
+
+
+### New Contributors
+* @dependabot[bot] made their first contribution in [#37](https://github.com/marcelo-6/ignition-workflows/pull/37)
+
 ## [0.3.6] - 2026-02-20
 
 ### <!-- 1 -->Bug Fixes
