@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.9] - 2026-04-07
+
+### <!-- 7 -->Miscellaneous Tasks
+- Bump DavidAnson/markdownlint-cli2-action from 22 to 23  by @dependabot[bot] in [#41](https://github.com/marcelo-6/ignition-workflows/pull/41) ([d1220b9](https://github.com/marcelo-6/ignition-workflows/commit/d1220b93af24394c4789f12fe9ba2ff367a2d670))
+
+
 ## [0.3.8] - 2026-03-12
 
 ### <!-- 7 -->Miscellaneous Tasks
