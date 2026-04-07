@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.10] - 2026-04-07
+
+### <!-- 7 -->Miscellaneous Tasks
+- Bump actions/configure-pages from 5 to 6  by @dependabot[bot] in [#39](https://github.com/marcelo-6/ignition-workflows/pull/39) ([33b5e13](https://github.com/marcelo-6/ignition-workflows/commit/33b5e136790ef9326f81bb4c7b4fbcbf3f1e835d))
+
+- Bump actions/deploy-pages from 4 to 5  by @dependabot[bot] in [#40](https://github.com/marcelo-6/ignition-workflows/pull/40) ([7218571](https://github.com/marcelo-6/ignition-workflows/commit/721857154d655ed4a87d87a784cbc3f4cce0e365))
+
+
 ## [0.3.9] - 2026-04-07
 
 ### <!-- 7 -->Miscellaneous Tasks
