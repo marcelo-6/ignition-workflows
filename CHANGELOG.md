@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.11] - 2026-06-03
+
+### <!-- 7 -->Miscellaneous Tasks
+- Bump actions/upload-pages-artifact from 4 to 5  by @dependabot[bot] in [#43](https://github.com/marcelo-6/ignition-workflows/pull/43) ([3d6e4dd](https://github.com/marcelo-6/ignition-workflows/commit/3d6e4ddfcd9c04b69a664d767f33eb09a540788f))
+
+- Bump softprops/action-gh-release from 2 to 3  by @dependabot[bot] in [#42](https://github.com/marcelo-6/ignition-workflows/pull/42) ([d6740f8](https://github.com/marcelo-6/ignition-workflows/commit/d6740f8619d9b554402510cfabfff4e822969fbb))
+
+
 ## [0.3.10] - 2026-04-07
 
 ### <!-- 7 -->Miscellaneous Tasks
