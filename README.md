@@ -16,6 +16,8 @@ Goal:
 
 - I've used SFCs in other projects in the past and it can be hard to manage the code and troubleshoot. I read about DBOS and found it gave a good framework for async long running tasks. I thought that porting over some of their design into Ignition (without using SFC module or creating thirdparty module) would be a fun personal project to get me a little more familiar with async multi-threaded Ignition Scripting.
 
+[Documentation Link](https://marcelo-6.github.io/ignition-workflows/)
+
 What is currently implemented:
 
 - Durable concurrent execution with retry behavior and operator control (HOLD/RESUME/STOP).
